@@ -34,4 +34,27 @@ app.post('/github', function(req, res) {
   res.status(200)
 })
 
+const pg = require('pg')
+const pool = pg.Pool()
+
+app.post('/authenticate', function(req, res) {
+
+  // TODO: verify that the user's ID token is valid, i.e. that they are who they say they are
+
+  // TODO: connect to database and check if user already exists;
+  // if they exist then update their last login otherwise create a DB entry representing them
+
+  pool.query('SELECT NOW()', [], (err, queryRes) => {
+
+    if (err) {
+      console.log(err)
+    }
+
+    console.log(queryRes.rows)
+
+    res.send(queryRes.rows)
+  })
+
+})
+
 app.listen(3000)
