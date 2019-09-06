@@ -1,3 +1,55 @@
+:root {
+    --color-1: #EFC7C2;
+    --color-2: #FFE5D4;
+    --color-3: #BFD3C1;
+    --color-4: #68A691;
+    --color-5: #694F5D;
+    /* https://coolors.co/efc7c2-ffe5d4-bfd3c1-68a691-694f5d */
+}
+
+body, html {
+    font-family: "Roboto Condensed", sans-serif;
+    padding: 0;
+    margin: 0;
+}
+
+#navbar {
+    height: 10vh;
+    width: 100vw;
+    top: 0;
+    background-color: var(--color-1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: fixed;
+}
+
+h1 {
+    margin: 0 auto;
+    text-align: center;
+    color: var(--color-5);
+}
+
+#mainContainer {
+    height: 90vh;
+    width: 100vw;
+    background-color: var(--color-2);
+    padding: 40px;
+    margin-top: 10vh;
+}
+
+.container {
+    overflow: auto;
+    background: #fff;
+    width: 70vw;
+    margin: 0 auto 40px;
+    padding: 40px;
+}
+
+h1 {
+    margin: 0;
+}
+
 #jsonOutput {
     width: 100%;
 }
