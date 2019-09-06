@@ -57,10 +57,11 @@ async function sendEmail(receivers, emailContent){
         pass: sender.pass
     }
   });
+
   // send mail with defined transport object
   let info = await transporter.sendMail({
     from: `${sender.name} <${sender.email}>`, // sender address
-    to: 'utra0001@student.monash.edu', // list of receivers
+    to: `${receivers}`, // list of receivers
     subject: 'Hello ✔', // Subject line
     text: 'Hello world?', // plain text body
     html: '<b>Hello world?</b>' // html body
@@ -69,4 +70,5 @@ async function sendEmail(receivers, emailContent){
   console.log('Email sent: %s', info.messageId);
 };
 
+//sendEmail('utra0001@student.monash.edu').catch(console.error)
 app.listen(3000)
