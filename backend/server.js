@@ -2,6 +2,14 @@ const express = require('express')
 const cors = require('cors')
 const fetch = require('node-fetch')
 const bodyParser = require('body-parser')
+const nodemailer = require('nodemailer');
+
+const sender = {
+  email: 'devalarm.test@gmail.com',
+  name: 'DevAlarm Notification',
+  pass:'fit2101devalarm'
+}
+
 const app = express()
 app.use(cors())
 app.use(bodyParser.json())
@@ -36,6 +44,35 @@ app.post('/github', function(req, res) {
   res.status(200)
 })
 
+async function sendEmail(receivers, emailContent){
+  // Source: https://nodemailer.com/about/
+  /* TODO: 
+  - configure receiver, email content
+  - error handling
+   */
+
+  // create reusable transporter object using the default SMTP transport
+  let transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: sender.email, 
+        pass: sender.pass
+    }
+  });
+
+  // send mail with defined transport object
+  let info = await transporter.sendMail({
+    from: `${sender.name} <${sender.email}>`, // sender address
+    to: `${receivers}`, // list of receivers
+    subject: 'Hello ✔', // Subject line
+    text: 'Hello world?', // plain text body
+    html: '<b>Hello world?</b>' // html body
+  });
+
+  console.log('Email sent: %s', info.messageId);
+};
+
+//sendEmail('utra0001@student.monash.edu').catch(console.error)
 const pg = require('pg')
 const pool = pg.Pool()
 
