@@ -5,12 +5,13 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
-    "launch": "./helper/ngrok http 3000"
+    "deploy": "./deploy.sh"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "asyncawait": "^1.0.8",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^8.1.0",
