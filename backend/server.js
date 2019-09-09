@@ -91,7 +91,7 @@ app.post('/authenticate', function(req, res) {
 
   const { email, idToken, githubUsername } = req.body
 
-  pool.query('SELECT * FROM public.users WHERE email_address=$1 OR username=$2', [email, githubUsername], (err, queryRes) => {
+  pool.query('SELECT * FROM public.users WHERE email_address=$1 OR github_username=$2', [email, githubUsername], (err, queryRes) => {
 
     if (err) {
       console.log(err)
