@@ -77,6 +77,11 @@ const pg = require('pg')
 const pool = pg.Pool()
 
 app.post('/authenticate', function(req, res) {
+  /**
+   * Register a user in the database:
+   * If they have logged in before the call returns HTTP 200 with their user ID
+   * If they are logging in for the first time the call returns HTTP 201 with their user ID
+   */
 
   // TODO: verify that the user's ID token is valid, i.e. that they are who they say they are
   // -- we need the Github auth to be done before this is possible
