@@ -3,12 +3,7 @@ const cors = require('cors')
 const fetch = require('node-fetch')
 const bodyParser = require('body-parser')
 const nodemailer = require('nodemailer');
-
-const sender = {
-  email: 'devalarm.test@gmail.com',
-  name: 'DevAlarm Notification',
-  pass:'fit2101devalarm'
-}
+const hbs = require('nodemailer-express-handlebars');
 
 const app = express()
 app.use(cors())
@@ -16,8 +11,36 @@ app.use(bodyParser.json())
 
 require("dotenv").config()
 
+const sender = {
+  email: 'devalarm.test@gmail.com',
+  name: 'DevAlarm Notification',
+  pass: 'fit2101devalarm'
+}
+
+// create reusable transporter object to send email
+let transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: sender.email,
+    pass: sender.pass
+  }
+});
+
+const handlebarsOption = {
+  viewEngine: {
+    extName: '.hbs',
+    partialsDir: './emails',
+    layoutsDir: './emails',
+    defaultLayout: 'index.handlebars',
+  },
+  viewPath: "./emails"
+}
+
+// Use handlebars to render
+transporter.use('compile', hbs(handlebarsOption));
+
 app.get('/', function (req, res) {
-  const response = { cool: { have: "fun" }}
+  const response = { cool: { have: "fun" } }
 
   res.json(response)
 })
@@ -34,7 +57,7 @@ app.get('/repo', function (req, res) {
   })
 })
 
-app.post('/github', function(req, res) {
+app.post('/github', function (req, res) {
   const { headers, body } = req
 
   console.log("body", body)
@@ -44,39 +67,35 @@ app.post('/github', function(req, res) {
   res.status(200)
 })
 
-async function sendEmail(receivers, emailContent){
-  // Source: https://nodemailer.com/about/
-  /* TODO: 
-  - configure receiver, email content
-  - error handling
+async function sendEmail(receivers, emailContent) {
+  /**
+   * Source: https://nodemailer.com/about/
    */
 
-  // create reusable transporter object using the default SMTP transport
-  let transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: sender.email, 
-        pass: sender.pass
+  let mailOptions = {
+    from: `${sender.name} <${sender.email}>`,
+    to: `${receivers}`, // TODO: check if can send to many receivers
+    subject: 'DevAlarm Test',
+    text: 'Wooohooo it works!!',
+    template: 'index',
+    context: {
+      name: emailContent
+    } // send extra values to template
+  };
+
+  transporter.sendMail(mailOptions, (err, data) => {
+    if (err) {
+      return console.log('Error occurs');
     }
+    return console.log('Email sent!!!');
   });
-
-  // send mail with defined transport object
-  let info = await transporter.sendMail({
-    from: `${sender.name} <${sender.email}>`, // sender address
-    to: `${receivers}`, // list of receivers
-    subject: 'Hello ✔', // Subject line
-    text: 'Hello world?', // plain text body
-    html: '<b>Hello world?</b>' // html body
-  });
-
-  console.log('Email sent: %s', info.messageId);
 };
 
-//sendEmail('utra0001@student.monash.edu').catch(console.error)
+// sendEmail('utra0001@student.monash.edu','Sara Tran').catch(console.error)
 const pg = require('pg')
 const pool = pg.Pool()
 
-app.post('/authenticate', function(req, res) {
+app.post('/authenticate', function (req, res) {
   /**
    * Register a user in the database:
    * If they have logged in before the call returns HTTP 200 with their user ID
