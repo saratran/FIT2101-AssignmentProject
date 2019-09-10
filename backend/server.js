@@ -85,7 +85,20 @@ app.post('/authenticate', function(req, res) {
 
   // TODO: verify that the user's ID token is valid, i.e. that they are who they say they are
   // -- we need the Github auth to be done before this is possible
-
+  function getData(url = '', data = {}) {
+    return fetch(url, {
+      mode: 'cors', // no-cors, cors, *same-origin
+      cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      redirect: 'follow', // manual, *follow, error
+      referrer: 'no-referrer', // no-referrer, *client
+      body: JSON.stringify(data), // body data type must match "Content-Type" header
+    }).then(response => response.json()); // parses JSON response into native JavaScript objects
+  }
+  getData('https://github.com/login/oauth/authorize', {client_id: "needToRegisterFirst"})
+      .then(data => console.log(JSON.stringify(data))).catch(error => console.error(error))
   // connect to database and check if user already exists;
   // if they exist then update their last login otherwise create a DB entry representing them
 
