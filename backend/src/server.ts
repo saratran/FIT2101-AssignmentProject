@@ -44,6 +44,15 @@ transporter.use('compile', hbs(handlebarsOption));
 dotenv.config(); // variables set in the .env file in this folder are now accessible with process.env.[variableName]
 const pool = new pg.Pool(); // Create a DB query pool. The database connection only works if you have valid DB credentials in the .env file
 
+const clientID = '3e670fbb378ba2969da8';
+const clientSecret = 'c63bc1e0c44bde2ac43141be91edc04524bb5087';
+
+app.get('/callback', (req, res) => {
+  const requestToken = req.query.code
+  fetch('https://github.com/login/oauth/access_token?client_id=${clientID}&client_secret=${clientSecret}&code=${requestToken}')
+      .then(response => console.log(JSON.stringify(response)));
+})
+
 async function sendEmail(receivers: string[], emailContent){
   // Source: https://nodemailer.com/about/
   /* TODO:
