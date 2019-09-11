@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "outDir": "build"
+  },
+  "files": [
+    "src/server.ts"
+  ]
+}
