@@ -47,11 +47,7 @@ const pool = new pg.Pool(); // Create a DB query pool. The database connection o
 async function sendEmail(receivers: string[], emailContent){
   // Source: https://nodemailer.com/about/
   /* TODO:
-  - configure receiver, email content
-  - error handling
-async function sendEmail(receivers, emailContent) {
-  /**
-   * Source: https://nodemailer.com/about/
+  - email content
    */
 
   let mailOptions = {
