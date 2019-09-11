@@ -44,7 +44,7 @@ transporter.use('compile', hbs(handlebarsOption));
 dotenv.config(); // variables set in the .env file in this folder are now accessible with process.env.[variableName]
 const pool = new pg.Pool(); // Create a DB query pool. The database connection only works if you have valid DB credentials in the .env file
 
-async function sendEmail(receivers, emailContent){
+async function sendEmail(receivers: string[], emailContent){
   // Source: https://nodemailer.com/about/
   /* TODO:
   - configure receiver, email content
@@ -72,7 +72,7 @@ async function sendEmail(receivers, emailContent) {
     return console.log('Email sent!!!');
   });
 }
-// sendEmail('utra0001@student.monash.edu','Sara Tran').catch(console.error)
+// sendEmail(['utra0001@student.monash.edu','saraut1479@gmail.com'],'Sara Tran').catch(console.error)
 
 app.get('/api', function (req, res) { // demo API homepage to verify that backend works
   const response = { cool: { have: "fun" }};
