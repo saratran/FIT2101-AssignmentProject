@@ -51,6 +51,7 @@ app.get('/callback', (req, res) => {
   const requestToken = req.query.code
   fetch('https://github.com/login/oauth/access_token?client_id=${clientID}&client_secret=${clientSecret}&code=${requestToken}')
       .then(response => console.log(JSON.stringify(response)));
+    // TODO: get response.data.access_token
 })
 
 async function sendEmail(receivers: string[], emailContent){
