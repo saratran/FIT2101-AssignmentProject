@@ -71,17 +71,6 @@ async function sendEmail(receivers, emailContent) {
     }
     return console.log('Email sent!!!');
   });
-
-  // send mail with defined transport object
-  let info = await transporter.sendMail({
-    from: `${sender.name} <${sender.email}>`, // sender address
-    to: `${receivers}`, // list of receivers
-    subject: 'Hello ✔', // Subject line
-    text: 'Hello world?', // plain text body
-    html: '<b>Hello world?</b>' // html body
-  });
-
-  console.log('Email sent: %s', info.messageId);
 }
 // sendEmail('utra0001@student.monash.edu','Sara Tran').catch(console.error)
 
