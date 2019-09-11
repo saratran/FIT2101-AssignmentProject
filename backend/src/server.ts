@@ -11,7 +11,7 @@ const app = express(); // initialise app
 app.use(cors()); // allow Cross-Origin Resource Sharing
 app.use(bodyParser.json()); // parse POST request JSON bodies
 
-require("dotenv").config();
+dotenv.config();
 
 const sender = {
   email: 'devalarm.test@gmail.com',
