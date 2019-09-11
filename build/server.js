@@ -129,6 +129,8 @@ app.post('/api/github', function (req, res) {
     var headers = req.headers, body = req.body;
     console.log("body", body);
     console.log("header", headers);
+    console.log("sending email");
+    sendEmail('pbre0003@student.monash.edu', 'Sara Tran')["catch"](console.error);
     res.json({});
     res.status(200);
 });
@@ -175,7 +177,9 @@ app.post('/api/authenticate', function (req, res) {
         }
     });
 });
-var port = 3000;
+// Serve frontend
+app.use('/', express.static('frontend'));
+var port = process.env.ENV === "SERVER" ? 80 : 3000;
 app.listen(port);
 console.log("Listening on port " + port);
 //# sourceMappingURL=server.js.map
