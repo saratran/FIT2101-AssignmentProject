@@ -1,23 +1,54 @@
-.header{
-    background-color:#00897b;
-    margin: auto;
-    padding: 10px 10px 10px 10px;
-    border-radius: 1em;
+#navbar {
+    height: 10vh;
+    margin: 0;
+    padding: 0;
+    top: 2px;
+    background-color: white;
+    text-align: center;
+    
 }
-body{
+
+img{
+    margin-top: 5px;
+}
+
+.container{
     background-color:white;
-    padding: 2em 20em 0em 20em;
+    margin-top: 30px;
+    margin-right: 30px;
+    margin-left: 30px;
+    padding: 10px 10px 10px 10px;
+    border-radius: 10px;
+}
+
+.container1{
+    background-color:#5EA985;
+    margin: 0;
+    padding: 10px 10px 10px 10px;
+    border-radius: 10px;
+}
+
+body{
+    background-color:#89cead;
+    padding: 0;
+    margin: 0;
 }
 
 h1{
     font-family: "Courier New", Courier, monospace;
     margin:auto;
     text-align: center;
+    color: #5EA985;
+}
+
+h2{
+    font-family: "Courier New", Courier, monospace;
+    margin:auto;
     color: white;
 }
 
 form{
-    color: aliceblue;
+    color: #5EA985;
     font-family: "Courier New", Courier, monospace;
     padding: 2em 0em 2em 0em;
 }
@@ -33,6 +64,5 @@ button{
     width: 150px;
     height: 40px;
     border-radius: 10em;
-    background: rgba(59,173,227,1);
-    background: linear-gradient(45deg, rgba(59,173,227,1) 0%, rgba(87,111,230,1) 25%, rgba(152,68,183,1) 51%, rgba(255,53,127,1) 100%);
+    background: #5EA985;
 }
