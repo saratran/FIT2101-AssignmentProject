@@ -41,34 +41,6 @@ const handlebarsOption = {
 // Use handlebars to render
 transporter.use('compile', hbs(handlebarsOption));
 
-app.get('/', function (req, res) {
-  const response = { cool: { have: "fun" } };
-
-  res.json(response)
-});
-
-app.get('/repo', function (req, res) {
-  const { owner, repo } = req.query;
-
-  fetch(`https://api.github.com/repos/${owner}/${repo}`).then(fetchRes => {
-    fetchRes.json().then(fetchJson => {
-      console.log(fetchJson);
-
-      res.json(fetchJson)
-    })
-  })
-});
-
-app.post('/github', function (req, res) {
-  const { headers, body } = req;
-
-  console.log("body", body);
-  console.log("header", headers);
-
-  res.json({});
-  res.status(200)
-});
-
 dotenv.config(); // variables set in the .env file in this folder are now accessible with process.env.[variableName]
 const pool = new pg.Pool(); // Create a DB query pool. The database connection only works if you have valid DB credentials in the .env file
 
@@ -142,7 +114,6 @@ app.post('/api/github', function(req, res) {
 });
 
 app.post('/api/authenticate', function(req, res) {
-app.post('/authenticate', function (req, res) {
   /**
    * Register a user in the database:
    * If they have logged in before the call returns HTTP 200 with their user ID
