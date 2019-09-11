@@ -2,13 +2,72 @@ import express = require('express'); // for web server
 import cors = require('cors'); // allows us to make requests across domains/ports (Cross-Origin Resource Sharing)
 import fetch from 'node-fetch'; // polyfill for browser JS 'fetch' functionality
 import bodyParser = require('body-parser'); // allows express to handle body of POST requests
-import nodeMailer = require('nodemailer'); // for sending emails
+import nodemailer = require('nodemailer'); // for sending emails
 import pg = require('pg'); // PostgreSQL (PG) database interface
 import dotenv = require('dotenv'); // environment variables
+import hbs = require('nodemailer-express-handlebars');
 
 const app = express(); // initialise app
 app.use(cors()); // allow Cross-Origin Resource Sharing
 app.use(bodyParser.json()); // parse POST request JSON bodies
+
+require("dotenv").config();
+
+const sender = {
+  email: 'devalarm.test@gmail.com',
+  name: 'DevAlarm Notification',
+  pass:'fit2101devalarm'
+}; // login details for Gmail account
+
+// create reusable transporter object to send email
+let transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: sender.email,
+    pass: sender.pass
+  }
+});
+
+const handlebarsOption = {
+  viewEngine: {
+    extName: '.hbs',
+    partialsDir: './emails',
+    layoutsDir: './emails',
+    defaultLayout: 'index.handlebars',
+  },
+  viewPath: "./emails"
+};
+
+// Use handlebars to render
+transporter.use('compile', hbs(handlebarsOption));
+
+app.get('/', function (req, res) {
+  const response = { cool: { have: "fun" } };
+
+  res.json(response)
+});
+
+app.get('/repo', function (req, res) {
+  const { owner, repo } = req.query;
+
+  fetch(`https://api.github.com/repos/${owner}/${repo}`).then(fetchRes => {
+    fetchRes.json().then(fetchJson => {
+      console.log(fetchJson);
+
+      res.json(fetchJson)
+    })
+  })
+});
+
+app.post('/github', function (req, res) {
+  const { headers, body } = req;
+
+  console.log("body", body);
+  console.log("header", headers);
+
+  res.json({});
+  res.status(200)
+});
 
 dotenv.config(); // variables set in the .env file in this folder are now accessible with process.env.[variableName]
 const pool = new pg.Pool(); // Create a DB query pool. The database connection only works if you have valid DB credentials in the .env file
@@ -18,15 +77,27 @@ async function sendEmail(receivers, emailContent){
   /* TODO:
   - configure receiver, email content
   - error handling
+async function sendEmail(receivers, emailContent) {
+  /**
+   * Source: https://nodemailer.com/about/
    */
 
-  // create reusable transporter object using the default SMTP transport
-  let transporter = nodeMailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: sender.email,
-      pass: sender.pass
+  let mailOptions = {
+    from: `${sender.name} <${sender.email}>`,
+    to: `${receivers}`, // TODO: check if can send to many receivers
+    subject: 'DevAlarm Test',
+    text: 'Wooohooo it works!!',
+    template: 'index',
+    context: {
+      name: emailContent
+    } // send extra values to template
+  };
+
+  transporter.sendMail(mailOptions, (err, data) => {
+    if (err) {
+      return console.log('Error occurs');
     }
+    return console.log('Email sent!!!');
   });
 
   // send mail with defined transport object
@@ -40,13 +111,7 @@ async function sendEmail(receivers, emailContent){
 
   console.log('Email sent: %s', info.messageId);
 }
-//sendEmail('utra0001@student.monash.edu').catch(console.error)
-
-const sender = {
-  email: 'devalarm.test@gmail.com',
-  name: 'DevAlarm Notification',
-  pass:'fit2101devalarm'
-}; // login details for Gmail account
+// sendEmail('utra0001@student.monash.edu','Sara Tran').catch(console.error)
 
 app.get('/api', function (req, res) { // demo API homepage to verify that backend works
   const response = { cool: { have: "fun" }};
@@ -77,6 +142,7 @@ app.post('/api/github', function(req, res) {
 });
 
 app.post('/api/authenticate', function(req, res) {
+app.post('/authenticate', function (req, res) {
   /**
    * Register a user in the database:
    * If they have logged in before the call returns HTTP 200 with their user ID
@@ -126,4 +192,4 @@ app.post('/api/authenticate', function(req, res) {
 
 const port = 3000;
 app.listen(port);
-console.log(`Listening on port ${port}`)
+console.log(`Listening on port ${port}`);
