@@ -1,6 +1,6 @@
 import express = require('express'); // for web server
 import cors = require('cors'); // allows us to make requests across domains/ports (Cross-Origin Resource Sharing)
-import fetch = require('node-fetch'); // polyfill for browser JS 'fetch' functionality
+import fetch from 'node-fetch'; // polyfill for browser JS 'fetch' functionality
 import bodyParser = require('body-parser'); // allows express to handle body of POST requests
 import nodeMailer = require('nodemailer'); // for sending emails
 import pg = require('pg'); // PostgreSQL (PG) database interface
