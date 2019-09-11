@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.ts",
   "scripts": {
-    "start": "tsc server.ts && nodemon server.js",
+    "start": "tsc server.ts && node server.js",
     "deploy": "./deploy.sh"
   },
   "keywords": [],
