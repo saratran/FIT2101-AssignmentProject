@@ -2,9 +2,9 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "server.ts",
+  "main": "src/server.ts",
   "scripts": {
-    "start": "tsc server.ts && node server.js",
+    "start": "nodemon",
     "deploy": "./deploy.sh"
   },
   "keywords": [],
