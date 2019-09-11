@@ -76,42 +76,29 @@ dotenv.config(); // variables set in the .env file in this folder are now access
 var pool = new pg.Pool(); // Create a DB query pool. The database connection only works if you have valid DB credentials in the .env file
 function sendEmail(receivers, emailContent) {
     return __awaiter(this, void 0, void 0, function () {
-        var mailOptions, info;
+        var mailOptions;
         return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    mailOptions = {
-                        from: sender.name + " <" + sender.email + ">",
-                        to: "" + receivers,
-                        subject: 'DevAlarm Test',
-                        text: 'Wooohooo it works!!',
-                        template: 'index',
-                        context: {
-                            name: emailContent
-                        } // send extra values to template
-                    };
-                    transporter.sendMail(mailOptions, function (err, data) {
-                        if (err) {
-                            return console.log('Error occurs');
-                        }
-                        return console.log('Email sent!!!');
-                    });
-                    return [4 /*yield*/, transporter.sendMail({
-                            from: sender.name + " <" + sender.email + ">",
-                            to: "" + receivers,
-                            subject: 'Hello ✔',
-                            text: 'Hello world?',
-                            html: '<b>Hello world?</b>' // html body
-                        })];
-                case 1:
-                    info = _a.sent();
-                    console.log('Email sent: %s', info.messageId);
-                    return [2 /*return*/];
-            }
+            mailOptions = {
+                from: sender.name + " <" + sender.email + ">",
+                to: "" + receivers,
+                subject: 'DevAlarm Test',
+                text: 'Wooohooo it works!!',
+                template: 'index',
+                context: {
+                    name: emailContent
+                } // send extra values to template
+            };
+            transporter.sendMail(mailOptions, function (err, data) {
+                if (err) {
+                    return console.log('Error occurs');
+                }
+                return console.log('Email sent!!!');
+            });
+            return [2 /*return*/];
         });
     });
 }
-// sendEmail('utra0001@student.monash.edu','Sara Tran').catch(console.error)
+// sendEmail(['utra0001@student.monash.edu','saraut1479@gmail.com'],'Sara Tran').catch(console.error)
 app.get('/api', function (req, res) {
     var response = { cool: { have: "fun" } };
     res.json(response);
