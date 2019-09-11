@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+<head>
+    <link rel = "stylesheet" type = "text/css" href = "style1.css" >
+</head>
+<body>
+    <div id="myDIV" class="header">
+        
+        <h1>E-MAIL PRIORITIES</h1>
+        <form action="">
+          <input type="radio" name="priority" value="1">Individual Mail<br>
+          <input type="radio" name="priority" value="2">Daily Digest<br>
+          <input type="radio" name="priority" value="3">Weekly Digest<br>
+        </form>
+        <button type="submit" value="Submit">Save Preference</button>
+        
+    </div>
+    
+    <ul id="myUL">
+    </ul>
+</body>
+<script>
+        fetch("http://localhost:3000/").then(res => {
+
+      res.json().then(json => {
+
+        console.log(json)
+
+      })
+</script>
+</html>
