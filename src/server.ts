@@ -94,6 +94,9 @@ app.post('/api/github', function(req, res) {
   console.log("body", body);
   console.log("header", headers);
 
+  console.log("sending email")
+  sendEmail('pbre0003@student.monash.edu','Sara Tran').catch(console.error)
+
   res.json({});
   res.status(200)
 });
@@ -146,6 +149,9 @@ app.post('/api/authenticate', function(req, res) {
   })
 });
 
-const port = 3000;
+// Serve frontend
+app.use('/', express.static('frontend'));
+
+const port = process.env.ENV === "SERVER" ? 80 : 3000;
 app.listen(port);
 console.log(`Listening on port ${port}`);
