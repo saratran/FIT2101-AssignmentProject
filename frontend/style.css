@@ -74,6 +74,11 @@ button {
 button:hover {
     background-color:#ffb3a0;
 }
+
+button:focus {
+    outline: none;
+}
+
 button:active {
     position:relative;
     top:1px;
