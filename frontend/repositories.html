@@ -8,20 +8,23 @@
 </head>
 <body>
     <div class="page-header">
-        <img src="img/logo.png" style="height: 30px; width: 165px; margin-left: calc(50% - 82px)">
+        <a href="index.html">
+            <img src="img/logo.png" style="height: 30px; width: 165px; margin-left: calc(50% - 82px)">
+        </a>
     </div>
     <main class="repository-content">
         <div class="repo-sidebar">
             <a class="active sidebar-header" style="text-align: center">Username</a>
             <div class="search-bar">
                 <div style="height: 30px; background-color: white; width: 230px; border-color: #555555; border-radius: 5px; margin-top: 5px;">
-                <img src="img/search-512.png" style="height: 20px; width: 20px; margin: 5px;">
-                <input id="repo-search" type="text"  placeholder="Search" oninput="searchRepos()">
+                    <img src="img/search-512.png" style="height: 20px; width: 20px; margin: 5px;">
+                    <input id="repo-search" type="text"  placeholder="Search" oninput="searchRepos()">
                 </div>
             </div>
             <a onclick="getRepoFiles(this)">Repo1</a>
             <a onclick="getRepoFiles(this)">Repo2</a>
             <a onclick="getRepoFiles(this)">Repo3</a>
+            <!--<a id="DanaC05" onclick="findRepositories(this)">Find repos</a>-->
         </div>
 
         <div class="repo-information">
@@ -67,10 +70,52 @@
 <script>
 function getRepoFiles(repository) {
     if (repository.classList.length == 0) {
-        repository.setAttribute("class", "selected");
+        repository.setAttribute("class", "active");
     }
     else {
         repository.className = "";
+    }
+}
+
+function findRepositories(elem) {
+    let username = elem.id;
+    let requestUrl = "https://api.github.com/users"
+    let params = "";
+
+    let githubData = {
+        userName: username,
+        callback: "repositoryResponse"
+    }
+
+    for (let key in githubData)
+    {
+        if (githubData.hasOwnProperty(key))
+        {
+            if (key === "callback") {
+                let encodedKey = encodeURIComponent(key);
+                let encodedValue = encodeURIComponent(githubData[key]);
+
+                params += "/repos/?";
+                params += encodedKey + "=" + encodedValue;
+            }
+            else {
+                params += "/" + username;
+            }
+        }
+    }
+
+    let script = document.createElement('script');
+    script.src = requestUrl + params;
+    console.log(requestUrl + params);
+    document.body.appendChild(script)
+}
+
+function repositoryResponse(userData) {
+    try {
+        alert(userData[0].name);
+    }
+    catch (e) {
+        alert("Error: " + userData.data.message);
     }
 }
 
