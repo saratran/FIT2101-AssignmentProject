@@ -1,8 +1,6 @@
-backend/node_modules/
-frontend/node_modules/
+node_modules/
 .idea/
-backend/.env
-backend/build/
+.env
+build/
 .DS_Store
 \.DS_Store
-backend/build/
