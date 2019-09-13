@@ -1,3 +1,7 @@
+/* Font scheme */
+@import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Comfortaa');
+
 /* color scheme */
 :root {
     --color-1: #89CEAD;
@@ -16,7 +20,7 @@
 
 /* page font */
 body {
-    font-family: "Roboto Condensed", sans-serif;
+    font-family: "Open Sans", sans-serif;
     margin-left: 0px;
 }
 
