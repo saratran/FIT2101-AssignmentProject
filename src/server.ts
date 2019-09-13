@@ -95,7 +95,7 @@ app.post('/api/github', function(req, res) {
   console.log("header", headers);
 
   console.log("sending email")
-  sendEmail(['pbre0003@student.monash.edu'],'Sara Tran').catch(console.error)
+  sendEmail('pbre0003@student.monash.edu','Sara Tran').catch(console.error)
 
   res.json({});
   res.status(200)

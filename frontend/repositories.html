@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en" class="page">
+<head>
+    <meta charset="UTF-8">
+    <script src="scripts/masonry.pkgd.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="repositories-style..css">
+    <title>Title</title>
+</head>
+<body>
+    <div class="page-header">
+        <a href="index.html">
+            <img src="img/logo.png" style="height: 30px; width: 165px; margin-left: calc(50% - 82px)">
+        </a>
+    </div>
+    <main class="repository-content">
+        <div class="repo-sidebar">
+            <a class="active sidebar-header" style="text-align: center">Username</a>
+            <div class="search-bar">
+                <div style="height: 30px; background-color: white; width: 230px; border-color: #555555; border-radius: 5px; margin-top: 5px;">
+                    <img src="img/search-512.png" style="height: 20px; width: 20px; margin: 5px;">
+                    <input id="repo-search" type="text"  placeholder="Search" oninput="searchRepos()">
+                </div>
+            </div>
+            <a onclick="getRepoFiles(this)">Repo1</a>
+            <a onclick="getRepoFiles(this)">Repo2</a>
+            <a onclick="getRepoFiles(this)">Repo3</a>
+            <!--<a id="DanaC05" onclick="findRepositories(this)">Find repos</a>-->
+        </div>
+
+        <div class="repo-information">
+            <div class="grid" data-masonry='{ "itemSelector": ".grid-item", "columnWidth": 200, "gutter": 60, "originLeft": true }'>
+                <div class="grid-item repo-file">
+                    <h1><img src="img/image-file-icon.png" style="height: 20px; width: 20px;">&nbsp; logo.png</h1>
+                    <p>Added by:</p>
+                    <p>Timothy Smith</p>
+                    <br/>
+                    <p style="color: #d1d1d1">Last Updated: 3 mins ago</p>
+                </div>
+                <div class="grid-item repo-file">
+                    <h1><img src="img/code-file-icon.png" style="height: 20px; width: 20px;">&nbsp; server.js</h1>
+                    <p>Recently modified by:</p>
+                    <p>Robert Bobert, Timothy Smith, John McJohnface</p>
+                    <br/>
+                    <p style="color: #d1d1d1">Last Updated: 3 mins ago</p>
+                </div>
+                <div class="grid-item repo-file">
+                    <h1><img src="img/HTML-file-icon.png" style="height: 20px; width: 20px;">&nbsp; style.css</h1>
+                    <p>Recently modified by:</p>
+                    <p>Robert Bobert</p>
+                    <p>Timothy Smith</p>
+                    <p>John McJohnface</p>
+                    <br/>
+                    <p style="color: #d1d1d1">Last Updated: 3 mins ago</p>
+                </div>
+                <div class="grid-item repo-file">
+                    <div class="repo-file-title">
+                        <h1><img src="img/HTML-file-icon.png" style="height: 20px; width: 20px;">&nbsp; index.html</h1>
+                    </div>
+                    <p>Recently modified by:</p>
+                    <p>Robert Bobert, Timothy Smith, John McJohnface</p>
+                    <br/>
+                    <p style="color: #d1d1d1">Last Updated: 3 mins ago</p>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+<script src="scripts/masonry.pkgd.min.js"></script>
+<script>
+function getRepoFiles(repository) {
+    if (repository.classList.length == 0) {
+        repository.setAttribute("class", "active");
+    }
+    else {
+        repository.className = "";
+    }
+}
+
+function findRepositories(elem) {
+    let username = elem.id;
+    let requestUrl = "https://api.github.com/users"
+    let params = "";
+
+    let githubData = {
+        userName: username,
+        callback: "repositoryResponse"
+    }
+
+    for (let key in githubData)
+    {
+        if (githubData.hasOwnProperty(key))
+        {
+            if (key === "callback") {
+                let encodedKey = encodeURIComponent(key);
+                let encodedValue = encodeURIComponent(githubData[key]);
+
+                params += "/repos/?";
+                params += encodedKey + "=" + encodedValue;
+            }
+            else {
+                params += "/" + username;
+            }
+        }
+    }
+
+    let script = document.createElement('script');
+    script.src = requestUrl + params;
+    console.log(requestUrl + params);
+    document.body.appendChild(script)
+}
+
+function repositoryResponse(userData) {
+    try {
+        alert(userData[0].name);
+    }
+    catch (e) {
+        alert("Error: " + userData.data.message);
+    }
+}
+
+</script>
