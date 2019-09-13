@@ -1,0 +1,126 @@
+/* color scheme */
+:root {
+    --color-1: #89CEAD;
+    --color-2: #5EA985;
+    --color-3: #FFFFFF;
+    --color-4: #30A3E5;
+    --color-5: #FFA0A0;
+}
+
+/* page background colour */
+.page {
+    background-color: var(--color-1);
+    height: 100%;
+    width: 100%;
+}
+
+/* page font */
+body {
+    font-family: "Roboto Condensed", sans-serif;
+    margin-left: 0px;
+}
+
+/* pager header */
+.page-header {
+    height: 10vh;
+    width: 100%;
+    top: 0;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: fixed;
+    z-index: 1000;
+}
+
+/* Repository list sidebar */
+.repo-sidebar {
+    margin-left: 8px;
+    margin-right: 10px;
+    padding: 0;
+    width: 250px;
+    background-color: #d1d1d1;
+    position: fixed;
+    height: 100%;
+    overflow: auto;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+/* Repositories */
+.repo-sidebar a {
+    display: block;
+    color: black;
+    padding: 16px;
+    text-decoration: none;
+}
+
+/* sidebar header color */
+.sidebar-header {
+    background-color: var(--color-2);
+    color: white;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+/* colour of repo when clicked */
+.repo-sidebar a.active {
+    background-color: var(--color-2);
+    color: white;
+}
+
+/* repo hover */
+.repo-sidebar a:hover:not(.active) {
+    background-color: #555;
+    color: white;
+    cursor: pointer;
+}
+
+/* margin of repo files */
+div.repo-information {
+    margin-left: 258px;
+    margin-top: 100px;
+    padding: 1px 16px;
+    height: 100%;
+}
+
+/* search bar behavior */
+input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
+    outline: none;
+    background-color: #f0f0f0;
+}
+
+/* search component in sidebar */
+#repo-search {
+    width: 190px;
+    height: 20px;
+    padding: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-style: none;
+    border-color: white;
+    position: absolute;
+    font-size: 11pt;
+}
+
+/* search input style */
+.search-bar {
+    width: 230px;
+    height: 50px;
+    padding: 10px;
+    background-color: #d1d1d1;
+    border-bottom-style: solid;
+    border-bottom-color: white;
+}
+
+/* repo file styling */
+.grid-item.repo-file {
+    background-color: white;
+    border-radius: 15px;
+    min-height: 200px;
+    width: 200px;
+    margin-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
