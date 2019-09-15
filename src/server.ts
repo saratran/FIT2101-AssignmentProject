@@ -57,11 +57,11 @@ app.get('/callback', (req, res) => {
       'Content-Type': 'application/json',
       // 'Content-Type': 'application/x-www-form-urlencoded',
     },
-    redirect: 'follow', // manual, *follow, error
   })
-    .then(res => {
-      res.text().then(text => {
+    .then(queryRes => {
+      queryRes.text().then(text => {
         console.log(text)
+        res.redirect(`/login.html?${text}`);
       })
     })
 })
