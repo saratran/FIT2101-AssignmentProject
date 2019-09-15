@@ -44,14 +44,26 @@ transporter.use('compile', hbs(handlebarsOption));
 dotenv.config(); // variables set in the .env file in this folder are now accessible with process.env.[variableName]
 const pool = new pg.Pool(); // Create a DB query pool. The database connection only works if you have valid DB credentials in the .env file
 
-const clientID = '3e670fbb378ba2969da8';
-const clientSecret = 'c63bc1e0c44bde2ac43141be91edc04524bb5087';
+const isDev = true
+
+const clientID = isDev ? '93c39afdbb7a9cb45fbc' : '3e670fbb378ba2969da8';
+const clientSecret = isDev ? '502e47a56a3efafe5a03a37d7629e5f213af5d17' : 'c63bc1e0c44bde2ac43141be91edc04524bb5087';
 
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code
-  fetch('https://github.com/login/oauth/access_token?client_id=${clientID}&client_secret=${clientSecret}&code=${requestToken}')
-      .then(response => console.log(JSON.stringify(response)));
-    // TODO: get response.data.access_token
+  fetch(`https://github.com/login/oauth/access_token?client_id=${clientID}&client_secret=${clientSecret}&code=${requestToken}`, {
+    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    headers: {
+      'Content-Type': 'application/json',
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    redirect: 'follow', // manual, *follow, error
+  })
+    .then(res => {
+      res.text().then(text => {
+        console.log(text)
+      })
+    })
 })
 
 async function sendEmail(receivers: string[], emailContent){
@@ -124,9 +136,9 @@ app.post('/api/authenticate', function(req, res) {
   // connect to database and check if user already exists;
   // if they exist then update their last login otherwise create a DB entry representing them
 
-  const { email, idToken, githubUsername } = req.body;
+  const { email, githubUsername } = req.body;
 
-  pool.query('SELECT * FROM public.users WHERE email_address=$1 OR github_username=$2', [email, githubUsername], (err, queryRes) => {
+  pool.query('SELECT * FROM public.users WHERE email_address=$1 AND github_username=$2', [email, githubUsername], (err, queryRes) => {
 
     if (err) {
       console.log(err);
