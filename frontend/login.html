@@ -1,0 +1,9 @@
+<!doctype html>
+<html>
+    <head> <title> Login </title> </head>
+    <script>
+        const url = new URL(window.location.href)
+        const access_token = url.searchParams.get("access_token")
+        localStorage.setItem('accessToken', access_token);
+    </script>
+</html>
