@@ -128,3 +128,35 @@ input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
     padding-right: 20px;
 }
 
+button {
+    background-color:#FFA0A0;
+    -moz-border-radius:28px;
+    -webkit-border-radius:28px;
+    border-radius:28px;
+    border:1px solid #FFA0A0;
+    display:inline-block;
+    cursor:pointer;
+    color:#ffffff;
+    font-family: Open Sans, sans-serif;
+    font-size:17px;
+    padding:16px 31px;
+    text-decoration:none;
+}
+button:hover {
+    background-color:#ffb3a0;
+}
+
+button:focus {
+    outline: none;
+}
+
+button:active {
+    position:relative;
+    top:1px;
+}
+
+#emailPriorities {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+}
