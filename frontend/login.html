@@ -5,5 +5,6 @@
         const url = new URL(window.location.href)
         const access_token = url.searchParams.get("access_token")
         localStorage.setItem('accessToken', access_token);
+        window.location.href = '/repositories.html'
     </script>
 </html>
