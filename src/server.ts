@@ -16,7 +16,7 @@ dotenv.config();
 const sender = {
   email: 'devalarm.test@gmail.com',
   name: 'DevAlarm Notification',
-  pass:'fit2101devalarm'
+  pass: 'fit2101devalarm'
 }; // login details for Gmail account
 
 // create reusable transporter object to send email
@@ -66,7 +66,7 @@ app.get('/callback', (req, res) => {
     })
 })
 
-async function sendEmail(receivers: string[], emailContent){
+async function sendEmail(receivers: string[], emailContent) {
   // Source: https://nodemailer.com/about/
   /* TODO:
   - email content
@@ -93,7 +93,7 @@ async function sendEmail(receivers: string[], emailContent){
 // sendEmail(['utra0001@student.monash.edu','saraut1479@gmail.com'],'Sara Tran').catch(console.error)
 
 app.get('/api', function (req, res) { // demo API homepage to verify that backend works
-  const response = { cool: { have: "fun" }};
+  const response = { cool: { have: "fun" } };
 
   res.json(response)
 });
@@ -110,20 +110,20 @@ app.get('/api/repo', function (req, res) {
   })
 });
 
-app.post('/api/github', function(req, res) {
+app.post('/api/github', function (req, res) {
   const { headers, body } = req;
 
   console.log("body", body);
   console.log("header", headers);
 
   console.log("sending email")
-  sendEmail(['pbre0003@student.monash.edu'],'Sara Tran').catch(console.error)
+  sendEmail(['pbre0003@student.monash.edu'], 'Sara Tran').catch(console.error)
 
   res.json({});
   res.status(200)
 });
 
-app.post('/api/authenticate', function(req, res) {
+app.post('/api/authenticate', function (req, res) {
   /**
    * Register a user in the database:
    * If they have logged in before the call returns HTTP 200 with their user ID
@@ -170,6 +170,38 @@ app.post('/api/authenticate', function(req, res) {
     }
   })
 });
+
+app.get('/user-contributed-files', function (req, res) {
+  const accessToken = req.query.access_token
+
+  // Get username
+  fetch(`https://api.github.com/user?access_token=${accessToken}`).then(fetchRes => {
+    fetchRes.json().then(fetchJson => {
+      // console.log(fetchJson);
+      const username = fetchJson.login
+
+      // Get closed pull request
+      fetch(`https://api.github.com/search/issues?q=type:pr+state:closed+author:${username}&per_page=100&page=1&access_token=${accessToken}`).then(fetchRes => {
+        fetchRes.json().then(fetchJson => {
+          const items = fetchJson.items;
+          items.forEach(element => {
+            // console.log(element)
+            const repo_url = element.repository_url
+            // Get repo contents
+            fetch(`${repo_url}/contents`).then(fetchRes => {
+              fetchRes.json().then(fetchJson => {
+                fetchJson.forEach(element => {
+                  console.log(element.name);
+                })
+              })
+            })
+          });
+        })
+      })
+    })
+  })
+}
+)
 
 // Serve frontend
 app.use('/', express.static('frontend'));
