@@ -60,6 +60,13 @@ app.get('/callback', (req, res) => {
   })
     .then(queryRes => {
       queryRes.text().then(text => {
+
+        // TODO: integrate with authentication system (using database)
+        // the callback returns an access token which can be sent to github to get the user's username.
+        // the access token should also be stored in the DB as it doesn't expire.
+        // for future logins we can do a DB lookup for the access token, and if the user is not logged in
+        // then we go ahead and make the github call to log them in.
+
         console.log(text)
         res.redirect(`/login.html?${text}`);
       })
