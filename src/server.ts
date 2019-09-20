@@ -179,19 +179,27 @@ async function getUserAsync(accessToken) {
 }
 
 async function getPullEvents(username, accessToken) {
+  // Closed pull events
   let response = await fetch(`https://api.github.com/search/issues?q=type:pr+state:closed+author:${username}&per_page=100&page=1&access_token=${accessToken}`)
   let data = await response.json()
   return data
 }
 
-async function getRepo(repo_url) {
+async function getRepoContents(repo_url) {
   let response = await fetch(`${repo_url}/contents`)
+  let data = await response.json()
+  return data
+}
+
+async function getFileCommits(repo_url, file_path){
+  let response = await fetch(`${repo_url}/commits?path=${file_path}`)
   let data = await response.json()
   return data
 }
 
 
 app.get('/api/user-contributed-files', async function (req, res) {
+  let response = []
   const accessToken = req.query.access_token
 
   let userData = await getUserAsync(accessToken) // data of authorized user 
@@ -203,14 +211,34 @@ app.get('/api/user-contributed-files', async function (req, res) {
   // console.log(pullEvents)
 
   // Get all repos from pull requests
-  let contributedRepos = [];
+  let contributedReposContents = [];
   const items = pullEvents.items;
   // console.log(items)
 
+  // Going through each repo
+  // TODO: may need to check for branches?
   for (let i = 0; i < items.length; i++){
-    contributedRepos.push(await getRepo(items[i].repository_url))
+    let repoContents = await getRepoContents(items[i].repository_url)
+    
+    // Going through each file
+    for (let j = 0; j < repoContents.length; j++){
+      let file = repoContents[j]
+      let file_name = file.name
+      let file_url = file.url
+      let file_path = file.path
+      let commits = await getFileCommits(items[i].repository_url, file_path)
+      
+      // Going through each commits
+      for (let m = 0; m < commits.length; m++){
+        if(commits[m].commit.author.name === userData.login){
+          // File have contributed to
+          // TODO: save to response, test with larger repos
+          console.log(file_name)
+          break
+        }
+      }
+    }
   }
-  // console.log(contributedRepos)
 }
 )
 
