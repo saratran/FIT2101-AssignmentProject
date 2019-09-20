@@ -60,13 +60,6 @@ app.get('/callback', (req, res) => {
   })
     .then(queryRes => {
       queryRes.text().then(text => {
-
-        // TODO: integrate with authentication system (using database)
-        // the callback returns an access token which can be sent to github to get the user's username.
-        // the access token should also be stored in the DB as it doesn't expire.
-        // for future logins we can do a DB lookup for the access token, and if the user is not logged in
-        // then we go ahead and make the github call to log them in.
-
         console.log(text)
         res.redirect(`/login.html?${text}`);
       })
@@ -178,35 +171,46 @@ app.post('/api/authenticate', function (req, res) {
   })
 });
 
-app.get('/user-contributed-files', function (req, res) {
+
+async function getUserAsync(accessToken) {
+  let response = await fetch(`https://api.github.com/user?access_token=${accessToken}`)
+  let data = await response.json()
+  return data
+}
+
+async function getPullEvents(username, accessToken) {
+  let response = await fetch(`https://api.github.com/search/issues?q=type:pr+state:closed+author:${username}&per_page=100&page=1&access_token=${accessToken}`)
+  let data = await response.json()
+  return data
+}
+
+async function getRepo(repo_url) {
+  let response = await fetch(`${repo_url}/contents`)
+  let data = await response.json()
+  return data
+}
+
+
+app.get('/api/user-contributed-files', async function (req, res) {
   const accessToken = req.query.access_token
 
-  // Get username
-  fetch(`https://api.github.com/user?access_token=${accessToken}`).then(fetchRes => {
-    fetchRes.json().then(fetchJson => {
-      // console.log(fetchJson);
-      const username = fetchJson.login
+  let userData = await getUserAsync(accessToken) // data of authorized user 
+  // console.log(userData)
 
-      // Get closed pull request
-      fetch(`https://api.github.com/search/issues?q=type:pr+state:closed+author:${username}&per_page=100&page=1&access_token=${accessToken}`).then(fetchRes => {
-        fetchRes.json().then(fetchJson => {
-          const items = fetchJson.items;
-          items.forEach(element => {
-            // console.log(element)
-            const repo_url = element.repository_url
-            // Get repo contents
-            fetch(`${repo_url}/contents`).then(fetchRes => {
-              fetchRes.json().then(fetchJson => {
-                fetchJson.forEach(element => {
-                  console.log(element.name);
-                })
-              })
-            })
-          });
-        })
-      })
-    })
-  })
+  // All closed pull requests
+  // TODO: should change to push events?
+  let pullEvents = await getPullEvents(userData.login, accessToken)
+  // console.log(pullEvents)
+
+  // Get all repos from pull requests
+  let contributedRepos = [];
+  const items = pullEvents.items;
+  // console.log(items)
+
+  for (let i = 0; i < items.length; i++){
+    contributedRepos.push(await getRepo(items[i].repository_url))
+  }
+  // console.log(contributedRepos)
 }
 )
 
