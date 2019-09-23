@@ -173,26 +173,24 @@ app.post('/api/authenticate', function (req, res) {
 
 
 async function getUserAsync(accessToken) {
-  let response = await fetch(`https://api.github.com/user?access_token=${accessToken}`)
-  let data = await response.json()
-  return data
+  return fetchAsync(`https://api.github.com/user?access_token=${accessToken}`)
 }
 
 async function getPullEvents(username, accessToken) {
   // Closed pull events
-  let response = await fetch(`https://api.github.com/search/issues?q=type:pr+state:closed+author:${username}&per_page=100&page=1&access_token=${accessToken}`)
-  let data = await response.json()
-  return data
+  return fetchAsync(`https://api.github.com/search/issues?q=type:pr+state:closed+author:${username}&per_page=100&page=1&access_token=${accessToken}`)
 }
 
 async function getRepoContents(repo_url) {
-  let response = await fetch(`${repo_url}/contents`)
-  let data = await response.json()
-  return data
+  return fetchAsync(`${repo_url}/contents`)
 }
 
-async function getFileCommits(repo_url, file_path){
-  let response = await fetch(`${repo_url}/commits?path=${file_path}`)
+async function getFileCommits(repo_url, file_path) {
+  return fetchAsync(`${repo_url}/commits?path=${file_path}`)
+}
+
+async function fetchAsync(url) {
+  let response = await fetch(url)
   let data = await response.json()
   return data
 }
@@ -211,34 +209,49 @@ app.get('/api/user-contributed-files', async function (req, res) {
   // console.log(pullEvents)
 
   // Get all repos from pull requests
-  let contributedReposContents = [];
   const items = pullEvents.items;
-  // console.log(items)
+  console.log(items)
 
   // Going through each repo
   // TODO: may need to check for branches?
-  for (let i = 0; i < items.length; i++){
-    let repoContents = await getRepoContents(items[i].repository_url)
-    
+  for(let item of items){
+    let obj = {}
+    let repoContents = await getRepoContents(item.repository_url)
+    let repoName = (await fetchAsync(item.repository_url)).name
+    console.log(repoContents)
+    console.log(repoName)
+    obj["repo_name"] = repoName
+    obj["repo_url"] = item.repository_url
+    obj["files_commited"] = []
+
     // Going through each file
-    for (let j = 0; j < repoContents.length; j++){
-      let file = repoContents[j]
+    for (let file of repoContents){
       let file_name = file.name
       let file_url = file.url
       let file_path = file.path
-      let commits = await getFileCommits(items[i].repository_url, file_path)
-      
-      // Going through each commits
-      for (let m = 0; m < commits.length; m++){
-        if(commits[m].commit.author.name === userData.login){
+      let commits = await getFileCommits(item.repository_url, file_path)
+      // Checking if any commit is done by the user
+      for (let commit of commits) {
+        console.log(commit)
+        if (commit.commit.author.name === userData.login) {
           // File have contributed to
           // TODO: save to response, test with larger repos
           console.log(file_name)
+          let file_data = {
+            "name": file_name,
+            "path": file_path,
+            "url": file_url
+          }
+          obj["files_commited"].push(file_data)
           break
         }
       }
     }
-  }
+    response.push(obj)
+    console.log(obj)
+  };
+  console.log(JSON.stringify(response, null, 4))
+  res.json(response)
 }
 )
 
