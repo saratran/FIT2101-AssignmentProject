@@ -242,6 +242,66 @@ app.post('/api/webhooks', async function (req, res) {
   // TODO: If this succeeded, add the repository to the tracked repositories list in the database
 
 })
+app.get('/api/owner-contributed-files', async function (req, res) {
+  /**
+   * This will return the repositories of the authenticated user and the files that they have committed to
+   *
+   * TODO:
+   * - Refactor the nested loops
+   * - Check for performance, currently I think it's quite slow because of the many API calls
+   * - Check with larger repos
+   */
+  let response = []
+  const accessToken = req.query.access_token
+  const username = (await fetchAsync(`https://api.github.com/user?access_token=${accessToken}`)).login
+  const userRepos = await fetchAsync(`http://api.github.com/user/repos?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`)
+
+  // Check each repo
+  for (let repo of userRepos) {
+    let obj = {}
+    obj["repo_name"] = repo.name
+    obj["repo_url"] = repo.url
+    obj["files"] = []
+
+    // Get all events related to the repo
+    const repoEvents = await fetchAsync(repo.events_url + `?client_id=${clientID}&client_secret=${clientSecret}`) // Contain many events of the repo
+    // console.log(repoEvents)
+
+    // It pains me to write this horrible nested loops :'(
+    // go through each event, see which one is PushEvent
+    for (let event of repoEvents) {
+      if (event.type === "PushEvent") {
+        let commits = event.payload.commits
+
+        // Get more data for each commit, specifically about the files that were committed
+        for (let commit of commits) {
+          let commit_files = (await fetchAsync(commit.url + `?client_id=${clientID}&client_secret=${clientSecret}`)).files
+
+          for (let file of commit_files) {
+            // If file has already been added before, don't check again
+            if (!obj["files"].includes(file.filename)) {
+              let file_commits = await (fetchAsync(repo.url + `/commits?path=${file.filename}&client_id=${clientID}&client_secret=${clientSecret}`))
+
+              // Go through each commit on the file
+              for (let file_commit of file_commits) {
+                if (file_commit.commit.author.name === username) {
+                  // user has committed to this file before
+                  obj["files"].push(file.filename)
+                  break
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    response.push(obj)
+  }
+
+  console.log(JSON.stringify(response, null, 4))
+  res.json(response)
+})
 
 app.get('/api/user-contributed-files', async function (req, res) {
   let response = []
@@ -261,7 +321,7 @@ app.get('/api/user-contributed-files', async function (req, res) {
 
   // Going through each repo
   // TODO: may need to check for branches?
-  for(let item of items){
+  for (let item of items) {
     let obj = {}
     let repoContents = await getRepoContents(item.repository_url)
     let repoName = (await fetchAsync(item.repository_url)).name
@@ -272,7 +332,7 @@ app.get('/api/user-contributed-files', async function (req, res) {
     obj["files_commited"] = []
 
     // Going through each file
-    for (let file of repoContents){
+    for (let file of repoContents) {
       let file_name = file.name
       let file_url = file.url
       let file_path = file.path
