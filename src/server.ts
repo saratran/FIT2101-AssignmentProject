@@ -171,7 +171,6 @@ app.post('/api/authenticate', function (req, res) {
   })
 });
 
-
 async function getUserAsync(accessToken) {
   return fetchAsync(`https://api.github.com/user?access_token=${accessToken}`)
 }
