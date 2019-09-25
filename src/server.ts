@@ -195,6 +195,54 @@ async function fetchAsync(url) {
   return data
 }
 
+app.get('/api/user', async function (req, res) {
+  const accessToken = req.query.access_token
+  let userData = await getUserAsync(accessToken) // data of authorized user
+  res.send(userData)
+})
+
+app.get('/api/repositories', async function (req, res) {
+
+  const accessToken = req.query.access_token
+  let userData = await getUserAsync(accessToken) // data of authorized user
+  console.log(userData)
+
+  const reposUrl = userData.repos_url
+  console.log(reposUrl)
+
+  fetch(reposUrl).then(fetchRes => {
+    fetchRes.json().then(json => {
+      console.log(json)
+
+      // format to only send repository names
+      const repos = json.map(repo => ({
+        name: repo.name,
+        url: repo.html_url,
+        description: repo.description
+      }))
+
+      res.send(repos)
+    })
+  })
+})
+
+app.delete('/api/webhooks', async function (req, res) {
+
+  // TODO: Remove the webhook from the repository on Github
+
+  // TODO: If this succeeded, remove the repository from the tracked repositories list in the database
+
+})
+
+app.post('/api/webhooks', async function (req, res) {
+
+  // TODO: Add a webhook to the repository on Github, if one does not exist
+
+  fetch('')
+
+  // TODO: If this succeeded, add the repository to the tracked repositories list in the database
+
+})
 
 app.get('/api/user-contributed-files', async function (req, res) {
   let response = []
