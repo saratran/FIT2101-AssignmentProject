@@ -4,46 +4,49 @@
     <meta charset="UTF-8">
     <script src="scripts/masonry.pkgd.min.js"></script>
     <link rel="stylesheet" type="text/css" href="repositories-style..css">
-    <title>Title</title>
+    <title>Dashboard</title>
 </head>
 <body>
     <div class="page-header">
         <a href="index.html">
             <img src="img/logo.png" style="height: 30px; width: 165px; margin-left: calc(50% - 82px)">
         </a>
+        <a href="email-priorities.html" id="emailPriorities"><button>Email Priorities</button></a>
     </div>
     <main class="repository-content">
-        <div class="repo-sidebar">
-            <a class="active sidebar-header" style="text-align: center">Username</a>
-            <div class="search-bar">
-                <div style="height: 30px; background-color: white; width: 230px; border-color: #555555; border-radius: 5px; margin-top: 5px;">
-                    <img src="img/search-512.png" style="height: 20px; width: 20px; margin: 5px;">
-                    <input id="repo-search" type="text"  placeholder="Search" oninput="searchRepos()">
+        <div class="master">
+            <div class="repo-sidebar">
+                <a class="active sidebar-header" style="text-align: center">Username</a>
+                <div class="search-bar">
+                    <div style="height: 30px; background-color: white; width: 230px; border-color: #555555; border-radius: 5px; margin-top: 5px;">
+                        <img src="img/search-512.png" style="height: 20px; width: 20px; margin: 5px;">
+                        <input id="repo-search" type="text"  placeholder="Search" oninput="searchRepos()">
+                    </div>
                 </div>
+                <a onclick="getRepoFiles(this)">Repo1</a>
+                <a onclick="getRepoFiles(this)">Repo2</a>
+                <a onclick="getRepoFiles(this)">Repo3</a>
+                <!--<a id="DanaC05" onclick="findRepositories(this)">Find repos</a>-->
             </div>
-            <a onclick="getRepoFiles(this)">Repo1</a>
-            <a onclick="getRepoFiles(this)">Repo2</a>
-            <a onclick="getRepoFiles(this)">Repo3</a>
-            <!--<a id="DanaC05" onclick="findRepositories(this)">Find repos</a>-->
         </div>
 
         <div class="repo-information">
-            <div class="grid" data-masonry='{ "itemSelector": ".grid-item", "columnWidth": 200, "gutter": 60, "originLeft": true }'>
-                <div class="grid-item repo-file">
+            <div class="grid" id="repoFiles" data-masonry='{ "itemSelector": ".grid-item", "columnWidth": 200, "gutter": 60, "originLeft": true }'>
+                <div class="grid-item repo-file" onclick="expandFile(this)">
                     <h1><img src="img/image-file-icon.png" style="height: 20px; width: 20px;">&nbsp; logo.png</h1>
                     <p>Added by:</p>
                     <p>Timothy Smith</p>
                     <br/>
                     <p style="color: #d1d1d1">Last Updated: 3 mins ago</p>
                 </div>
-                <div class="grid-item repo-file">
+                <div class="grid-item repo-file" onclick="expandFile(this)">
                     <h1><img src="img/code-file-icon.png" style="height: 20px; width: 20px;">&nbsp; server.js</h1>
                     <p>Recently modified by:</p>
                     <p>Robert Bobert, Timothy Smith, John McJohnface</p>
                     <br/>
                     <p style="color: #d1d1d1">Last Updated: 3 mins ago</p>
                 </div>
-                <div class="grid-item repo-file">
+                <div class="grid-item repo-file" onclick="expandFile(this)">
                     <h1><img src="img/HTML-file-icon.png" style="height: 20px; width: 20px;">&nbsp; style.css</h1>
                     <p>Recently modified by:</p>
                     <p>Robert Bobert</p>
@@ -52,7 +55,7 @@
                     <br/>
                     <p style="color: #d1d1d1">Last Updated: 3 mins ago</p>
                 </div>
-                <div class="grid-item repo-file">
+                <div class="grid-item repo-file" onclick="expandFile(this)">
                     <div class="repo-file-title">
                         <h1><img src="img/HTML-file-icon.png" style="height: 20px; width: 20px;">&nbsp; index.html</h1>
                     </div>
@@ -68,8 +71,9 @@
 </html>
 <script src="scripts/masonry.pkgd.min.js"></script>
 <script>
+    let gridItemInfo = "";
 function getRepoFiles(repository) {
-    if (repository.classList.length == 0) {
+    if (repository.classList.length === 0) {
         repository.setAttribute("class", "active");
     }
     else {
@@ -77,6 +81,121 @@ function getRepoFiles(repository) {
     }
 }
 
+function expandFile(gridItem) {
+    // save file information for when returning to repo-file view
+    gridItemInfo = gridItem.innerHTML;
+
+    // hide repo sidebar
+    document.getElementsByClassName("repo-sidebar")[0].className = "repo-sidebar hidden";
+
+    // hide file grid
+    gridItem.parentElement.className = "grid slide-out-bck";
+
+    // get file title for master view header
+    let gridItemContent = gridItem.querySelectorAll("h1")[0].innerHTML;
+
+    // set up for grid item deletion
+    let repoGrid = document.getElementById("repoFiles");
+    let repoFIleMsnry = new Masonry(repoGrid, {
+        // options
+        itemSelector: '.grid-item',
+        columnWidth: 200,
+        gutter: 60,
+        originLeft: true
+    });
+
+    // create the file master sidebar
+    let newSidebar = document.createElement("div");
+    let newSidebarHeader = document.createElement("a");
+    newSidebarHeader.className = "master-sidebar-header";
+    newSidebarHeader.innerHTML = "<div class=\"returnButton\" style=\"text-align: left\"><h3 style=\"color: white; cursor: pointer; margin-top: 0; margin-right: 0; position: absolute\" onclick=\"returnToRepos(this)\"><</h3></div><div style=\"margin-left: 60px; margin-top: 0; text-align: left\">" + gridItemContent + "</div>";
+    newSidebar.className = "master-file detailToMaster-target";
+    newSidebar.appendChild(newSidebarHeader);
+    gridItem.removeAttribute("onclick");
+
+    // remove file from grid
+    gridItem.remove();
+
+    // add file to master view
+    document.getElementsByClassName("master")[0].appendChild(newSidebar);
+
+    // refresh grid layout
+    repoFIleMsnry.layout();
+
+    // create detail grid
+    let detailGrid = document.createElement("div");
+    detailGrid.className = "grid slide-in-bck";
+    detailGrid.id = "fileDetails";
+    detailGrid.setAttribute("data-masonry", '{ "itemSelector": ".grid-item", "columnWidth": 200, "gutter": 60, "originLeft": true }');
+    let fileDetailMsnry = new Masonry(detailGrid, {
+        // options
+        itemSelector: '.grid-item',
+        columnWidth: 200,
+        gutter: 60,
+        originLeft: true
+    });
+
+    // add grid to page
+    let gridArea = document.getElementsByClassName("repo-information")[0];
+    gridArea.prepend(detailGrid);
+
+    // create detail grid elements
+    let detailGridItem1 = document.createElement("div");
+    detailGridItem1.className = "grid-item file-detail";
+    detailGridItem1.innerHTML = "<h1>Graph</h1><img alt='example graph' src='https://i.pinimg.com/originals/1d/b2/fe/1db2fe7e19861900a2d9260cd1272727.jpg' style='height: 300px;'>";
+
+    // add detail elements to grid
+    detailGrid.appendChild(detailGridItem1);
+    fileDetailMsnry.appended(detailGridItem1);
+
+    // refresh grid layout
+    fileDetailMsnry.layout();
+}
+
+function returnToRepos(file) {
+    // remove master sidebar
+    file.classList.remove("master-file", "detailToMaster-target");
+    let master = document.getElementsByClassName("master")[0];
+    let masterSidebar = document.getElementsByClassName("master-file")[0];
+    master.removeChild(masterSidebar);
+
+    // set up repo file grid to return
+    let repoFileGrid = document.getElementById("repoFiles");
+    let repoFIleMsnry = new Masonry(repoFileGrid, {
+        // options
+        itemSelector: '.grid-item',
+        columnWidth: 200,
+        gutter: 60,
+        originLeft: true
+    });
+
+    // create grid element for file in master view
+   let newGridItem = document.createElement("div");
+   newGridItem.className = "grid-item repo-file";
+   newGridItem.setAttribute("onclick", "expandFile(this)");
+   newGridItem.innerHTML = gridItemInfo;
+
+   // make repo sidebar visible
+   document.getElementsByClassName("repo-sidebar")[0].className = "repo-sidebar visible";
+
+   // add grid element to repo grid
+   repoFileGrid.appendChild(newGridItem);
+   repoFIleMsnry.appended(newGridItem);
+
+   // make file detail grid hidden
+   let detailGrid = document.getElementById("fileDetails");
+   detailGrid.className = "grid slide-out-bck";
+   document.getElementsByClassName("repo-information")[0].removeChild(detailGrid);
+
+   // make repo grid visible
+   repoFileGrid.className = "grid slide-in-bck";
+
+   // refresh repo grid layout
+   repoFIleMsnry.layout();
+
+}
+
+// need to implement use with auth token
 function findRepositories(elem) {
     let username = elem.id;
     let requestUrl = "https://api.github.com/users"

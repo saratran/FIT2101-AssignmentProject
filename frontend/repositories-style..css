@@ -37,10 +37,35 @@ body {
     z-index: 1000;
 }
 
+.master {
+    left: -300px;
+    width: 550px;
+    height: 100%;
+}
+
+.master-file {
+    height: 100%;
+    width: 250px;
+    background-color: white;
+    margin-left: 8px;
+    margin-right: 10px;
+    padding: 0;
+    position: fixed;
+    overflow: auto;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    animation-name: master-file-scale;
+    animation-duration: 1s;
+    -webkit-animation-name: master-file-scale;
+    -webkit-animation-duration: 1s;
+    animation-delay: 3000ms;
+    -webkit-animation-delay: 3000ms;
+}
+
+
 /* Repository list sidebar */
 .repo-sidebar {
     margin-left: 8px;
-    margin-right: 10px;
     padding: 0;
     width: 250px;
     background-color: #d1d1d1;
@@ -67,6 +92,19 @@ body {
     border-top-right-radius: 15px;
 }
 
+.master-sidebar-header {
+    background-color: var(--color-2);
+    display: block;
+    color: white;
+    padding: 16px;
+    margin: 0;
+    text-decoration: none;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    text-align: center;
+}
+
+
 /* colour of repo when clicked */
 .repo-sidebar a.active {
     background-color: var(--color-2);
@@ -82,7 +120,7 @@ body {
 
 /* margin of repo files */
 div.repo-information {
-    margin-left: 258px;
+    margin-left: 268px;
     margin-top: 100px;
     padding: 1px 16px;
     height: 100%;
@@ -126,5 +164,217 @@ input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
     margin-bottom: 20px;
     padding-left: 20px;
     padding-right: 20px;
+    padding-bottom: 20px;
+    cursor: pointer;
+}
+
+.grid-item.file-detail {
+    background-color: white;
+    border-radius: 15px;
+    min-height: 200px;
+    min-width: 200px;
+    margin-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 20px;
+}
+
+master {
+    left: 0;
+    position: absolute;
+    height: 100%;
+    width: 266px;
+    margin-right: 10px;
+}
+
+@keyframes master-file-scale {
+    0% {height: 0}
+    100% {min-height: 716px}
+}
+
+.repo-sidebar.hidden {
+    animation-name: hide-sidebar;
+    -webkit-animation-name: hide-sidebar;
+    animation-duration: 0.5s;
+    -webkit-animation-duration: 0.5s;
+    left: -300px;
+}
+
+@keyframes hide-sidebar {
+    0% {left: 8px}
+    100% {left: -300px}
+
+}
+
+@-webkit-keyframes hide-sidebar {
+    0% {left: 8px}
+    100% {left: -300px}
+}
+
+.detailToMaster-target {
+    -webkit-animation: detailToMaster 2500ms linear both;
+    animation: detailToMaster 2500ms linear both;
+    background-color: white;
+    border-radius: 15px;
+}
+
+/* Generated with Bounce.js. Edit at http://bouncejs.com#%7Bs%3A%5B%7BT%3A%22c%22%2Ce%3A%22b%22%2Cd%3A3000%2CD%3A0%2Cf%3A%7Bx%3A1%2Cy%3A1%7D%2Ct%3A%7Bx%3A1.5%2Cy%3A1%7D%2Cs%3A3%2Cb%3A4%7D%2C%7BT%3A%22t%22%2Ce%3A%22b%22%2Cd%3A3000%2CD%3A0%2Cf%3A%7Bx%3A268%2Cy%3A100%7D%2Ct%3A%7Bx%3A35%2Cy%3A100%7D%2Cs%3A3%2Cb%3A4%7D%5D%7D */
+
+@-webkit-keyframes detailToMaster {
+    0% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 268, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 268, 0, 0, 1); }
+    4.3% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 134.29, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 134.29, 0, 0, 1); }
+    8.61% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 39.568, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 39.568, 0, 0, 1); }
+    12.91% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -5.592, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -5.592, 0, 0, 1); }
+    17.22% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -16.267, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -16.267, 0, 0, 1); }
+    28.33% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2.637, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2.637, 0, 0, 1); }
+    39.44% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 9.62, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 9.62, 0, 0, 1); }
+    61.66% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 7.892, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 7.892, 0, 0, 1); }
+    83.98% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8.007, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8.007, 0, 0, 1); }
+    100% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8, 0, 0, 1); }
+}
+
+@keyframes detailToMaster {
+    0% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 268, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 268, 0, 0, 1); }
+    4.3% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 134.29, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 134.29, 0, 0, 1); }
+    8.61% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 39.568, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 39.568, 0, 0, 1); }
+    12.91% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -5.592, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -5.592, 0, 0, 1); }
+    17.22% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -16.267, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -16.267, 0, 0, 1); }
+    28.33% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2.637, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2.637, 0, 0, 1); }
+    39.44% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 9.62, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 9.62, 0, 0, 1); }
+    61.66% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 7.892, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 7.892, 0, 0, 1); }
+    83.98% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8.007, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8.007, 0, 0, 1); }
+    100% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8, 0, 0, 1); }
+}
+
+.slide-out-bck {
+    -webkit-animation: slide-out-bck 0.5s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+    animation: slide-out-bck 0.5s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
+}
+
+@-webkit-keyframes slide-out-bck {
+    0% {
+        -webkit-transform: translateZ(0) translateY(0);
+        transform: translateZ(0) translateY(0);
+        opacity: 1;
+    }
+    100% {
+        -webkit-transform: translateZ(-1100px) translateY(1000px);
+        transform: translateZ(-1100px) translateY(1000px);
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+@keyframes slide-out-bck {
+    0% {
+        -webkit-transform: translateZ(0) translateY(0);
+        transform: translateZ(0) translateY(0);
+        opacity: 1;
+    }
+    100% {
+        -webkit-transform: translateZ(-1100px) translateY(1000px);
+        transform: translateZ(-1100px) translateY(1000px);
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+.slide-in-bck {
+    -webkit-animation: slide-in-bck 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+    animation: slide-in-bck 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
+}
+
+@-webkit-keyframes slide-in-bck {
+    0% {
+        -webkit-transform: translateZ(700px) translateY(300px);
+        transform: translateZ(700px) translateY(300px);
+        opacity: 0;
+    }
+    100% {
+        -webkit-transform: translateZ(0) translateY(0);
+        transform: translateZ(0) translateY(0);
+        opacity: 1;
+    }
+}
+@keyframes slide-in-bck {
+    0% {
+        -webkit-transform: translateZ(700px) translateY(300px);
+        transform: translateZ(700px) translateY(300px);
+        opacity: 0;
+    }
+    100% {
+        -webkit-transform: translateZ(0) translateY(0);
+        transform: translateZ(0) translateY(0);
+        opacity: 1;
+    }
+}
+
+.repo-sidebar.visible {
+    -webkit-animation: view-sidebar 2500ms linear both;
+    animation: view-sidebar 2500ms linear both;
+    left: 2px;
+}
+
+/* Generated with Bounce.js. Edit at http://bouncejs.com#%7Bs%3A%5B%7BT%3A%22t%22%2Ce%3A%22b%22%2Cd%3A3000%2CD%3A0%2Cf%3A%7Bx%3A-300%2Cy%3A0%7D%2Ct%3A%7Bx%3A2%2Cy%3A0%7D%2Cs%3A3%2Cb%3A4%7D%5D%7D */
+
+@-webkit-keyframes view-sidebar {
+    0% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -300, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -300, 0, 0, 1); }
+    4.1% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -124.752, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -124.752, 0, 0, 1); }
+    8.11% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -29.858, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -29.858, 0, 0, 1); }
+    12.11% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 7.567, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 7.567, 0, 0, 1); }
+    16.12% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 15.093, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 15.093, 0, 0, 1); }
+    27.23% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4.367, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4.367, 0, 0, 1); }
+    38.34% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1.687, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1.687, 0, 0, 1); }
+    60.56% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2.007, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2.007, 0, 0, 1); }
+    82.78% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); }
+    100% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); }
+}
+
+@keyframes view-sidebar {
+    0% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -300, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -300, 0, 0, 1); }
+    4.1% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -124.752, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -124.752, 0, 0, 1); }
+    8.11% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -29.858, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -29.858, 0, 0, 1); }
+    12.11% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 7.567, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 7.567, 0, 0, 1); }
+    16.12% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 15.093, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 15.093, 0, 0, 1); }
+    27.23% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4.367, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4.367, 0, 0, 1); }
+    38.34% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1.687, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1.687, 0, 0, 1); }
+    60.56% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2.007, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2.007, 0, 0, 1); }
+    82.78% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); }
+    100% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); }
+}
+
+
+
+
+button {
+    background-color:#FFA0A0;
+    -moz-border-radius:28px;
+    -webkit-border-radius:28px;
+    border-radius:28px;
+    border:1px solid #FFA0A0;
+    display:inline-block;
+    cursor:pointer;
+    color:#ffffff;
+    font-family: Open Sans, sans-serif;
+    font-size:17px;
+    padding:16px 31px;
+    text-decoration:none;
+}
+button:hover {
+    background-color:#ffb3a0;
+}
+
+button:focus {
+    outline: none;
+}
+
+button:active {
+    position:relative;
+    top:1px;
+}
+
+#emailPriorities {
+    position: absolute;
+    top: 5px;
+    right: 10px;
 }
 
