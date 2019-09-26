@@ -261,7 +261,7 @@ app.get('/api/owner-contributed-files', async function (req, res) {
     let obj = {}
     obj["repo_name"] = repo.name
     obj["repo_url"] = repo.url
-    obj["files"] = []
+    obj["files_contributed"] = []
 
     // Get all events related to the repo
     const repoEvents = await fetchAsync(repo.events_url + `?client_id=${clientID}&client_secret=${clientSecret}`) // Contain many events of the repo
@@ -279,14 +279,14 @@ app.get('/api/owner-contributed-files', async function (req, res) {
 
           for (let file of commit_files) {
             // If file has already been added before, don't check again
-            if (!obj["files"].includes(file.filename)) {
+            if (!obj["files_contributed"].includes(file.filename)) {
               let file_commits = await (fetchAsync(repo.url + `/commits?path=${file.filename}&client_id=${clientID}&client_secret=${clientSecret}`))
 
               // Go through each commit on the file
               for (let file_commit of file_commits) {
                 if (file_commit.commit.author.name === username) {
                   // user has committed to this file before
-                  obj["files"].push(file.filename)
+                  obj["files_contributed"].push(file.filename)
                   break
                 }
               }
