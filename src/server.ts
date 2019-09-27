@@ -245,7 +245,7 @@ app.post('/api/webhooks', async function (req, res) {
 
 
   // Test setting up webhook
-  const accessToken = '85b226df5a2d2d16e5ce170440f48d30140138ea'
+  const accessToken = '1e8a7d73d0e86bd126a6d3f328a030ffd1b70785'
   const my_repo = `https://api.github.com/repos/sara1479/test-repo-fit2101/hooks?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`
   fetch(my_repo, {
     method: "POST",
