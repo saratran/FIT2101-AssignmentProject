@@ -239,13 +239,13 @@ app.post('/api/webhooks', async function (req, res) {
    * 'x-accepted-oauth-scopes': [ '' ],
    * TODO: oauth scope is not enough to get private repo
    * see https://developer.github.com/apps/building-oauth-apps/understanding-scopes-for-oauth-apps/
-   * 
+   *
    * May need to authorise as GitHub app rather than Oauth app to be able to create webhook
    */
 
 
   // Test setting up webhook
-  const accessToken = '85b226df5a2d2d16e5ce170440f48d30140138ea'
+  const accessToken = '1e8a7d73d0e86bd126a6d3f328a030ffd1b70785'
   const my_repo = `https://api.github.com/repos/sara1479/test-repo-fit2101/hooks?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`
   fetch(my_repo, {
     method: "POST",
@@ -272,9 +272,51 @@ app.post('/api/webhooks', async function (req, res) {
   })
   // TODO: Add a webhook to the repository on Github, if one does not exist
 
-  // fetch('')
+  const accessToken = req.query.access_token
+  let userData = await getUserAsync(accessToken)
+  // console.log(userData)
+  const { login } = userData
 
-  // TODO: If this succeeded, add the repository to the tracked repositories list in the database
+  const { repo } = req.query
+
+  // const body = {
+  //   config: {
+  //     url: "https://devalarm.com/github",
+  //     content_type: "json"
+  //   }
+  // }
+
+  const body = {
+    "name": "web",
+    "active": true,
+    "events": [
+      "push",
+      "pull_request"
+    ],
+    "config": {
+      "url": "https://example.com/webhook",
+      "content_type": "json",
+      "insecure_ssl": "0"
+    }
+  }
+
+  console.log(`https://api.github.com/repos/${login}/${repo}/hooks`)
+
+  console.log(accessToken)
+
+  fetch(`https://api.github.com/repos/${login}/${repo}/hooks?access_token=${accessToken}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  }).then(fetchRes => {
+    fetchRes.json().then(json => {
+      console.log(json)
+
+      // TODO: If this succeeded, add the repository to the tracked repositories list in the database
+    })
+  })
 
 })
 
@@ -349,12 +391,12 @@ app.get('/api/user-contributed-files', async function (req, res) {
 
      TODO: oauth scope is not enough to get private repo
     see https://developer.github.com/apps/building-oauth-apps/understanding-scopes-for-oauth-apps/
-  */  
+  */
 
   // fetch(`https://api.github.com/users/sara1479?access_token=${accessToken}`).then(fetchRes => {
   //   console.log(fetchRes.headers)
   // })
-  let userData = await getUserAsync(accessToken) // data of authorized user 
+  let userData = await getUserAsync(accessToken) // data of authorized user
   // console.log(userData)
 
   // All closed pull requests
