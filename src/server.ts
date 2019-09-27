@@ -237,9 +237,51 @@ app.post('/api/webhooks', async function (req, res) {
 
   // TODO: Add a webhook to the repository on Github, if one does not exist
 
-  fetch('')
+  const accessToken = req.query.access_token
+  let userData = await getUserAsync(accessToken)
+  // console.log(userData)
+  const { login } = userData
 
-  // TODO: If this succeeded, add the repository to the tracked repositories list in the database
+  const { repo } = req.query
+
+  // const body = {
+  //   config: {
+  //     url: "https://devalarm.com/github",
+  //     content_type: "json"
+  //   }
+  // }
+
+  const body = {
+    "name": "web",
+    "active": true,
+    "events": [
+      "push",
+      "pull_request"
+    ],
+    "config": {
+      "url": "https://example.com/webhook",
+      "content_type": "json",
+      "insecure_ssl": "0"
+    }
+  }
+
+  console.log(`https://api.github.com/repos/${login}/${repo}/hooks`)
+
+  console.log(accessToken)
+
+  fetch(`https://api.github.com/repos/${login}/${repo}/hooks?access_token=${accessToken}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  }).then(fetchRes => {
+    fetchRes.json().then(json => {
+      console.log(json)
+
+      // TODO: If this succeeded, add the repository to the tracked repositories list in the database
+    })
+  })
 
 })
 app.get('/api/owner-contributed-files', async function (req, res) {
