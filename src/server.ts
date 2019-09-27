@@ -234,14 +234,50 @@ app.delete('/api/webhooks', async function (req, res) {
 })
 
 app.post('/api/webhooks', async function (req, res) {
+  /**
+   * 'x-oauth-scopes': [ '' ],
+   * 'x-accepted-oauth-scopes': [ '' ],
+   * TODO: oauth scope is not enough to get private repo
+   * see https://developer.github.com/apps/building-oauth-apps/understanding-scopes-for-oauth-apps/
+   * 
+   * May need to authorise as GitHub app rather than Oauth app to be able to create webhook
+   */
 
+
+  // Test setting up webhook
+  const accessToken = '85b226df5a2d2d16e5ce170440f48d30140138ea'
+  const my_repo = `https://api.github.com/repos/sara1479/test-repo-fit2101/hooks?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`
+  fetch(my_repo, {
+    method: "POST",
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      "name": "web",
+      "active": true,
+      "events": [
+        "push"
+      ],
+      "config": {
+        "url": "http://5a8c7739.ngrok.io/payload",
+        "content_type": "json",
+        "insecure_ssl": "0"
+      }
+    })
+  }).then(fetchRes => {
+    console.log(fetchRes)
+    fetchRes.json().then(jsonRes => {
+      console.log(jsonRes)
+    })
+  })
   // TODO: Add a webhook to the repository on Github, if one does not exist
 
-  fetch('')
+  // fetch('')
 
   // TODO: If this succeeded, add the repository to the tracked repositories list in the database
 
 })
+
 app.get('/api/owner-contributed-files', async function (req, res) {
   /**
    * This will return the repositories of the authenticated user and the files that they have committed to
@@ -307,6 +343,17 @@ app.get('/api/user-contributed-files', async function (req, res) {
   let response = []
   const accessToken = req.query.access_token
 
+  /*
+      'x-oauth-scopes': [ '' ],
+     'x-accepted-oauth-scopes': [ '' ],
+
+     TODO: oauth scope is not enough to get private repo
+    see https://developer.github.com/apps/building-oauth-apps/understanding-scopes-for-oauth-apps/
+  */  
+
+  // fetch(`https://api.github.com/users/sara1479?access_token=${accessToken}`).then(fetchRes => {
+  //   console.log(fetchRes.headers)
+  // })
   let userData = await getUserAsync(accessToken) // data of authorized user 
   // console.log(userData)
 
@@ -317,7 +364,7 @@ app.get('/api/user-contributed-files', async function (req, res) {
 
   // Get all repos from pull requests
   const items = pullEvents.items;
-  console.log(items)
+  // console.log(items)
 
   // Going through each repo
   // TODO: may need to check for branches?
@@ -325,8 +372,8 @@ app.get('/api/user-contributed-files', async function (req, res) {
     let obj = {}
     let repoContents = await getRepoContents(item.repository_url)
     let repoName = (await fetchAsync(item.repository_url)).name
-    console.log(repoContents)
-    console.log(repoName)
+    // console.log(repoContents)
+    // console.log(repoName)
     obj["repo_name"] = repoName
     obj["repo_url"] = item.repository_url
     obj["files_commited"] = []
@@ -339,11 +386,11 @@ app.get('/api/user-contributed-files', async function (req, res) {
       let commits = await getFileCommits(item.repository_url, file_path)
       // Checking if any commit is done by the user
       for (let commit of commits) {
-        console.log(commit)
+        // console.log(commit)
         if (commit.commit.author.name === userData.login) {
           // File have contributed to
           // TODO: save to response, test with larger repos
-          console.log(file_name)
+          // console.log(file_name)
           let file_data = {
             "name": file_name,
             "path": file_path,
