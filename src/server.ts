@@ -245,8 +245,10 @@ app.post('/api/webhooks', async function (req, res) {
 
 
   // Test setting up webhook
-  const accessToken = '1e8a7d73d0e86bd126a6d3f328a030ffd1b70785'
-  const my_repo = `https://api.github.com/repos/sara1479/test-repo-fit2101/hooks?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`
+  // const accessToken = '1e8a7d73d0e86bd126a6d3f328a030ffd1b70785'
+  const { access_token, username, repo } = req.query
+
+  const my_repo = `https://api.github.com/repos/${username}/${repo}/hooks?access_token=${access_token}&client_id=${clientID}&client_secret=${clientSecret}`
   fetch(my_repo, {
     method: "POST",
     headers: {
@@ -259,7 +261,7 @@ app.post('/api/webhooks', async function (req, res) {
         "push"
       ],
       "config": {
-        "url": "http://5a8c7739.ngrok.io/payload",
+        "url": "https://devalarm.com/api/github",
         "content_type": "json",
         "insecure_ssl": "0"
       }
@@ -268,56 +270,12 @@ app.post('/api/webhooks', async function (req, res) {
     console.log(fetchRes)
     fetchRes.json().then(jsonRes => {
       console.log(jsonRes)
-    })
-  })
-  // TODO: Add a webhook to the repository on Github, if one does not exist
-
-  const accessToken = req.query.access_token
-  let userData = await getUserAsync(accessToken)
-  // console.log(userData)
-  const { login } = userData
-
-  const { repo } = req.query
-
-  // const body = {
-  //   config: {
-  //     url: "https://devalarm.com/github",
-  //     content_type: "json"
-  //   }
-  // }
-
-  const body = {
-    "name": "web",
-    "active": true,
-    "events": [
-      "push",
-      "pull_request"
-    ],
-    "config": {
-      "url": "https://example.com/webhook",
-      "content_type": "json",
-      "insecure_ssl": "0"
-    }
-  }
-
-  console.log(`https://api.github.com/repos/${login}/${repo}/hooks`)
-
-  console.log(accessToken)
-
-  fetch(`https://api.github.com/repos/${login}/${repo}/hooks?access_token=${accessToken}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(body)
-  }).then(fetchRes => {
-    fetchRes.json().then(json => {
-      console.log(json)
 
       // TODO: If this succeeded, add the repository to the tracked repositories list in the database
+
+      res.send(jsonRes)
     })
   })
-
 })
 
 app.get('/api/owner-contributed-files', async function (req, res) {
