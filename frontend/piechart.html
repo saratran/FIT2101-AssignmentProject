@@ -1,5 +1,6 @@
 <html>
-    <head><script src="https://d3js.org/d3.v5.min.js"></script>
+    <head>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
     </head>
     <h2>Server.js</h2>
     <h4>Repo 1</h4>
@@ -22,6 +23,9 @@
             var legRectSize = 15;
             var legSpacing = 8;
             
+            var total = 0;
+            var number = 0;
+            
             var color = d3.scaleOrdinal(d3.schemeDark2);
 
             //append svg
@@ -29,15 +33,24 @@
 
             var individualContr = [{name:"rob", cont:10}, {name:"tim", cont:15}, {name:"john", cont:21}];
             
+            for (i = 0; i < individualContr.length; i++) {
+              total = total + individualContr[i].cont;
+            }
+            
+            for (i = 0; i < individualContr.length; i++) {
+                number = (individualContr[i].cont / total) * 100;
+                individualContr[i].perc = Math.round( number * 10 ) / 10;
+            }
+            
             var total = individualContr[0].cont + individualContr[1].cont + individualContr[2].cont;
 
-            var data = d3.pie().sort(null).value(function(d){return d.cont;})(individualContr);
+            var data = d3.pie().sort(null).value(function(d){return d.perc;})(individualContr);
 
             var sectors = d3.arc().innerRadius(inRadius).outerRadius(outerRadius).padAngle(.05).padRadius(50);
 
             var sections = svg.selectAll("path").data(data);
 
-            sections.enter().append("path").attr("d", sectors).attr("fill", function(d,i){return color(d.data.cont);})
+            sections.enter().append("path").attr("d", sectors).attr("fill", function(d,i){return color(d.data.name);})
             
             var legend = svg.selectAll(".legend").data(color.domain()).enter().append("g").attr("class","legend").attr("transform",function(d,i){
                 var height = legRectSize + legSpacing;
@@ -49,7 +62,7 @@
             
             legend.append("rect").attr("width", legRectSize).attr("height",legRectSize).style("fill", color).style("stroke", color);
             
-            legend.append("text").attr("x", legRectSize + legSpacing).attr("y",legRectSize - legSpacing).text(function(d){return d;});
+            legend.append("text").attr("x", legRectSize + legSpacing).attr("y",legRectSize - legSpacing + 4).text(function(d, i){return color.domain()[i] + " - " + individualContr[i].perc + "%";});
             
         </script>
     </body>
