@@ -5,6 +5,9 @@ function returnToRepos() {}
 function getRepos() {}
 function getFiles(reponame) {}
 function getFileIcon() {}
+function getContributorInfo() {}
+function fileToFront() {}
+
 
 $(document).ready(function() {
   // All code goes in this function to ensure JQuery and the page are ready before JS code is run
@@ -13,16 +16,12 @@ $(document).ready(function() {
   const apiUrl = isDev ? `http://localhost:3000/api` : `https://devalarm.com/api`;
 
   let gridItemInfo = "";
-  function getRepoFiles(repository) {
-    if (repository.classList.length === 0) {
-      repository.setAttribute("class", "active");
-    }
-    else {
-      repository.className = "";
-    }
-  }
 
   expandFile = (gridItem) => {
+    // repo and file info
+    let repoName = gridItem.id;
+    let fileName = gridItem.querySelectorAll("h1")[0].innerText.trim();
+
     // save file information for when returning to repo-file view
     gridItemInfo = gridItem.innerHTML;
 
@@ -42,7 +41,8 @@ $(document).ready(function() {
       itemSelector: '.grid-item',
       columnWidth: 200,
       gutter: 60,
-      originLeft: true
+      originLeft: true,
+      horizontalOrder: true
     });
 
 
@@ -74,7 +74,8 @@ $(document).ready(function() {
       itemSelector: '.grid-item',
       columnWidth: 200,
       gutter: 60,
-      originLeft: true
+      originLeft: true,
+      horizontalOrder: true
     });
 
     // add grid to page
@@ -83,15 +84,36 @@ $(document).ready(function() {
 
     // create detail grid elements
     let detailGridItem1 = document.createElement("div");
+    let detailGridItem2 = document.createElement("div");
     detailGridItem1.className = "grid-item file-detail";
+    detailGridItem1.id = "Graph";
+    detailGridItem2.className = "grid-item file-detail contributor-table";
+    detailGridItem2.id = fileName + " Contributors";
     detailGridItem1.innerHTML = "<h1>Graph</h1><img alt='example graph' src='https://i.pinimg.com/originals/1d/b2/fe/1db2fe7e19861900a2d9260cd1272727.jpg' style='height: 300px;'>";
+    detailGridItem2.innerHTML = "<h1>" + fileName + " Contributors</h1>";
 
     // add detail elements to grid
     detailGrid.appendChild(detailGridItem1);
+    detailGrid.appendChild(detailGridItem2);
     fileDetailMsnry.appended(detailGridItem1);
+    fileDetailMsnry.appended(detailGridItem2);
+
+    // add contributor table to grid item
+    getContributorInfo(repoName, fileName, "contributor-table");
+
+    // add detail references to sidebar
+    let gridItem1Reference = document.createElement("a");
+    let gridItem2Reference = document.createElement("a");
+    gridItem1Reference.innerHTML = detailGridItem1.id;
+    gridItem2Reference.innerHTML = detailGridItem2.id;
+    gridItem1Reference.setAttribute("onclick", "fileToFront(this)");
+    gridItem2Reference.setAttribute("onclick", "fileToFront(this)");
+    newSidebar.appendChild(gridItem1Reference);
+    newSidebar.appendChild(gridItem2Reference);
 
     // refresh grid layout
     fileDetailMsnry.layout();
+
   }
 
   returnToRepos = (file) => {
@@ -108,7 +130,8 @@ $(document).ready(function() {
       itemSelector: '.grid-item',
       columnWidth: 200,
       gutter: 60,
-      originLeft: true
+      originLeft: true,
+      horizontalOrder: true
     });
 
     // create grid element for file in master view
@@ -169,7 +192,8 @@ $(document).ready(function() {
       itemSelector: '.grid-item',
       columnWidth: 200,
       gutter: 60,
-      originLeft: true
+      originLeft: true,
+      horizontalOrder: true
     });
 
     fetch(apiUrl + `/files-mock/${reponame}`).then(fetchRes => {
@@ -179,6 +203,7 @@ $(document).ready(function() {
           let newGridItem = document.createElement("div");
           let fileIcon = getFileIcon(file.filename);
           newGridItem.className = "grid-item repo-file";
+          newGridItem.id = reponame;
           newGridItem.setAttribute("onclick", "expandFile(this)");
           newGridItem.innerHTML = `<h1><img alt="file icon" src="` + fileIcon + `" style="height: 20px; width: 20px;">&nbsp; ${file.filename}</h1><p>Other Contributors:</p>`;
           file.otherContributors.forEach(contributor => {
@@ -198,9 +223,51 @@ $(document).ready(function() {
         })
       })
     })
+  }
 
+  getContributorInfo = (repoName, fileName, gridItemClass) => {
+    fetch(apiUrl + `/files-mock/${repoName}`).then(fetchRes => {
+      fetchRes.json().then(json => {
+        json.forEach(file => {
+          if (file.filename === fileName) {
+            let contributorInfo = document.createElement("table");
+            let tableHeader = document.createElement("tr");
+            let tableHeader1 = document.createElement("th");
+            let tableHeader2 = document.createElement("th");
+            let tableHeader3 = document.createElement("th");
+            tableHeader1.innerHTML = "Name";
+            tableHeader2.innerHTML = "Username";
+            tableHeader3.innerHTML = "Contact Information";
 
+            tableHeader.className = "header";
+            tableHeader.appendChild(tableHeader1);
+            tableHeader.appendChild(tableHeader2);
+            tableHeader.appendChild(tableHeader3);
 
+            contributorInfo.appendChild(tableHeader);
+
+            file.otherContributors.forEach(contributor => {
+              let newContributor = document.createElement("tr");
+              let contributorName = document.createElement("td");
+              let userName = document.createElement("td");
+              let contactInfo = document.createElement("td");
+              contributorName.innerHTML = `${contributor.name}`;
+              userName.innerHTML = `${contributor.username}`;
+              contactInfo.innerHTML = `${contributor.email}`;
+
+              newContributor.appendChild(contributorName);
+              newContributor.appendChild(userName);
+              newContributor.appendChild(contactInfo);
+
+              contributorInfo.appendChild(newContributor);
+            });
+
+            let gridItem = document.getElementsByClassName(gridItemClass)[0];
+            gridItem.appendChild(contributorInfo);
+          }
+        })
+      })
+    })
   }
 
   getFileIcon = (fileName) => {
@@ -218,6 +285,28 @@ $(document).ready(function() {
     }
 
     return imagePath;
+  }
+
+  fileToFront = (fileAttribute) => {
+    let fileToGet = document.getElementById(fileAttribute.innerHTML);
+    let fileDetailsGrid = document.getElementById("fileDetails");
+
+    let fileDetailsMsnry = new Masonry(fileDetailsGrid, {
+      // options
+      itemSelector: '.grid-item',
+      columnWidth: 200,
+      gutter: 60,
+      originLeft: true,
+      horizontalOrder: true
+    });
+
+    if (fileToGet !== fileDetailsGrid.firstChild) {
+      fileDetailsGrid.removeChild(fileToGet);
+      fileDetailsGrid.insertBefore(fileToGet, fileDetailsGrid.firstChild);
+      fileDetailsMsnry.appended(fileToGet);
+
+      fileDetailsMsnry.layout();
+    }
   }
 
   $("#getReposButton").on("click", getRepos);
