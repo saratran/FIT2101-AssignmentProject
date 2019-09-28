@@ -155,14 +155,24 @@ $(document).ready(function() {
         })
       })
     })
+  }
 
+  function getFiles(reponame) {
     // Getting mock repo data
-    const reponame = "test"
     fetch(apiUrl + `/files-mock/{reponame}`).then(fetchRes => {
       fetchRes.json().then(json => {
         console.log(json)
+        json.forEach(file => {
+          let repofile = document.createElement("div")
+          repofile.className = "grid-item repo-file"
+          repofile.setAttribute("onclick", "expandFile(this)")
+          repofile.innerHTML = `<h1>${file.filename}</h1>`
+          document.getElementById("repoFiles").appendChild(repofile)
+        })
       })
     })
+
+
   }
 
   function repositoryResponse(userData) {
@@ -178,5 +188,5 @@ $(document).ready(function() {
 
   // On page load
   getRepos();
-
+  getFiles("test");
 });
