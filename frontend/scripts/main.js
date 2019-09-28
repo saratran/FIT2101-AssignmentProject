@@ -155,6 +155,14 @@ $(document).ready(function() {
         })
       })
     })
+
+    // Getting mock repo data
+    const reponame = "test"
+    fetch(apiUrl + `/files-mock/{reponame}`).then(fetchRes => {
+      fetchRes.json().then(json => {
+        console.log(json)
+      })
+    })
   }
 
   function repositoryResponse(userData) {
