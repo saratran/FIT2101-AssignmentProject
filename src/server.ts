@@ -441,36 +441,32 @@ app.get('/api/user-contributed-files', async function (req, res) {
 }
 );
 
-app.get(`/api/files-new`, (req, res) => {
+app.get(`/api/files-new/:repo`, (req, res) => {
   /**
    * Problem statement:
-   * List of all files contributed to
-   Lines in each file modified/contributed
-   How many lines (or percentage) of code has the other person changed on the code that you have contributed
-   Show list of contributions and modifications from other people
-   Show visually / graph if desired.
-
-   Goal is to retrieve the list of all files the user has contributed to.
+   * List of all files contributed to (just the number, not the actual lines)
+   * Lines in each file modified/contributed
+   * How many lines (or percentage) of code has the other person changed on the code that you have contributed
+   * Show list of contributions and modifications from other people
+   * Show visually / graph if desired.
+   * Goal is to retrieve the list of all files the user has contributed to.
+   *
+   * Interpretation:
+   * -- load all push events in the repo
+   * -- load all commits from each push event
+   * -- from these commits, get the file changes for each
+   * -- summarise file changes for each file and send back to the user in the form of an array of FileInfo objects (defined in definitions.d.ts)
    */
+
+  const { repo } = req.params;
+
+  // Fetch all push events
+
+
+  // Fetch all commits for each push event
+
+  // Get file changes for each commit
 });
-
-interface Contribution {
-  commitCount: number;
-  lineEditCount: number;
-}
-
-interface Contributor {
-  username: string;
-  email: string;
-  contribution: Contribution;
-}
-
-interface FileInfo {
-  filename: string;
-  lineCount: number;
-  yourContributions: Contribution;
-  otherContributors: Contributor[];
-}
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -478,12 +474,13 @@ function randInt(min, max) {
 
 app.get(`/api/files-mock/:repo`, (req, res) => {
   /**
-   * Mock endpoint for loading data on the frontend
+   * Mock endpoint for loading some random data on the frontend
    */
   const { repo } = req.params;
 
-  const files = ["index.js", "server.js", "soup.js", "beans.js", "rmrfslash.sh"].map(filename => {
-    const fileInfo: FileInfo = {
+  const files = ["index.js", "server.js", "soup.js", "beans.js", "rmrfslash.sh"]
+    .map((filename: string): FileInfo => {
+    return {
       filename,
       lineCount: randInt(300, 500),
       yourContributions: {
@@ -506,8 +503,6 @@ app.get(`/api/files-mock/:repo`, (req, res) => {
         }
       }]
     };
-
-    return fileInfo;
   });
 
   res.send(files)
