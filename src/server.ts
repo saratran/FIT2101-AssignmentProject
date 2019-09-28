@@ -512,7 +512,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
         const lineChanges = {
           // additions: file.additions,
           // deletions: file.deletions,
-          changes: file.changes,
+          lineChangeCount: file.changes,
           author: {
             login: commit.author.login,
             name: "unknown",
@@ -531,7 +531,68 @@ app.get(`/api/files/:repo`, async (req, res) => {
     // TODO: we should filter such that only the files the user has contributed to are shown.
 
     console.log(files);
-    res.send(files);
+
+    // Now evaluate the files by user and run a reduction algorithm on the changes
+
+    const ownUserInfo = {
+      username: "patrickbrett",
+      email: "pkbrett37@gmail.com",
+      name: "Patrick Brett"
+    }
+
+    const filesArrangedByUser: FileInfo[] = Object.keys(files).map(filename => {
+      const file = files[filename]
+
+      const contributionByUser: { [username: string]: Contribution } = {};
+
+      file.changes.forEach(change => {
+        const authorLogin = change.author.login;
+
+        if (Object.keys(contributionByUser).includes(authorLogin)) {
+          contributionByUser[authorLogin].lineChangeCount += change.lineChangeCount;
+          contributionByUser[authorLogin].commitCount++;
+        } else {
+            contributionByUser[authorLogin] = {
+            lineChangeCount: change.lineChangeCount,
+            commitCount: 1
+          }
+        }
+      });
+
+      const yourContributions = contributionByUser[ownUserInfo.username];
+
+      const otherContributors = [];
+
+      Object.keys(contributionByUser).forEach(username => {
+        if (username !== ownUserInfo.username) {
+          const contributor: Contributor = {
+            username,
+            email: "unknown",
+            name: "unknown",
+            contribution: contributionByUser[username]
+          };
+          otherContributors.push(contributor);
+        }
+      });
+
+      const contributor1: Contributor = {
+        username: "",
+        email: "",
+        name: "",
+        contribution: {
+          commitCount: 0,
+          lineChangeCount: 0
+        }
+      };
+
+      return {
+        filename,
+        yourContributions,
+        otherContributors
+      }
+    });
+
+    res.send(filesArrangedByUser);
   })
 });
 
@@ -548,24 +609,26 @@ app.get(`/api/files-mock/:repo`, (req, res) => {
   const files = ["index.js", "server.js", "soup.js", "beans.js", "rmrfslash.sh"]
     .map((filename: string): FileInfo => ({
       filename,
-      lineCount: randInt(300, 500),
+      // lineCount: randInt(300, 500),
       yourContributions: {
         commitCount: randInt(2, 5),
-        lineEditCount: randInt(100, 200)
+        lineChangeCount: randInt(100, 200)
       },
       otherContributors: [{
         username: "coolhavefun3",
         email: "coolhavefun3@gmail.com",
+        name: "Coolhave Fun3",
         contribution: {
           commitCount: randInt(1, 3),
-          lineEditCount: randInt(50, 120)
+          lineChangeCount: randInt(50, 120)
         }
       }, {
         username: "coolhavefun4",
         email: "coolhavefun4@gmail.com",
+        name: "Coolhave Fun4",
         contribution: {
           commitCount: randInt(1, 3),
-          lineEditCount: randInt(30, 70)
+          lineChangeCount: randInt(30, 70)
         }
       }]
   }));
