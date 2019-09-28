@@ -1,23 +1,31 @@
 <html>
     <head><script src="https://d3js.org/d3.v5.min.js"></script>
-    <script src="d3.legend.js"></script></head>
+    </head>
     <h2>Server.js</h2>
     <h4>Repo 1</h4>
+    <style>
+      .legend {font-size: 12px;}  
+      rect {stroke-width: 2;}
+    </style>
     <body>
         <script>
 
             //set dimensions of piechart
-            var width = 250;
-            var height = 250;
+            var width = 350;
+            var height = 350;
             var margin = 0;
 
             //radius of piechart
-            var radius = 100;
+            var outerRadius = 150;
+            var inRadius = 100;
             
-            var color = d3.scaleOrdinal(d3.schemePaired);
+            var legRectSize = 15;
+            var legSpacing = 8;
+            
+            var color = d3.scaleOrdinal(d3.schemeDark2);
 
             //append svg
-            var svg = d3.select("body").append("svg").attr("width", width).attr("height", height).style("background", "white");
+            var svg = d3.select("body").append("svg").attr("width", width).attr("height", height).style("background", "white").append("g").attr("transform","translate(" + width/2 + "," + height/2 + ")");
 
             var individualContr = [{name:"rob", cont:10}, {name:"tim", cont:15}, {name:"john", cont:21}];
             
@@ -25,29 +33,24 @@
 
             var data = d3.pie().sort(null).value(function(d){return d.cont;})(individualContr);
 
-            var sectors = d3.arc().innerRadius(50).outerRadius(radius).padAngle(.05).padRadius(50);
+            var sectors = d3.arc().innerRadius(inRadius).outerRadius(outerRadius).padAngle(.05).padRadius(50);
 
-            var sections = svg.append("g").attr("transform","translate(125, 125)").selectAll("path").data(data);
+            var sections = svg.selectAll("path").data(data);
 
-            sections.enter().append("path").attr("d", sectors).attr("fill", function(d){return color(d.data.cont);})
+            sections.enter().append("path").attr("d", sectors).attr("fill", function(d,i){return color(d.data.cont);})
             
+            var legend = svg.selectAll(".legend").data(color.domain()).enter().append("g").attr("class","legend").attr("transform",function(d,i){
+                var height = legRectSize + legSpacing;
+                var offset = height * color.domain().length / 2;
+                var horz = -2 * legRectSize;
+                var vert = i * height - offset;
+                return "translate(" + horz + "," + vert + ")";
+            });
             
-            /*var color = d3.scaleOrdinal().domain(["rob","tim","john"]).range(d3.schemeDark2);
-
-            function update(data){
-                var pie = d3.pie().value(function(d){return d.value;}).sort(function(a,b){console.log(a); return d3.ascending(a.key, b.key);})
-
-                var data_ready = pie(d3.entries(data))
-
-                var u = svg.selectAll("path").data(data_ready)
-
-                u.enter().append('path').merge(u).transition().duration(1000).atrr('d', d3.arc().innerRadius(10).outerRadius(radius)).atrr('fill', function(d){return(color(d.data.key))}).atrr("stroke","white").style("stroke-width","2px").style("opacity", 1)
-
-                u.exit().remove()
-
-            };
-
-            update(individualContr);*/
+            legend.append("rect").attr("width", legRectSize).attr("height",legRectSize).style("fill", color).style("stroke", color);
+            
+            legend.append("text").attr("x", legRectSize + legSpacing).attr("y",legRectSize - legSpacing).text(function(d){return d;});
+            
         </script>
     </body>
     
