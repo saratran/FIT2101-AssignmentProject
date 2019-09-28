@@ -2,6 +2,8 @@
 
 function expandFile() {}
 function returnToRepos() {}
+function getRepos() {}
+function getFiles(reponame) {}
 
 $(document).ready(function() {
   // All code goes in this function to ensure JQuery and the page are ready before JS code is run
@@ -34,13 +36,14 @@ $(document).ready(function() {
 
     // set up for grid item deletion
     let repoGrid = document.getElementById("repoFiles");
-    let repoFIleMsnry = new Masonry(repoGrid, {
+    let repoFileMsnry = new Masonry(repoGrid, {
       // options
       itemSelector: '.grid-item',
       columnWidth: 200,
       gutter: 60,
       originLeft: true
     });
+
 
     // create the file master sidebar
     let newSidebar = document.createElement("div");
@@ -58,7 +61,7 @@ $(document).ready(function() {
     document.getElementsByClassName("master")[0].appendChild(newSidebar);
 
     // refresh grid layout
-    repoFIleMsnry.layout();
+    repoFileMsnry.layout();
 
     // create detail grid
     let detailGrid = document.createElement("div");
@@ -99,7 +102,7 @@ $(document).ready(function() {
 
     // set up repo file grid to return
     let repoFileGrid = document.getElementById("repoFiles");
-    let repoFIleMsnry = new Masonry(repoFileGrid, {
+    let repoFileMsnry = new Masonry(repoFileGrid, {
       // options
       itemSelector: '.grid-item',
       columnWidth: 200,
@@ -118,7 +121,7 @@ $(document).ready(function() {
 
     // add grid element to repo grid
     repoFileGrid.appendChild(newGridItem);
-    repoFIleMsnry.appended(newGridItem);
+    repoFileMsnry.appended(newGridItem);
 
     // make file detail grid hidden
     let detailGrid = document.getElementById("fileDetails");
@@ -129,11 +132,11 @@ $(document).ready(function() {
     repoFileGrid.className = "grid slide-in-bck";
 
     // refresh repo grid layout
-    repoFIleMsnry.layout();
+    repoFileMsnry.layout();
 
   }
 
-  function getRepos() {
+  getRepos = () => {
     // Fetch access token
     const accessToken = window.localStorage.getItem("accessToken")
 
@@ -157,20 +160,43 @@ $(document).ready(function() {
     })
   }
 
-  function getFiles(reponame) {
+  getFiles = (reponame) => {
     // Getting mock repo data
-    fetch(apiUrl + `/files-mock/{reponame}`).then(fetchRes => {
+    let repoFileGrid = document.getElementById("repoFiles");
+    let repoFileMsnry = new Masonry(repoFileGrid, {
+      // options
+      itemSelector: '.grid-item',
+      columnWidth: 200,
+      gutter: 60,
+      originLeft: true
+    });
+
+    fetch(apiUrl + `/files-mock/${reponame}`).then(fetchRes => {
       fetchRes.json().then(json => {
         console.log(json)
         json.forEach(file => {
-          let repofile = document.createElement("div")
-          repofile.className = "grid-item repo-file"
-          repofile.setAttribute("onclick", "expandFile(this)")
-          repofile.innerHTML = `<h1>${file.filename}</h1>`
-          document.getElementById("repoFiles").appendChild(repofile)
+          let newGridItem = document.createElement("div")
+          newGridItem.className = "grid-item repo-file"
+          newGridItem.setAttribute("onclick", "expandFile(this)")
+          newGridItem.innerHTML = `<h1>${file.filename}</h1> <p>Other Contributors:</p>`
+          file.otherContributors.forEach(contributor => {
+            newGridItem.innerHTML = newGridItem.innerHTML + `<p>${contributor.name}</p>`
+          })
+
+
+          // add grid element to repo grid
+          repoFileGrid.appendChild(newGridItem);
+          repoFileMsnry.appended(newGridItem);
+
+          // make repo grid visible
+          repoFileGrid.className = "grid slide-in-bck";
+
+          // refresh repo grid layout
+          repoFileMsnry.layout();
         })
       })
     })
+
 
 
   }
