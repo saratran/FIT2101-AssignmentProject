@@ -6,6 +6,7 @@ import nodemailer = require('nodemailer'); // for sending emails
 import pg = require('pg'); // PostgreSQL (PG) database interface
 import dotenv = require('dotenv'); // environment variables
 import hbs = require('nodemailer-express-handlebars');
+import flatMap = require('flatmap');
 
 const app = express(); // initialise app
 app.use(cors()); // allow Cross-Origin Resource Sharing
@@ -441,7 +442,7 @@ app.get('/api/user-contributed-files', async function (req, res) {
 }
 );
 
-app.get(`/api/files-new/:repo`, (req, res) => {
+app.get(`/api/files/:repo`, async (req, res) => {
   /**
    * Problem statement:
    * List of all files contributed to (just the number, not the actual lines)
@@ -459,13 +460,49 @@ app.get(`/api/files-new/:repo`, (req, res) => {
    */
 
   const { repo } = req.params;
+  const { accessToken } = req.query;
+
+  const username = (await getUserAsync(accessToken)).login;
 
   // Fetch all push events
 
+  const eventsUrl = `https://api.github.com/repos/${username}/${repo}/events?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
 
-  // Fetch all commits for each push event
+  const repoEvents = await fetchAsync(eventsUrl);
+  const pushEvents = repoEvents.filter(({ type }) => type === "PushEvent");
+  // console.log(pushEvents);
+
+  // Fetch all commits for each push event and flatten
+
+  const commits = flatMap(pushEvents, ({ payload }) => payload.commits);
+  // console.log(commits);
 
   // Get file changes for each commit
+
+  const commitInfoProms = []
+
+  commits.forEach(async commit => {
+    const commitInfoProm = fetchAsync(commit.url);
+
+    commitInfoProm.then(commitInfo => {
+      commit.author = commitInfo.author;
+      // commit.committer = commitInfo.committer;
+      commit.stats = commitInfo.stats;
+      commit.files = commitInfo.files;
+    });
+
+    commitInfoProms.push(commitInfoProm);
+  });
+
+  // @ts-ignore
+  Promise.all(commitInfoProms).then(() => {
+    console.log("***********************")
+    console.log(commits)
+    console.log("***********************")
+
+    // Identify unique files that were changed
+
+  })
 });
 
 function randInt(min, max) {
@@ -479,8 +516,7 @@ app.get(`/api/files-mock/:repo`, (req, res) => {
   const { repo } = req.params;
 
   const files = ["index.js", "server.js", "soup.js", "beans.js", "rmrfslash.sh"]
-    .map((filename: string): FileInfo => {
-    return {
+    .map((filename: string): FileInfo => ({
       filename,
       lineCount: randInt(300, 500),
       yourContributions: {
@@ -502,8 +538,7 @@ app.get(`/api/files-mock/:repo`, (req, res) => {
           lineEditCount: randInt(30, 70)
         }
       }]
-    };
-  });
+  }));
 
   res.send(files)
 });
