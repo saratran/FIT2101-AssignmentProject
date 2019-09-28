@@ -6,7 +6,8 @@ function getRepos() {}
 function getFiles(reponame) {}
 function getFileIcon() {}
 function getContributorInfo() {}
-function fileToFront() {}
+function highlightFile() {}
+function goToUserPage() {}
 
 
 $(document).ready(function() {
@@ -41,8 +42,7 @@ $(document).ready(function() {
       itemSelector: '.grid-item',
       columnWidth: 200,
       gutter: 60,
-      originLeft: true,
-      horizontalOrder: true
+      originLeft: true
     });
 
 
@@ -74,8 +74,7 @@ $(document).ready(function() {
       itemSelector: '.grid-item',
       columnWidth: 200,
       gutter: 60,
-      originLeft: true,
-      horizontalOrder: true
+      originLeft: true
     });
 
     // add grid to page
@@ -106,8 +105,8 @@ $(document).ready(function() {
     let gridItem2Reference = document.createElement("a");
     gridItem1Reference.innerHTML = detailGridItem1.id;
     gridItem2Reference.innerHTML = detailGridItem2.id;
-    gridItem1Reference.setAttribute("onclick", "fileToFront(this)");
-    gridItem2Reference.setAttribute("onclick", "fileToFront(this)");
+    gridItem1Reference.setAttribute("onclick", "highlightFile(this)");
+    gridItem2Reference.setAttribute("onclick", "highlightFile(this)");
     newSidebar.appendChild(gridItem1Reference);
     newSidebar.appendChild(gridItem2Reference);
 
@@ -130,8 +129,7 @@ $(document).ready(function() {
       itemSelector: '.grid-item',
       columnWidth: 200,
       gutter: 60,
-      originLeft: true,
-      horizontalOrder: true
+      originLeft: true
     });
 
     // create grid element for file in master view
@@ -192,8 +190,7 @@ $(document).ready(function() {
       itemSelector: '.grid-item',
       columnWidth: 200,
       gutter: 60,
-      originLeft: true,
-      horizontalOrder: true
+      originLeft: true
     });
 
     fetch(apiUrl + `/files-mock/${reponame}`).then(fetchRes => {
@@ -255,6 +252,8 @@ $(document).ready(function() {
               userName.innerHTML = `${contributor.username}`;
               contactInfo.innerHTML = `${contributor.email}`;
 
+              newContributor.id = userName.innerHTML
+              newContributor.setAttribute("onclick", "goToUserPage(this)")
               newContributor.appendChild(contributorName);
               newContributor.appendChild(userName);
               newContributor.appendChild(contactInfo);
@@ -287,26 +286,23 @@ $(document).ready(function() {
     return imagePath;
   }
 
-  fileToFront = (fileAttribute) => {
-    let fileToGet = document.getElementById(fileAttribute.innerHTML);
-    let fileDetailsGrid = document.getElementById("fileDetails");
-
-    let fileDetailsMsnry = new Masonry(fileDetailsGrid, {
-      // options
-      itemSelector: '.grid-item',
-      columnWidth: 200,
-      gutter: 60,
-      originLeft: true,
-      horizontalOrder: true
+  highlightFile = (fileAttribute) => {
+    let itemToHighlight = document.getElementById(fileAttribute.innerHTML);
+    window.scrollTo({
+      top: itemToHighlight.getBoundingClientRect().top - 70,
+      behavior: "smooth"
     });
 
-    if (fileToGet !== fileDetailsGrid.firstChild) {
-      fileDetailsGrid.removeChild(fileToGet);
-      fileDetailsGrid.insertBefore(fileToGet, fileDetailsGrid.firstChild);
-      fileDetailsMsnry.appended(fileToGet);
+    itemToHighlight.classList.add("highlight-pulsate");
 
-      fileDetailsMsnry.layout();
-    }
+    setTimeout(function(){ itemToHighlight.classList.remove("highlight-pulsate") }, 1000);
+
+  }
+
+  goToUserPage = (username) => {
+    let pageName = username.id;
+    var win = window.open("https://github.com/" + pageName, '_blank');
+    win.focus();
   }
 
   $("#getReposButton").on("click", getRepos);

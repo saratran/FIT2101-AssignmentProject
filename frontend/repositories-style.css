@@ -399,6 +399,7 @@ button:active {
     right: 10px;
 }
 
+/* table styling */
 table {
     border-collapse: collapse;
     background: white;
@@ -412,11 +413,13 @@ table * {
     position: relative;
 }
 table td, table th {
-    padding-left: 8px;
+    padding: 15px;
 }
 table thead tr {
     height: 60px;
     background: #36304a;
+    align-content: center;
+    text-align: center;
 }
 table tr {
     height: 50px;
@@ -436,9 +439,7 @@ table td.c, table th.c {
 table td.r, table th.r {
     text-align: center;
 }
-
-
-tr:nth-child(even) {
+tr:nth-child(odd) {
     background-color: #f5f5f5;
 }
 tr {
@@ -450,5 +451,43 @@ tr {
 tr:hover:not(.header) {
     color: #555555;
     background-color: #f5f5f5;
+    cursor: pointer;
 }
+
+
+
+.highlight-pulsate {
+    -webkit-animation: pulsate 0.3s ease-in-out 2 both;
+    animation: pulsate 0.3s ease-in-out 2 both;
+}
+@-webkit-keyframes pulsate {
+    0% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+    50% {
+        -webkit-transform: scale(0.9);
+        transform: scale(0.9);
+    }
+    100% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+}
+@keyframes pulsate {
+    0% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+    50% {
+        -webkit-transform: scale(0.9);
+        transform: scale(0.9);
+    }
+    100% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+}
+
+
 
