@@ -470,7 +470,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
 
   const repoEvents = await fetchAsync(eventsUrl);
   const pushEvents = repoEvents.filter(({ type }) => type === "PushEvent");
-  // console.log(pushEvents);
+  console.log(pushEvents);
 
   // Fetch all commits for each push event and flatten
 
@@ -482,7 +482,8 @@ app.get(`/api/files/:repo`, async (req, res) => {
   const commitInfoProms = []
 
   commits.forEach(async commit => {
-    const commitInfoProm = fetchAsync(commit.url);
+    const commitInfoUrl = commit.url + `?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
+    const commitInfoProm = fetchAsync(commitInfoUrl);
 
     commitInfoProm.then(commitInfo => {
       commit.author = commitInfo.author;
@@ -496,12 +497,41 @@ app.get(`/api/files/:repo`, async (req, res) => {
 
   // @ts-ignore
   Promise.all(commitInfoProms).then(() => {
-    console.log("***********************")
-    console.log(commits)
-    console.log("***********************")
+    // console.log("***********************")
+    // console.log(commits)
+    // console.log("***********************")
 
     // Identify unique files that were changed
+    const files = {};
+    commits.forEach(commit => {
+      commit.files.forEach(file => {
+        const name = file.filename;
 
+        console.log(file);
+
+        const lineChanges = {
+          // additions: file.additions,
+          // deletions: file.deletions,
+          changes: file.changes,
+          author: {
+            login: commit.author.login,
+            name: "unknown",
+            email: "unknown"
+          }
+        };
+
+        if (Object.keys(files).includes(name)) {
+          files[name].changes.push(lineChanges);
+        } else {
+          files[name] = { changes: [lineChanges] }
+        }
+      });
+    });
+
+    // TODO: we should filter such that only the files the user has contributed to are shown.
+
+    console.log(files);
+    res.send(files);
   })
 });
 
