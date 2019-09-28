@@ -4,6 +4,7 @@ function expandFile() {}
 function returnToRepos() {}
 function getRepos() {}
 function getFiles(reponame) {}
+function getFileIcon() {}
 
 $(document).ready(function() {
   // All code goes in this function to ensure JQuery and the page are ready before JS code is run
@@ -175,12 +176,13 @@ $(document).ready(function() {
       fetchRes.json().then(json => {
         console.log(json)
         json.forEach(file => {
-          let newGridItem = document.createElement("div")
-          newGridItem.className = "grid-item repo-file"
-          newGridItem.setAttribute("onclick", "expandFile(this)")
-          newGridItem.innerHTML = `<h1>${file.filename}</h1> <p>Other Contributors:</p>`
+          let newGridItem = document.createElement("div");
+          let fileIcon = getFileIcon(file.filename);
+          newGridItem.className = "grid-item repo-file";
+          newGridItem.setAttribute("onclick", "expandFile(this)");
+          newGridItem.innerHTML = `<h1><img alt="file icon" src="` + fileIcon + `" style="height: 20px; width: 20px;">&nbsp; ${file.filename}</h1><p>Other Contributors:</p>`;
           file.otherContributors.forEach(contributor => {
-            newGridItem.innerHTML = newGridItem.innerHTML + `<p>${contributor.name}</p>`
+            newGridItem.innerHTML = newGridItem.innerHTML + `<p>${contributor.name}</p>`;
           })
 
 
@@ -201,13 +203,21 @@ $(document).ready(function() {
 
   }
 
-  function repositoryResponse(userData) {
-    try {
-      alert(userData[0].name);
+  getFileIcon = (fileName) => {
+    let imagePath = "";
+    let fileType = fileName.substring(fileName.indexOf(".") + 1, fileName.length).toUpperCase();
+
+    if (["JPG", "PNG", "GIF", "WEBP", "TIFF", "PSD", "RAW", "BMP", "HEIF", "INDD", "JPEG", "SVG", "AI", "EPS", "PDF"].includes(fileType)) {
+      imagePath = "https://www.pngrepo.com/png/141793/170/image-file.png";
     }
-    catch (e) {
-      alert("Error: " + userData.data.message);
+    else if (["HTML", "MD", "CSS", "TXT"].includes(fileType)) {
+      imagePath = "https://icon-library.net/images/file-icon-png/file-icon-png-23.jpg";
     }
+    else {
+      imagePath = "https://www.pngrepo.com/png/26279/170/code-file.png";
+    }
+
+    return imagePath;
   }
 
   $("#getReposButton").on("click", getRepos);
