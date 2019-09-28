@@ -441,6 +441,78 @@ app.get('/api/user-contributed-files', async function (req, res) {
 }
 );
 
+app.get(`/api/files-new`, (req, res) => {
+  /**
+   * Problem statement:
+   * List of all files contributed to
+   Lines in each file modified/contributed
+   How many lines (or percentage) of code has the other person changed on the code that you have contributed
+   Show list of contributions and modifications from other people
+   Show visually / graph if desired.
+
+   Goal is to retrieve the list of all files the user has contributed to.
+   */
+});
+
+interface Contribution {
+  commitCount: number;
+  lineEditCount: number;
+}
+
+interface Contributor {
+  username: string;
+  email: string;
+  contribution: Contribution;
+}
+
+interface FileInfo {
+  filename: string;
+  lineCount: number;
+  yourContributions: Contribution;
+  otherContributors: Contributor[];
+}
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+app.get(`/api/files-mock/:repo`, (req, res) => {
+  /**
+   * Mock endpoint for loading data on the frontend
+   */
+  const { repo } = req.params;
+
+  const files = ["index.js", "server.js", "soup.js", "beans.js", "rmrfslash.sh"].map(filename => {
+    const fileInfo: FileInfo = {
+      filename,
+      lineCount: randInt(300, 500),
+      yourContributions: {
+        commitCount: randInt(2, 5),
+        lineEditCount: randInt(100, 200)
+      },
+      otherContributors: [{
+        username: "coolhavefun3",
+        email: "coolhavefun3@gmail.com",
+        contribution: {
+          commitCount: randInt(1, 3),
+          lineEditCount: randInt(50, 120)
+        }
+      }, {
+        username: "coolhavefun4",
+        email: "coolhavefun4@gmail.com",
+        contribution: {
+          commitCount: randInt(1, 3),
+          lineEditCount: randInt(30, 70)
+        }
+      }]
+    };
+
+    return fileInfo;
+  });
+
+  res.send(files)
+});
+
 // Serve frontend
 app.use('/', express.static('frontend'));
 
