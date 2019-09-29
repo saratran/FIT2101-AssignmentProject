@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <script src="scripts/masonry.pkgd.min.js"></script>
     <script src="scripts/jquery-3.4.1.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="scripts/main.js"></script>
     <link rel="stylesheet" type="text/css" href="repositories-style.css">
     <link rel="stylesheet" type="text/css" href="loading-spinner.css">
@@ -26,14 +27,15 @@
                         <input id="repo-search" type="text"  placeholder="Search" oninput="searchRepos()">
                     </div>
                 </div>
-                <div><a id="getReposButton">Refresh repo list</a></div>
+                <div><button id="getReposButton" style="padding-top: 3px; padding-bottom: 3px; margin-top: 20px; margin-left: 26px; margin-bottom: 20px;">Refresh repo list</button></div>
                 <div id="repo-list"></div>
             </div>
         </div>
 
         <div class="repo-information">
-            <div class="grid" id="repoFiles" data-masonry='{ "itemSelector": ".grid-item", "columnWidth": 200, "gutter": 60, "originLeft": true }'>
-                <div class="grid-item repo-file" onclick="expandFile(this)">
+            <div class="grid" id="repoFiles" data-masonry='{ "itemSelector": ".grid-item", "columnWidth": 200, "gutter": 20, "originLeft": true }'>
+
+              <!--  <div class="grid-item repo-file" onclick="expandFile(this)">
                     <h1><img src="img/image-file-icon.png" style="height: 20px; width: 20px;">&nbsp; logo.png</h1>
                     <p>Added by:</p>
                     <p>Timothy Smith</p>
@@ -64,7 +66,7 @@
                     <p>Robert Bobert, Timothy Smith, John McJohnface</p>
                     <br/>
                     <p style="color: #d1d1d1">Last Updated: 3 mins ago</p>
-                </div>
+                </div>-->
             </div>
         </div>
     </main>

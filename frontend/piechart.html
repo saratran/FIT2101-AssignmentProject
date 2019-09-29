@@ -1,0 +1,113 @@
+<html>
+    <head>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+    </head>
+    <h2>Server.js</h2>
+    <h4>Repo 1</h4>
+    <style>
+      .legend {font-size: 12px;}  
+      rect {stroke-width: 2;}
+    </style>
+    <body>
+        <script>
+
+            //set dimensions of piechart
+            var width = 350;
+            var height = 350;
+            var margin = 0;
+
+            //radii of piechart
+            var outerRadius = 150;
+            var inRadius = 100;
+            
+            //set the dimensions of the legend blocks
+            var legRectSize = 15;
+            var legSpacing = 8;
+            
+            //variables needed
+            var total = 0;
+            var number = 0;
+            
+            //set the color range for the data in the piechart
+            var color = d3.scaleOrdinal().range(["#247BA0","#70C1B3","#B2DBBF","#F3FFBD","#FF1654",'#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D','#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A', '#FF99E6', '#CCFF1A', '#FF1A66', '#E6331A', '#33FFCC','#66994D', '#B366CC', '#4D8000', '#B33300', '#CC80CC', '#66664D', '#991AFF', '#E666FF', '#4DB3FF', '#1AB399', '#E666B3', '#33991A', '#CC9999', '#B3B31A', '#00E680', '#4D8066', '#809980', '#E6FF80', '#1AFF33', '#999933', '#FF3380', '#CCCC00', '#66E64D', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF']);
+
+            //append svg to the body tag in html and then append an object and translate it to middle
+            var svg = d3
+            .select("body")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .style("background", "white")
+            .append("g")
+            .attr("transform","translate(" + width/2 + "," + height/2 + ")");
+            
+            //sample data
+            var individualContr = [{name:"rob", cont:10}, {name:"tim", cont:15}, {name:"john", cont:21}];
+            
+            //find the total number of lines contributed
+            for (i = 0; i < individualContr.length; i++) {
+              total = total + individualContr[i].cont;
+            }
+            
+            //find the percentage of contribution and append as a property
+            for (i = 0; i < individualContr.length; i++) {
+                number = (individualContr[i].cont / total) * 100;
+                individualContr[i].perc = Math.round( number * 10 ) / 10;
+            }
+
+            //bind the data to a piechart in d3
+            var data = d3
+            .pie()
+            .sort(null)
+            .value(function(d){return d.perc;})(individualContr);
+
+            //set the radii of the piechart and add padding
+            var sectors = d3
+            .arc()
+            .innerRadius(inRadius)
+            .outerRadius(outerRadius)
+            .padAngle(.05)
+            .padRadius(50);
+
+            //add data to segments and fill them with color
+            var sections = svg.selectAll("path").data(data);
+            sections.enter()
+                .append("path")
+                .attr("d", sectors)
+                .attr("fill", function(d,i){return color(d.data.name);})
+            
+            
+            //add a legend to the middle of the donut chart
+            var legend = svg
+            .selectAll(".legend")
+            .data(color.domain())
+            .enter()
+            .append("g")
+            .attr("class","legend")
+            .attr("transform",function(d,i){
+                var height = legRectSize + legSpacing;
+                var offset = height * color.domain().length / 2;
+                var horz = -2 * legRectSize;
+                var vert = i * height - offset;
+                return "translate(" + horz + "," + vert + ")";
+            });
+            
+            //create containers for colors of the legend
+            legend
+                .append("rect")
+                .attr("width", legRectSize)
+                .attr("height",legRectSize)
+                .style("fill", color)
+                .style("stroke", color);
+            
+            //add text to the legend for names and percentages
+            legend
+                .append("text")
+                .attr("x", legRectSize + legSpacing)
+                .attr("y",legRectSize - legSpacing + 4)
+                .text(function(d, i){return color.domain()[i] + " - " + individualContr[i].perc + "%";});
+            
+        </script>
+    </body>
+    
+</html>

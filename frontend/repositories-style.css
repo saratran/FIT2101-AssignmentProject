@@ -39,12 +39,14 @@ body {
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
 }
 
+/* set master sidebar container to contain one hidden and one visible sidebar */
 .master {
     left: -300px;
     width: 550px;
     height: 100%;
 }
 
+/* style attributes for master file view (sidebar) */
 .master-file {
     height: 100%;
     width: 250px;
@@ -64,6 +66,20 @@ body {
     -webkit-animation-delay: 3000ms;
 }
 
+/* file sidebar element attributes */
+.master-file a {
+    display: block;
+    color: black;
+    padding: 16px;
+    text-decoration: none;
+}
+
+/* file element (file sidebar) color on hover */
+.master-file a:hover:not(.master-sidebar-header) {
+    background-color: #555;
+    color: white;
+    cursor: pointer;
+}
 
 /* Repository list sidebar */
 .repo-sidebar {
@@ -94,6 +110,7 @@ body {
     border-top-right-radius: 15px;
 }
 
+/* file master sidebar header */
 .master-sidebar-header {
     background-color: var(--color-2);
     display: block;
@@ -105,7 +122,6 @@ body {
     border-top-right-radius: 15px;
     text-align: center;
 }
-
 
 /* colour of repo when clicked */
 .repo-sidebar a.active {
@@ -171,9 +187,12 @@ input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
 }
 
+/* grid item hover color */
 .grid-item.repo-file:hover {
     background-color: #e6e6e6;
 }
+
+/* file detail component attributes */
 .grid-item.file-detail {
     background-color: white;
     border-radius: 15px;
@@ -185,19 +204,17 @@ input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
     padding-bottom: 20px;
 }
 
-master {
-    left: 0;
-    position: absolute;
-    height: 100%;
-    width: 266px;
-    margin-right: 10px;
-}
-
+/* expand file for master-detail view */
 @keyframes master-file-scale {
     0% {height: 0}
     100% {min-height: 716px}
 }
+@-webkit-keyframes master-file-scale {
+    0% {height: 0}
+    100% {min-height: 716px}
+}
 
+/* hide repo sidebar */
 .repo-sidebar.hidden {
     animation-name: hide-sidebar;
     -webkit-animation-name: hide-sidebar;
@@ -206,17 +223,17 @@ master {
     left: -300px;
 }
 
+/* animation to hide repo sidebar */
 @keyframes hide-sidebar {
     0% {left: 8px}
     100% {left: -300px}
-
 }
-
 @-webkit-keyframes hide-sidebar {
     0% {left: 8px}
     100% {left: -300px}
 }
 
+/* move expanded file to the left */
 .detailToMaster-target {
     -webkit-animation: detailToMaster 2500ms linear both;
     animation: detailToMaster 2500ms linear both;
@@ -224,8 +241,20 @@ master {
     border-radius: 15px;
 }
 
-/* Generated with Bounce.js. Edit at http://bouncejs.com#%7Bs%3A%5B%7BT%3A%22c%22%2Ce%3A%22b%22%2Cd%3A3000%2CD%3A0%2Cf%3A%7Bx%3A1%2Cy%3A1%7D%2Ct%3A%7Bx%3A1.5%2Cy%3A1%7D%2Cs%3A3%2Cb%3A4%7D%2C%7BT%3A%22t%22%2Ce%3A%22b%22%2Cd%3A3000%2CD%3A0%2Cf%3A%7Bx%3A268%2Cy%3A100%7D%2Ct%3A%7Bx%3A35%2Cy%3A100%7D%2Cs%3A3%2Cb%3A4%7D%5D%7D */
-
+/* Generated with Bounce.js. */
+/* animation to move expanded file to the left */
+@keyframes detailToMaster {
+    0% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 268, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 268, 0, 0, 1); }
+    4.3% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 134.29, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 134.29, 0, 0, 1); }
+    8.61% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 39.568, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 39.568, 0, 0, 1); }
+    12.91% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -5.592, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -5.592, 0, 0, 1); }
+    17.22% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -16.267, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -16.267, 0, 0, 1); }
+    28.33% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2.637, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2.637, 0, 0, 1); }
+    39.44% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 9.62, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 9.62, 0, 0, 1); }
+    61.66% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 7.892, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 7.892, 0, 0, 1); }
+    83.98% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8.007, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8.007, 0, 0, 1); }
+    100% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8, 0, 0, 1); }
+}
 @-webkit-keyframes detailToMaster {
     0% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 268, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 268, 0, 0, 1); }
     4.3% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 134.29, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 134.29, 0, 0, 1); }
@@ -239,24 +268,13 @@ master {
     100% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8, 0, 0, 1); }
 }
 
-@keyframes detailToMaster {
-    0% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 268, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 268, 0, 0, 1); }
-    4.3% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 134.29, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 134.29, 0, 0, 1); }
-    8.61% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 39.568, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 39.568, 0, 0, 1); }
-    12.91% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -5.592, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -5.592, 0, 0, 1); }
-    17.22% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -16.267, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -16.267, 0, 0, 1); }
-    28.33% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2.637, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2.637, 0, 0, 1); }
-    39.44% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 9.62, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 9.62, 0, 0, 1); }
-    61.66% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 7.892, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 7.892, 0, 0, 1); }
-    83.98% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8.007, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8.007, 0, 0, 1); }
-    100% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 8, 0, 0, 1); }
-}
-
+/* slide down and fade out */
 .slide-out-bck {
     -webkit-animation: slide-out-bck 0.5s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
     animation: slide-out-bck 0.5s cubic-bezier(0.550, 0.085, 0.680, 0.530) both;
 }
 
+/* animation to slide down and fade out */
 @-webkit-keyframes slide-out-bck {
     0% {
         -webkit-transform: translateZ(0) translateY(0);
@@ -284,11 +302,13 @@ master {
     }
 }
 
+/* slide up and fade in */
 .slide-in-bck {
     -webkit-animation: slide-in-bck 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
     animation: slide-in-bck 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
 }
 
+/* animation to slide up and fade in */
 @-webkit-keyframes slide-in-bck {
     0% {
         -webkit-transform: translateZ(700px) translateY(300px);
@@ -314,14 +334,15 @@ master {
     }
 }
 
+/* slide repo sidebar into view */
 .repo-sidebar.visible {
     -webkit-animation: view-sidebar 2500ms linear both;
     animation: view-sidebar 2500ms linear both;
     left: 2px;
 }
 
-/* Generated with Bounce.js. Edit at http://bouncejs.com#%7Bs%3A%5B%7BT%3A%22t%22%2Ce%3A%22b%22%2Cd%3A3000%2CD%3A0%2Cf%3A%7Bx%3A-300%2Cy%3A0%7D%2Ct%3A%7Bx%3A2%2Cy%3A0%7D%2Cs%3A3%2Cb%3A4%7D%5D%7D */
-
+/* Generated with Bounce.js. */
+/* animation to slide repo sidebar into view */
 @-webkit-keyframes view-sidebar {
     0% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -300, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -300, 0, 0, 1); }
     4.1% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -124.752, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -124.752, 0, 0, 1); }
@@ -334,7 +355,6 @@ master {
     82.78% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); }
     100% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); }
 }
-
 @keyframes view-sidebar {
     0% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -300, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -300, 0, 0, 1); }
     4.1% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -124.752, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -124.752, 0, 0, 1); }
@@ -348,9 +368,7 @@ master {
     100% { -webkit-transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); transform: matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 1); }
 }
 
-
-
-
+/* attributes for all buttons */
 button {
     background-color:#FFA0A0;
     -moz-border-radius:28px;
@@ -368,51 +386,115 @@ button {
 button:hover {
     background-color:#ffb3a0;
 }
-
 button:focus {
     outline: none;
 }
-
 button:active {
     position:relative;
     top:1px;
 }
-
 #emailPriorities {
     position: absolute;
     top: 5px;
     right: 10px;
 }
 
-button {
-    background-color:#FFA0A0;
-    -moz-border-radius:28px;
-    -webkit-border-radius:28px;
-    border-radius:28px;
-    border:1px solid #FFA0A0;
-    display:inline-block;
-    cursor:pointer;
-    color:#ffffff;
-    font-family: Open Sans, sans-serif;
-    font-size:17px;
-    padding:16px 31px;
-    text-decoration:none;
+/* table styling */
+table {
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
 }
-button:hover {
-    background-color:#ffb3a0;
+table * {
+    position: relative;
+}
+table td, table th {
+    padding: 15px;
+}
+table thead tr {
+    height: 60px;
+    background: #36304a;
+    align-content: center;
+    text-align: center;
+}
+table tr {
+    height: 50px;
+}
+table tr:last-child {
+    border: 0;
+}
+table td, table th {
+    text-align: left;
+}
+table td.l, table th.l {
+    text-align: right;
+}
+table td.c, table th.c {
+    text-align: center;
+}
+table td.r, table th.r {
+    text-align: center;
+}
+tr:nth-child(odd) {
+    background-color: #f5f5f5;
+}
+tr {
+    font-size: 15px;
+    color: black;
+    line-height: 1.2;
+    font-weight: unset;
+}
+tr:hover:not(.header) {
+    color: #555555;
+    background-color: #f5f5f5;
+    cursor: pointer;
 }
 
-button:focus {
-    outline: none;
+
+
+.highlight-pulsate {
+    -webkit-animation: pulsate 0.3s ease-in-out 2 both;
+    animation: pulsate 0.3s ease-in-out 2 both;
+}
+@-webkit-keyframes pulsate {
+    0% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+    50% {
+        -webkit-transform: scale(0.9);
+        transform: scale(0.9);
+    }
+    100% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+}
+@keyframes pulsate {
+    0% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
+    50% {
+        -webkit-transform: scale(0.9);
+        transform: scale(0.9);
+    }
+    100% {
+        -webkit-transform: scale(1);
+        transform: scale(1);
+    }
 }
 
-button:active {
-    position:relative;
-    top:1px;
+.legend {
+    font-size: 12px;
+}
+rect {
+    stroke-width: 2;
 }
 
-#emailPriorities {
-    position: absolute;
-    top: 5px;
-    right: 10px;
-}
+
+
