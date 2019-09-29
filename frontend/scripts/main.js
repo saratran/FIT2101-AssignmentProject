@@ -21,7 +21,6 @@ $(document).ready(function() {
   let gridItemInfo = "";
 
   expandFile = (gridItem) => {
-    // GO TO LINES MARKED WITH **
     // repo and file info
     let repoName = gridItem.id;
     let fileName = gridItem.querySelectorAll("h1")[0].innerText.trim();
@@ -47,7 +46,6 @@ $(document).ready(function() {
       gutter: 60,
       originLeft: true
     });
-
 
     // create the file master sidebar
     let newSidebar = document.createElement("div");
@@ -94,6 +92,7 @@ $(document).ready(function() {
     barGraph.id = "barGraph";
     barGraph.setAttribute("style", "height: 400px; width: 400px");
 
+    // set grid element attributes
     detailGridItem1.className = "grid-item file-detail";
     detailGridItem1.id = "Individual Contributions";
     detailGridItem2.className = "grid-item file-detail pieChart";
@@ -116,7 +115,7 @@ $(document).ready(function() {
     fileDetailMsnry.appended(detailGridItem2);
     fileDetailMsnry.appended(detailGridItem3);
 
-    // add contributor table to grid item
+    // add contributor table and graphs to relevant grid items
     getContributorInfo(repoName, fileName, "contributor-table");
 
     // add detail references to sidebar
@@ -135,7 +134,6 @@ $(document).ready(function() {
 
     // refresh grid layout
     fileDetailMsnry.layout();
-
   }
 
   returnToRepos = (file) => {
@@ -250,7 +248,9 @@ $(document).ready(function() {
     fetch(apiUrl + `/files-mock/${repoName}`).then(fetchRes => {
       fetchRes.json().then(json => {
         json.forEach(file => {
+          // check for correct file
           if (file.filename === fileName) {
+            // create table elements
             let contributorInfo = document.createElement("table");
             let tableHeader = document.createElement("tr");
             let tableHeader1 = document.createElement("th");
@@ -260,37 +260,48 @@ $(document).ready(function() {
             tableHeader2.innerHTML = "Username";
             tableHeader3.innerHTML = "Contact Information";
 
+            // set header and cells
             tableHeader.className = "header";
             tableHeader.appendChild(tableHeader1);
             tableHeader.appendChild(tableHeader2);
             tableHeader.appendChild(tableHeader3);
 
+            // add header to table
             contributorInfo.appendChild(tableHeader);
 
+            // add contributor info
             file.otherContributors.forEach(contributor => {
+              // create new row and cells
               let newContributor = document.createElement("tr");
               let contributorName = document.createElement("td");
               let userName = document.createElement("td");
               let contactInfo = document.createElement("td");
+
+              // add contributor information to cells
               contributorName.innerHTML = `${contributor.name}`;
               userName.innerHTML = `${contributor.username}`;
               contactInfo.innerHTML = `${contributor.email}`;
 
+              // get graph data from contributor
               let dataItem = {name: `${contributor.username}`, cont: Number(`${contributor.contribution.lineChangeCount}`)};
               graphData.push(dataItem);
 
+              // set row attributes
               newContributor.id = userName.innerHTML
               newContributor.setAttribute("onclick", "goToUserPage(this)")
               newContributor.appendChild(contributorName);
               newContributor.appendChild(userName);
               newContributor.appendChild(contactInfo);
 
+              // add row to table
               contributorInfo.appendChild(newContributor);
             });
 
+            // create pie chart and bar graph and add to relevant grid elements
             getBarGraph(graphData, "barGraph");
             getPieChart(graphData, "pieChart");
 
+            // add table to relevant grid element
             let gridItem = document.getElementsByClassName(gridItemClass)[0];
             gridItem.appendChild(contributorInfo);
           }
@@ -303,6 +314,7 @@ $(document).ready(function() {
     let imagePath = "";
     let fileType = fileName.substring(fileName.indexOf(".") + 1, fileName.length).toUpperCase();
 
+    // check for file type and return relevant image path for icon
     if (["JPG", "PNG", "GIF", "WEBP", "TIFF", "PSD", "RAW", "BMP", "HEIF", "INDD", "JPEG", "SVG", "AI", "EPS", "PDF"].includes(fileType)) {
       imagePath = "https://www.pngrepo.com/png/141793/170/image-file.png";
     }
@@ -318,19 +330,24 @@ $(document).ready(function() {
 
   highlightFile = (fileAttribute) => {
     let itemToHighlight = document.getElementById(fileAttribute.innerHTML);
+
+    // scroll to relevant item
     window.scrollTo({
       top: itemToHighlight.getBoundingClientRect().top - 70,
       behavior: "smooth"
     });
 
+    // pulse item
     itemToHighlight.classList.add("highlight-pulsate");
 
+    // remove pulse attribute so it can be repeated multiple times after 1 second (duration of pulse animation)
     setTimeout(function(){ itemToHighlight.classList.remove("highlight-pulsate") }, 1000);
-
   }
 
   goToUserPage = (username) => {
     let pageName = username.id;
+
+    // open user github page in new window
     var win = window.open("https://github.com/" + pageName, '_blank');
     win.focus();
   }
@@ -353,7 +370,6 @@ $(document).ready(function() {
     var svg = d3.select("#" + elementId);
     var chart = svg.append("g").attr("transform", "translate(" + margin + "," + margin + ")")
 
-
     //set the color scheme for the data
     var color = d3.scaleOrdinal().range(["#247BA0","#70C1B3","#B2DBBF","#F3FFBD","#FF1654",'#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D','#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A', '#FF99E6', '#CCFF1A', '#FF1A66', '#E6331A', '#33FFCC','#66994D', '#B366CC', '#4D8000', '#B33300', '#CC80CC', '#66664D', '#991AFF', '#E666FF', '#4DB3FF', '#1AB399', '#E666B3', '#33991A', '#CC9999', '#B3B31A', '#00E680', '#4D8066', '#809980', '#E6FF80', '#1AFF33', '#999933', '#FF3380', '#CCCC00', '#66E64D', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF']);
 
@@ -368,8 +384,7 @@ $(document).ready(function() {
 
     //append the xScale and transalte it to form the x axis of the bar graph
     chart.append("g").attr("transform", "translate(0, " + height + ")").call(d3.axisBottom(xScale));
-
-
+    
     chart
         .selectAll()
         .data(graphData)
