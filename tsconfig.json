@@ -4,6 +4,7 @@
     "outDir": "build"
   },
   "files": [
-    "src/server.ts"
+    "src/server.ts",
+    "src/definitions.d.ts"
   ]
 }

@@ -6,6 +6,7 @@ import nodemailer = require('nodemailer'); // for sending emails
 import pg = require('pg'); // PostgreSQL (PG) database interface
 import dotenv = require('dotenv'); // environment variables
 import hbs = require('nodemailer-express-handlebars');
+import flatMap = require('flatmap');
 
 const app = express(); // initialise app
 app.use(cors()); // allow Cross-Origin Resource Sharing
@@ -440,6 +441,200 @@ app.get('/api/user-contributed-files', async function (req, res) {
   res.json(response)
 }
 );
+
+app.get(`/api/files/:repo`, async (req, res) => {
+  /**
+   * Problem statement:
+   * List of all files contributed to (just the number, not the actual lines)
+   * Lines in each file modified/contributed
+   * How many lines (or percentage) of code has the other person changed on the code that you have contributed
+   * Show list of contributions and modifications from other people
+   * Show visually / graph if desired.
+   * Goal is to retrieve the list of all files the user has contributed to.
+   *
+   * Interpretation:
+   * -- load all push events in the repo
+   * -- load all commits from each push event
+   * -- from these commits, get the file changes for each
+   * -- summarise file changes for each file and send back to the user in the form of an array of FileInfo objects (defined in definitions.d.ts)
+   */
+
+  const { repo } = req.params;
+  const { accessToken } = req.query;
+
+  const username = (await getUserAsync(accessToken)).login;
+
+  // Fetch all push events
+
+  const eventsUrl = `https://api.github.com/repos/${username}/${repo}/events?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
+
+  const repoEvents = await fetchAsync(eventsUrl);
+  const pushEvents = repoEvents.filter(({ type }) => type === "PushEvent");
+  console.log(pushEvents);
+
+  // Fetch all commits for each push event and flatten
+
+  const commits = flatMap(pushEvents, ({ payload }) => payload.commits);
+  // console.log(commits);
+
+  // Get file changes for each commit
+
+  const commitInfoProms = []
+
+  commits.forEach(async commit => {
+    const commitInfoUrl = commit.url + `?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
+    const commitInfoProm = fetchAsync(commitInfoUrl);
+
+    commitInfoProm.then(commitInfo => {
+      commit.author = commitInfo.author;
+      // commit.committer = commitInfo.committer;
+      commit.stats = commitInfo.stats;
+      commit.files = commitInfo.files;
+    });
+
+    commitInfoProms.push(commitInfoProm);
+  });
+
+  // @ts-ignore
+  Promise.all(commitInfoProms).then(() => {
+    // console.log("***********************")
+    // console.log(commits)
+    // console.log("***********************")
+
+    // Identify unique files that were changed
+    const files = {};
+    commits.forEach(commit => {
+      commit.files.forEach(file => {
+        const name = file.filename;
+
+        console.log(file);
+
+        const lineChanges = {
+          // additions: file.additions,
+          // deletions: file.deletions,
+          lineChangeCount: file.changes,
+          author: {
+            login: commit.author.login,
+            name: "unknown",
+            email: "unknown"
+          }
+        };
+
+        if (Object.keys(files).includes(name)) {
+          files[name].changes.push(lineChanges);
+        } else {
+          files[name] = { changes: [lineChanges] }
+        }
+      });
+    });
+
+    // TODO: we should filter such that only the files the user has contributed to are shown.
+
+    console.log(files);
+
+    // Now evaluate the files by user and run a reduction algorithm on the changes
+
+    const ownUserInfo = {
+      username: "patrickbrett",
+      email: "pkbrett37@gmail.com",
+      name: "Patrick Brett"
+    }
+
+    const filesArrangedByUser: FileInfo[] = Object.keys(files).map(filename => {
+      const file = files[filename]
+
+      const contributionByUser: { [username: string]: Contribution } = {};
+
+      file.changes.forEach(change => {
+        const authorLogin = change.author.login;
+
+        if (Object.keys(contributionByUser).includes(authorLogin)) {
+          contributionByUser[authorLogin].lineChangeCount += change.lineChangeCount;
+          contributionByUser[authorLogin].commitCount++;
+        } else {
+            contributionByUser[authorLogin] = {
+            lineChangeCount: change.lineChangeCount,
+            commitCount: 1
+          }
+        }
+      });
+
+      const yourContributions = contributionByUser[ownUserInfo.username];
+
+      const otherContributors = [];
+
+      Object.keys(contributionByUser).forEach(username => {
+        if (username !== ownUserInfo.username) {
+          const contributor: Contributor = {
+            username,
+            email: "unknown",
+            name: "unknown",
+            contribution: contributionByUser[username]
+          };
+          otherContributors.push(contributor);
+        }
+      });
+
+      const contributor1: Contributor = {
+        username: "",
+        email: "",
+        name: "",
+        contribution: {
+          commitCount: 0,
+          lineChangeCount: 0
+        }
+      };
+
+      return {
+        filename,
+        yourContributions,
+        otherContributors
+      }
+    });
+
+    res.send(filesArrangedByUser);
+  })
+});
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+app.get(`/api/files-mock/:repo`, (req, res) => {
+  /**
+   * Mock endpoint for loading some random data on the frontend
+   */
+  const { repo } = req.params;
+
+  const files = ["index.js", "server.js", "soup.js", "beans.js", "rmrfslash.sh"]
+    .map((filename: string): FileInfo => ({
+      filename,
+      // lineCount: randInt(300, 500),
+      yourContributions: {
+        commitCount: randInt(2, 5),
+        lineChangeCount: randInt(100, 200)
+      },
+      otherContributors: [{
+        username: "coolhavefun3",
+        email: "coolhavefun3@gmail.com",
+        name: "Coolhave Fun3",
+        contribution: {
+          commitCount: randInt(1, 3),
+          lineChangeCount: randInt(50, 120)
+        }
+      }, {
+        username: "coolhavefun4",
+        email: "coolhavefun4@gmail.com",
+        name: "Coolhave Fun4",
+        contribution: {
+          commitCount: randInt(1, 3),
+          lineChangeCount: randInt(30, 70)
+        }
+      }]
+  }));
+
+  res.send(files)
+});
 
 // Serve frontend
 app.use('/', express.static('frontend'));
