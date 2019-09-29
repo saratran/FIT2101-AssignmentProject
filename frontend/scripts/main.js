@@ -1,8 +1,6 @@
 // Function headers
 
-// ************ EHTESHAM LOOK AT THE MARKED FUNCTIONS *********************
-
-function expandFile() {} // THIS ONE
+function expandFile() {}
 function returnToRepos() {}
 function getRepos() {}
 function getFiles(reponame) {}
@@ -10,7 +8,8 @@ function getFileIcon() {}
 function getContributorInfo() {}
 function highlightFile() {}
 function goToUserPage() {}
-function getBarGraph() {} // THEN THIS ONE
+function getBarGraph() {}
+function getPieChart() {}
 
 
 $(document).ready(function() {
@@ -72,12 +71,12 @@ $(document).ready(function() {
     let detailGrid = document.createElement("div");
     detailGrid.className = "grid slide-in-bck";
     detailGrid.id = "fileDetails";
-    detailGrid.setAttribute("data-masonry", '{ "itemSelector": ".grid-item", "columnWidth": 200, "gutter": 60, "originLeft": true }');
+    detailGrid.setAttribute("data-masonry", '{ "itemSelector": ".grid-item", "columnWidth": 200, "gutter": 30, "originLeft": true }');
     let fileDetailMsnry = new Masonry(detailGrid, {
       // options
       itemSelector: '.grid-item',
       columnWidth: 200,
-      gutter: 60,
+      gutter: 30,
       originLeft: true
     });
 
@@ -88,44 +87,51 @@ $(document).ready(function() {
     // create detail grid elements
     let detailGridItem1 = document.createElement("div");
     let detailGridItem2 = document.createElement("div");
+    let detailGridItem3 = document.createElement("div");
 
-    // ** THIS CREATES THE SVG ELEMENT AND SETS HEIGHT, WIDTH ETC
-    let barGraph = document.createElement("svg");
-    barGraph.id = "barChart";
-    barGraph.setAttribute("style", "height: 400px; width: 300px");
-
+    // create svg elements for graphs
+    let barGraph = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    barGraph.id = "barGraph";
+    barGraph.setAttribute("style", "height: 400px; width: 400px");
 
     detailGridItem1.className = "grid-item file-detail";
-    detailGridItem1.id = "Graph";
-    detailGridItem2.className = "grid-item file-detail contributor-table";
-    detailGridItem2.id = fileName + " Contributors";
-    detailGridItem1.innerHTML = "<h1>Graph</h1>"
-    detailGridItem2.innerHTML = "<h1>" + fileName + " Contributors</h1>";
+    detailGridItem1.id = "Individual Contributions";
+    detailGridItem2.className = "grid-item file-detail pieChart";
+    detailGridItem2.id = "User Contribution Ratio";
+    detailGridItem2.setAttribute("style", "height: 470px; width: 350px");
+    detailGridItem3.className = "grid-item file-detail contributor-table";
+    detailGridItem3.id = fileName + " Contributors";
+    detailGridItem1.innerHTML = "<h1>Individual Contributions</h1>";
+    detailGridItem2.innerHTML = "<h1>User Contribution Ratio</h1>";
+    detailGridItem3.innerHTML = "<h1>" + fileName + " Contributors</h1>";
 
-    // ** THIS ADDS THE SVG ELEMENT TO THE GRID ITEM
+    // add graphs to relevant grid items
     detailGridItem1.appendChild(barGraph);
 
     // add detail elements to grid
     detailGrid.appendChild(detailGridItem1);
     detailGrid.appendChild(detailGridItem2);
+    detailGrid.appendChild(detailGridItem3);
     fileDetailMsnry.appended(detailGridItem1);
     fileDetailMsnry.appended(detailGridItem2);
+    fileDetailMsnry.appended(detailGridItem3);
 
     // add contributor table to grid item
     getContributorInfo(repoName, fileName, "contributor-table");
 
-    // ** THIS CALLS THE CODE THAT CREATES THE GRAPH ANS APPENDS IT TO THE SVG ELEMENT
-    getBarGraph();
-
     // add detail references to sidebar
     let gridItem1Reference = document.createElement("a");
     let gridItem2Reference = document.createElement("a");
+    let gridItem3Reference = document.createElement("a");
     gridItem1Reference.innerHTML = detailGridItem1.id;
     gridItem2Reference.innerHTML = detailGridItem2.id;
+    gridItem3Reference.innerHTML = detailGridItem3.id;
     gridItem1Reference.setAttribute("onclick", "highlightFile(this)");
     gridItem2Reference.setAttribute("onclick", "highlightFile(this)");
+    gridItem3Reference.setAttribute("onclick", "highlightFile(this)");
     newSidebar.appendChild(gridItem1Reference);
     newSidebar.appendChild(gridItem2Reference);
+    newSidebar.appendChild(gridItem3Reference);
 
     // refresh grid layout
     fileDetailMsnry.layout();
@@ -240,6 +246,7 @@ $(document).ready(function() {
   }
 
   getContributorInfo = (repoName, fileName, gridItemClass) => {
+    let graphData = [];
     fetch(apiUrl + `/files-mock/${repoName}`).then(fetchRes => {
       fetchRes.json().then(json => {
         json.forEach(file => {
@@ -269,6 +276,9 @@ $(document).ready(function() {
               userName.innerHTML = `${contributor.username}`;
               contactInfo.innerHTML = `${contributor.email}`;
 
+              let dataItem = {name: `${contributor.username}`, cont: Number(`${contributor.contribution.lineChangeCount}`)};
+              graphData.push(dataItem);
+
               newContributor.id = userName.innerHTML
               newContributor.setAttribute("onclick", "goToUserPage(this)")
               newContributor.appendChild(contributorName);
@@ -277,6 +287,9 @@ $(document).ready(function() {
 
               contributorInfo.appendChild(newContributor);
             });
+
+            getBarGraph(graphData, "barGraph");
+            getPieChart(graphData, "pieChart");
 
             let gridItem = document.getElementsByClassName(gridItemClass)[0];
             gridItem.appendChild(contributorInfo);
@@ -322,26 +335,22 @@ $(document).ready(function() {
     win.focus();
   }
 
-  getBarGraph = () => {
-    // ** HERE'S YOUR CODE
-    //sample data
-    var individualContr = [{name:"rob", cont:10}, {name:"tim", cont:15}, {name:"john", cont:21}];
-
+  getBarGraph = (graphData, elementId) => {
     //dimensions for the bar chart along with a margin
     var margin = 60;
-    var width = (120 * individualContr.length) - 2 * margin;
+    var width = (200 * graphData.length) - 2 * margin;
     var height = 400 - 2 * margin;
     var max = 0;
 
     //find the max contribution
-    for (i = 0; i < individualContr.length; i++) {
-      if (individualContr[i].cont > max){
-        max = individualContr[i].cont
+    for (i = 0; i < graphData.length; i++) {
+      if (graphData[i].cont > max){
+        max = graphData[i].cont
       }
     }
 
     //select the svg container and append an object and translate it to leave margin on top and left
-    var svg = d3.select("svg");
+    var svg = d3.select("#" + elementId);
     var chart = svg.append("g").attr("transform", "translate(" + margin + "," + margin + ")")
 
 
@@ -355,7 +364,7 @@ $(document).ready(function() {
     chart.append("g").call(d3.axisLeft(yScale));
 
     //set the range and split it in the width with the names of contributors
-    var xScale = d3.scaleBand().range([0, width]).domain(individualContr.map((d) => d.name)).padding(0.4);
+    var xScale = d3.scaleBand().range([0, width]).domain(graphData.map((d) => d.name)).padding(0.4);
 
     //append the xScale and transalte it to form the x axis of the bar graph
     chart.append("g").attr("transform", "translate(0, " + height + ")").call(d3.axisBottom(xScale));
@@ -363,7 +372,7 @@ $(document).ready(function() {
 
     chart
         .selectAll()
-        .data(individualContr)
+        .data(graphData)
         .enter()
         .append("rect")
         .attr("x", (s) => xScale(s.name))
@@ -416,12 +425,102 @@ $(document).ready(function() {
     //add label to y axis
     svg.append("text").attr("x", -(height / 2) - margin).attr("y", margin / 2.4).attr("transform", "rotate(-90)").attr("text-anchor","middle").text("Number of Lines Contributed").attr("font-size", "11px");
 
-    //add title to the bar graph
-    svg.append("text").attr("x", width / 2 + margin).attr("y", 30).attr("text-anchor","middle").text("Individual Contributions")
-
     //add label to the x axis
     svg.append("text").attr("x", width / 2 + margin).attr("y", height + 2 * margin - 20).attr("text-anchor","middle").text("Names of Contributors").attr("font-size", "11px")
+  }
 
+  getPieChart = (chartData, gridElementClass) => {
+    //set dimensions of piechart
+    var width = 350;
+    var height = 350;
+    var margin = 0;
+
+    //radii of piechart
+    var outerRadius = 150;
+    var inRadius = 100;
+
+    //set the dimensions of the legend blocks
+    var legRectSize = 15;
+    var legSpacing = 8;
+
+    //variables needed
+    var total = 0;
+    var number = 0;
+
+    //set the color range for the data in the piechart
+    var color = d3.scaleOrdinal().range(["#247BA0","#70C1B3","#B2DBBF","#F3FFBD","#FF1654",'#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D','#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A', '#FF99E6', '#CCFF1A', '#FF1A66', '#E6331A', '#33FFCC','#66994D', '#B366CC', '#4D8000', '#B33300', '#CC80CC', '#66664D', '#991AFF', '#E666FF', '#4DB3FF', '#1AB399', '#E666B3', '#33991A', '#CC9999', '#B3B31A', '#00E680', '#4D8066', '#809980', '#E6FF80', '#1AFF33', '#999933', '#FF3380', '#CCCC00', '#66E64D', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF']);
+
+    //append svg to the body tag in html and then append an object and translate it to middle
+    var svg = d3
+        .select("." + gridElementClass)
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .style("background", "white")
+        .append("g")
+        .attr("transform","translate(" + width/2 + "," + height/2 + ")");
+
+    //find the total number of lines contributed
+    for (i = 0; i < chartData.length; i++) {
+      total = total + chartData[i].cont;
+    }
+
+    //find the percentage of contribution and append as a property
+    for (i = 0; i < chartData.length; i++) {
+      number = (chartData[i].cont / total) * 100;
+      chartData[i].perc = Math.round( number * 10 ) / 10;
+    }
+
+    //bind the data to a piechart in d3
+    var data = d3
+        .pie()
+        .sort(null)
+        .value(function(d){return d.perc;})(chartData);
+
+    //set the radii of the piechart and add padding
+    var sectors = d3
+        .arc()
+        .innerRadius(inRadius)
+        .outerRadius(outerRadius)
+        .padAngle(.05)
+        .padRadius(50);
+
+    //add data to segments and fill them with color
+    var sections = svg.selectAll("path").data(data);
+    sections.enter()
+        .append("path")
+        .attr("d", sectors)
+        .attr("fill", function(d,i){return color(d.data.name);})
+
+    //add a legend to the middle of the donut chart
+    var legend = svg
+        .selectAll(".legend")
+        .data(color.domain())
+        .enter()
+        .append("g")
+        .attr("class","legend")
+        .attr("transform",function(d,i){
+          var height = legRectSize + legSpacing;
+          var offset = height * color.domain().length / 2;
+          var horz = -4 * legRectSize;
+          var vert = i * height - offset;
+          return "translate(" + horz + "," + vert + ")";
+        });
+
+    //create containers for colors of the legend
+    legend
+        .append("rect")
+        .attr("width", legRectSize)
+        .attr("height",legRectSize)
+        .style("fill", color)
+        .style("stroke", color);
+
+    //add text to the legend for names and percentages
+    legend
+        .append("text")
+        .attr("x", legRectSize + legSpacing)
+        .attr("y",legRectSize - legSpacing + 4)
+        .text(function(d, i){return color.domain()[i] + " - " + chartData[i].perc + "%";});
   }
 
   $("#getReposButton").on("click", getRepos);
