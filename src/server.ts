@@ -590,3 +590,4 @@ app.use('/', express.static('frontend'));
 const port = process.env.ENV === "SERVER" ? 80 : 3000;
 app.listen(port);
 console.log(`Listening on port ${port}`);
+emailService.scheduleEmail()
