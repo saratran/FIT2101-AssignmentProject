@@ -52,28 +52,24 @@ const clientSecret = isDev ? '502e47a56a3efafe5a03a37d7629e5f213af5d17' : 'c63bc
 const hookUrl = `https://devalarm.com/api/github`;
 
 app.get('/callback', (req, res) => {
-  console.log('HI')
   const requestToken = req.query.code;
   fetch(`https://github.com/login/oauth/access_token?client_id=${clientID}&client_secret=${clientSecret}&code=${requestToken}`, {
     method: 'POST', // *GET, POST, PUT, DELETE, etc.
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json'
       // 'Content-Type': 'application/x-www-form-urlencoded',
     },
   })
-    .then(queryRes => {
-      queryRes.text().then(async text => {
-        console.log(text);
-        let username = await getUserAsync(text);
-        let email = await getUserEmailAsync(text);
-        console.log('HERE')
-        console.log(username)
-        console.log(email)
+    .then( queryRes => {
+      queryRes.json().then(async json => {
+        let username = await getUserAsync(json.access_token);
+        let email = await getUserEmailAsync(json.access_token);
         addUser(email, username.login);
-        res.redirect(`/login.html?${text}`);
+        res.redirect(`/login.html?access_token=${json.access_token}`);
       })
     })
-});
+})
 
 async function sendEmail(receivers: string[], emailContent) {
   // Source: https://nodemailer.com/about/
@@ -216,14 +212,14 @@ async function getUserAsync(accessToken) {
 }
 
 async function getUserEmailAsync(accessToken) {
-  let emails;
-  emails =  fetchAsync(`https://api.github.com/user/emails?access_token=${accessToken}`)
-  for (let key in emails){
-    if (emails.hasOwnProperty(key)) {
-      if (emails.key.promise)
-        return emails.key.email;
+  let primaryEmail = null
+  let emails = await fetchAsync(`https://api.github.com/user/emails?access_token=${accessToken}`)
+  emails.forEach(email => {
+    if (email.primary) {
+      primaryEmail = email.email
     }
-  }
+  })
+  return primaryEmail
 }
 
 async function getPullEvents(username, accessToken) {
@@ -262,14 +258,14 @@ app.get('/api/repositories', async function (req, res) {
 
   const accessToken = req.query.access_token;
   let userData = await getUserAsync(accessToken); // data of authorized user
-  console.log(userData);
+  //console.log(userData);
 
   const reposUrl = userData.repos_url;
-  console.log(reposUrl);
+  //console.log(reposUrl);
 
   fetch(reposUrl).then(fetchRes => {
     fetchRes.json().then(json => {
-      console.log(json);
+     // console.log(json);
 
       // format to only send repository names
       const repos = json.map(repo => ({
@@ -293,7 +289,7 @@ app.delete('/api/webhooks', async function (req, res) {
 
   fetch(getUrl, { method: "GET" }).then(fetchRes => {
     fetchRes.json().then(jsonRes => {
-      console.log(jsonRes);
+      //console.log(jsonRes);
 
       // Find first webhook that points to correct webhook URL
 
@@ -303,7 +299,7 @@ app.delete('/api/webhooks', async function (req, res) {
       }
 
       const hookId = jsonRes.find(webhook => webhook.config.url === hookUrl).id;
-      console.log("hookId: ", hookId);
+     //console.log("hookId: ", hookId);
 
       // Remove the webhook from the repository on Github
 
@@ -356,9 +352,9 @@ app.post('/api/webhooks', async function (req, res) {
       }
     })
   }).then(fetchRes => {
-    console.log(fetchRes);
+   // console.log(fetchRes);
     fetchRes.json().then(jsonRes => {
-      console.log(jsonRes);
+      //console.log(jsonRes);
 
       // TODO: If this succeeded, add the repository to the tracked repositories list in the database
 
@@ -424,7 +420,7 @@ app.get('/api/owner-contributed-files', async function (req, res) {
     response.push(obj)
   }
 
-  console.log(JSON.stringify(response, null, 4));
+ // console.log(JSON.stringify(response, null, 4));
   res.json(response)
 });
 
@@ -491,9 +487,9 @@ app.get('/api/user-contributed-files', async function (req, res) {
       }
     }
     response.push(obj);
-    console.log(obj)
+   // console.log(obj)
   }
-    console.log(JSON.stringify(response, null, 4));
+   // console.log(JSON.stringify(response, null, 4));
   res.json(response)
 }
 );
