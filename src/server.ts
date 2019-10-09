@@ -52,6 +52,7 @@ const clientSecret = isDev ? '502e47a56a3efafe5a03a37d7629e5f213af5d17' : 'c63bc
 const hookUrl = `https://devalarm.com/api/github`;
 
 app.get('/callback', (req, res) => {
+  console.log('HI')
   const requestToken = req.query.code;
   fetch(`https://github.com/login/oauth/access_token?client_id=${clientID}&client_secret=${clientSecret}&code=${requestToken}`, {
     method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -61,8 +62,14 @@ app.get('/callback', (req, res) => {
     },
   })
     .then(queryRes => {
-      queryRes.text().then(text => {
+      queryRes.text().then(async text => {
         console.log(text);
+        let username = await getUserAsync(text);
+        let email = await getUserEmailAsync(text);
+        console.log('HERE')
+        console.log(username)
+        console.log(email)
+        addUser(email, username.login);
         res.redirect(`/login.html?${text}`);
       })
     })
@@ -125,6 +132,37 @@ app.post('/api/github', function (req, res) {
   res.status(200)
 });
 
+function addUser(email, githubUsername) {
+
+  pool.query('SELECT * FROM public.users WHERE email_address=$1 AND github_username=$2', [email, githubUsername], (err, queryRes) => {
+
+    if (err) {
+      console.log(err);
+      return
+    } else {
+      console.log(queryRes.rows);
+
+      // If user does not exist, create an account for them
+      if (queryRes.rows.length) { // user exists already, get their ID?
+        const { id } = queryRes.rows[0];
+        return { id }
+      } else { // user does not exist
+        pool.query('INSERT INTO public.users (email_address, github_username, first_login_date) VALUES ($1, $2, NOW()) RETURNING id', [email, githubUsername], (err, queryRes2) => {
+
+          if (err) {
+            console.log(err);
+            return
+          } else {
+            console.log("User created");
+            const { id } = queryRes2.rows[0];
+            return {id}
+          }
+        })
+      }
+    }
+  })
+}
+
 app.post('/api/authenticate', function (req, res) {
   /**
    * Register a user in the database:
@@ -177,6 +215,17 @@ async function getUserAsync(accessToken) {
   return fetchAsync(`https://api.github.com/user?access_token=${accessToken}`)
 }
 
+async function getUserEmailAsync(accessToken) {
+  let emails;
+  emails =  fetchAsync(`https://api.github.com/user/emails?access_token=${accessToken}`)
+  for (let key in emails){
+    if (emails.hasOwnProperty(key)) {
+      if (emails.key.promise)
+        return emails.key.email;
+    }
+  }
+}
+
 async function getPullEvents(username, accessToken) {
   // Closed pull events
   return fetchAsync(`https://api.github.com/search/issues?q=type:pr+state:closed+author:${username}&per_page=100&page=1&access_token=${accessToken}`)
@@ -201,6 +250,13 @@ app.get('/api/user', async function (req, res) {
   let userData = await getUserAsync(accessToken); // data of authorized user
   res.send(userData)
 });
+
+/*
+app.get('/api/emails', async function (req, res) {
+  const accessToken = req.query.access_token;
+  let userData = await getUserEmailAsync(accessToken); // data of authorized user
+  res.send(userData)
+});*/
 
 app.get('/api/repositories', async function (req, res) {
 
