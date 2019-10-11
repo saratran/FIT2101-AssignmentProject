@@ -10,7 +10,6 @@ function highlightFile() {}
 function goToUserPage() {}
 function getBarGraph() {}
 function getPieChart() {}
-function addUser(){}
 
 $(document).ready(function() {
   // All code goes in this function to ensure JQuery and the page are ready before JS code is run
@@ -19,35 +18,6 @@ $(document).ready(function() {
   const apiUrl = isDev ? `http://localhost:3000/api` : `https://devalarm.com/api`;
 
   let gridItemInfo = "";
-
-  addUser = () => {/*
-    let email = ""
-    let username = ""
-    const accessToken = window.localStorage.getItem("accessToken")
-    fetch(apiUrl + `/emails?access_token=${accessToken}`).then(fetchRes => {
-      fetchRes.json().then(json => {
-        console.log(json)
-        json.forEach(function(key, data){
-          let email = ""
-          if (data.primary) {
-            email = data.email;
-          }
-        })
-      })
-    })
-    fetch(apiUrl + `/user?access_token=${accessToken}`).then(fetchRes => {
-      fetchRes.json().then(json => {
-        username = json.login
-      })
-    })
-
-    fetch(apiUrl + `/authenticate?access_token=${accessToken}`).then(fetchRes => {
-      fetchRes.json().then(json => {
-        username = json.login
-      })
-    })
-    */
-  }
 
   expandFile = (gridItem) => {
     // repo and file info
@@ -570,7 +540,6 @@ $(document).ready(function() {
   $("#getReposButton").on("click", getRepos);
 
   // On page load
- // addUser()
   getRepos();
   getFiles("test");
 });

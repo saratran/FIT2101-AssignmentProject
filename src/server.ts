@@ -461,7 +461,7 @@ app.get('/api/user-contributed-files', async function (req, res) {
     // console.log(repoName)
     obj["repo_name"] = repoName;
     obj["repo_url"] = item.repository_url;
-    obj["files_commited"] = [];
+    obj["files_committed"] = [];
 
     // Going through each file
     for (let file of repoContents) {
@@ -481,7 +481,7 @@ app.get('/api/user-contributed-files', async function (req, res) {
             "path": file_path,
             "url": file_url
           };
-          obj["files_commited"].push(file_data);
+          obj["files_committed"].push(file_data);
           break
         }
       }
