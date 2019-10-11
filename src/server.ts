@@ -459,6 +459,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
    * -- summarise file changes for each file and send back to the user in the form of an array of FileInfo objects (defined in definitions.d.ts)
    */
 
+
   const { repo } = req.params;
   const { accessToken } = req.query;
 
@@ -467,10 +468,10 @@ app.get(`/api/files/:repo`, async (req, res) => {
   // Fetch all push events
 
   const eventsUrl = `https://api.github.com/repos/${username}/${repo}/events?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
-
+ 
   const repoEvents = await fetchAsync(eventsUrl);
   const pushEvents = repoEvents.filter(({ type }) => type === "PushEvent");
-  console.log(pushEvents);
+  // console.log(pushEvents);
 
   // Fetch all commits for each push event and flatten
 
@@ -507,14 +508,12 @@ app.get(`/api/files/:repo`, async (req, res) => {
       commit.files.forEach(file => {
         const name = file.filename;
 
-        console.log(file);
-
         const lineChanges = {
           // additions: file.additions,
           // deletions: file.deletions,
           lineChangeCount: file.changes,
           author: {
-            login: commit.author.login,
+            login: (commit.author == null)?'unknown':commit.author.login,
             name: "unknown",
             email: "unknown"
           }
