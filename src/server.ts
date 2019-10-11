@@ -2,45 +2,16 @@ import express = require('express'); // for web server
 import cors = require('cors'); // allows us to make requests across domains/ports (Cross-Origin Resource Sharing)
 import fetch from 'node-fetch'; // polyfill for browser JS 'fetch' functionality
 import bodyParser = require('body-parser'); // allows express to handle body of POST requests
-import nodemailer = require('nodemailer'); // for sending emails
 import pg = require('pg'); // PostgreSQL (PG) database interface
 import dotenv = require('dotenv'); // environment variables
-import hbs = require('nodemailer-express-handlebars');
 import flatMap = require('flatmap');
+import emailService = require('./email-service');
 
 const app = express(); // initialise app
 app.use(cors()); // allow Cross-Origin Resource Sharing
 app.use(bodyParser.json()); // parse POST request JSON bodies
 
 dotenv.config();
-
-const sender = {
-  email: 'devalarm.test@gmail.com',
-  name: 'DevAlarm Notification',
-  pass: 'fit2101devalarm'
-}; // login details for Gmail account
-
-// create reusable transporter object to send email
-let transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: sender.email,
-    pass: sender.pass
-  }
-});
-
-const handlebarsOption = {
-  viewEngine: {
-    extName: '.hbs',
-    partialsDir: './emails',
-    layoutsDir: './emails',
-    defaultLayout: 'index.handlebars',
-  },
-  viewPath: "./emails"
-};
-
-// Use handlebars to render
-transporter.use('compile', hbs(handlebarsOption));
 
 dotenv.config(); // variables set in the .env file in this folder are now accessible with process.env.[variableName]
 const pool = new pg.Pool(); // Create a DB query pool. The database connection only works if you have valid DB credentials in the .env file
@@ -71,30 +42,7 @@ app.get('/callback', (req, res) => {
     })
 })
 
-async function sendEmail(receivers: string[], emailContent) {
-  // Source: https://nodemailer.com/about/
-  /* TODO:
-  - email content
-   */
 
-  let mailOptions = {
-    from: `${sender.name} <${sender.email}>`,
-    to: `${receivers}`, // TODO: check if can send to many receivers
-    subject: 'DevAlarm Test',
-    text: 'Wooohooo it works!!',
-    template: 'index',
-    context: {
-      name: emailContent
-    } // send extra values to template
-  };
-
-  transporter.sendMail(mailOptions, (err, data) => {
-    if (err) {
-      return console.log('Error occurs');
-    }
-    return console.log('Email sent!!!');
-  });
-}
 // sendEmail(['utra0001@student.monash.edu','saraut1479@gmail.com'],'Sara Tran').catch(console.error)
 
 app.get('/api', function (req, res) { // demo API homepage to verify that backend works
@@ -122,7 +70,7 @@ app.post('/api/github', function (req, res) {
   console.log("header", headers);
 
   console.log("sending email");
-  sendEmail(['pbre0003@student.monash.edu'], 'Sara Tran').catch(console.error);
+  emailService.sendEmail(['utra0001@student.monash.edu'], 'Sara Tran').catch(console.error);
 
   res.json({});
   res.status(200)
@@ -694,3 +642,4 @@ app.use('/', express.static('frontend'));
 const port = process.env.ENV === "SERVER" ? 80 : 3000;
 app.listen(port);
 console.log(`Listening on port ${port}`);
+emailService.scheduleEmail()
