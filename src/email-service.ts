@@ -2,9 +2,6 @@ import nodemailer = require('nodemailer'); // for sending emails
 import hbs = require('nodemailer-express-handlebars');
 import nodeSchedule = require('node-schedule');
 
-interface Frequency {
-
-}
 
 const frequency = {
   daily: { hour: 10 }, // trigger event at 10:00 am everyday
@@ -48,13 +45,13 @@ export async function sendEmail(receivers: string[], emailContent) {
 
   let mailOptions = {
     from: `${sender.name} <${sender.email}>`,
-    to: `${receivers}`, // TODO: check if can send to many receivers
+    to: `${receivers}`,
     subject: 'DevAlarm Test',
     text: 'Wooohooo it works!!',
     template: 'index',
     context: {
       name: emailContent
-    } // send extra values to template
+    } // TODO: send extra values to template
   };
 
   transporter.sendMail(mailOptions, (err, data) => {
@@ -73,7 +70,7 @@ export function scheduleEmail(frequencyOption?) {
    * - reschedule incomplete events at the start of the script
    * 
    * What to save in database: 
-   * - information for a single PushEvent
+   * - information for a single PushEvent / files changed
    * - then need to compile the email content based on those events
    */
   console.log('email scheduler initialised')
@@ -85,4 +82,5 @@ export function scheduleEmail(frequencyOption?) {
   nodeSchedule.scheduleJob(frequency.minute, function(){
     console.log('1 minute has passed!')
   })
+
 }
