@@ -107,6 +107,48 @@ function addUser(email, githubUsername) {
   })
 }
 
+function addRepo(repo, email, githubUsername){
+  /**
+   * Need user(id) to insert as FK
+   * get user(id) from email and githubUsername
+   */
+  pool.query('SELECT id FROM public.users WHERE email_address=$1 AND github_username=$2', [email, githubUsername], (err, queryRes) => {
+    if (err) {
+      console.log(err);
+      return
+    } else {
+      if (queryRes.rows.length) { // user exists already, get their ID?
+        const { id } = queryRes.rows[0];
+        pool.query('SELECT * FROM public.repos WHERE user_id=$1 AND name=$2', [id, repo.name], (err, queryRes) => {
+          if (err) {
+            console.log(err);
+            return
+          } else {
+            if (!queryRes.rows.length) { 
+              pool.query('INSERT INTO public.repos (name, user_id, url, description) VALUES ($1, $2, $3, $4) RETURNING id', [repo.name, id, repo.url, repo.description], (err, queryRes2) => {
+                if (err) {
+                  console.log(err);
+                  return
+                } else {
+                  console.log("Repo saved");
+                  const { id } = queryRes2.rows[0];
+                  return {id}
+                }
+              })
+            }
+          }
+        })
+      }      
+    }
+  })
+}
+let repo = {
+  name: 'repo2',
+  url:'http://something.com',
+  description:'some description'
+}
+addRepo(repo, 'pkbrett40@gmail.com','patrickbrett5')
+
 app.post('/api/authenticate', function (req, res) {
   /**
    * Register a user in the database:
@@ -221,6 +263,8 @@ app.get('/api/repositories', async function (req, res) {
         url: repo.html_url,
         description: repo.description
       }));
+
+
 
       res.send(repos)
     })
