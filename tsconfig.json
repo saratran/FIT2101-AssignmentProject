@@ -5,6 +5,7 @@
   },
   "files": [
     "src/server.ts",
-    "src/definitions.d.ts"
+    "src/definitions.d.ts",
+    "src/email-service.ts"
   ]
 }
