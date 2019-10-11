@@ -525,7 +525,6 @@ app.get(`/api/files/:repo`, async (req, res) => {
   // Fetch all commits for each push event and flatten
 
   const commits = flatMap(pushEvents, ({ payload }) => payload.commits);
-  console.log('COMMITS: '+JSON.stringify(commits));
 
   // Get file changes for each commit
 
@@ -555,7 +554,6 @@ app.get(`/api/files/:repo`, async (req, res) => {
     // Identify unique files that were changed
     const files = {};
     commits.forEach(commit => {
-        console.log(commit)
       commit.files.forEach(file => {
         const name = file.filename;
         const lineChanges = {
@@ -570,13 +568,10 @@ app.get(`/api/files/:repo`, async (req, res) => {
         } else {
           files[name] = { changes: [lineChanges] }
         }
-        console.log(lineChanges)
       });
     });
 
     // TODO: we should filter such that only the files the user has contributed to are shown.
-
-    console.log(files);
 
     // Now evaluate the files by user and run a reduction algorithm on the changes
 
@@ -588,7 +583,8 @@ app.get(`/api/files/:repo`, async (req, res) => {
 
     const filesArrangedByUser: FileInfo[] = Object.keys(files).map(filename => {
       const file = files[filename]
-      const contributionByUser: { [username: string]: Contribution } = {};
+      const contributionByUser: {[username: string]: Contribution } = {};
+
 
       file.changes.forEach(change => {
         const authorLogin = change.author.login;
@@ -597,30 +593,29 @@ app.get(`/api/files/:repo`, async (req, res) => {
           contributionByUser[authorLogin].lineChangeCount += change.lineChangeCount;
           contributionByUser[authorLogin].commitCount++;
         } else {
+
             contributionByUser[authorLogin] = {
-            lineChangeCount: change.lineChangeCount,
-            commitCount: 1
-          }
+              lineChangeCount: change.lineChangeCount,
+              commitCount: 1,
+            }
         }
       });
 
       const yourContributions = contributionByUser[ownUserInfo.username];
-
       const otherContributors = [];
-
       Object.keys(contributionByUser).forEach(username => {
         if (username !== ownUserInfo.username) {
           const contributor: Contributor = {
             username,
-            email: "unknown",
-            name: "unknown",
+            email: "John",
+            name: "John",
             contribution: contributionByUser[username]
           };
           otherContributors.push(contributor);
         }
       });
 
-      const contributor1: Contributor = {
+     /* const contributor1: Contributor = {
         username: "",
         email: "",
         name: "",
@@ -628,7 +623,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
           commitCount: 0,
           lineChangeCount: 0
         }
-      };
+      };*/
 
       return {
         filename,

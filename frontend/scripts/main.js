@@ -13,6 +13,8 @@ function getPieChart() {}
 
 $(document).ready(function() {
     // All code goes in this function to ensure JQuery and the page are ready before JS code is run
+    let repoData;
+    let userData;
 
     const isDev = true;
     const apiUrl = isDev ? `http://localhost:3000/api` : `https://devalarm.com/api`;
@@ -99,10 +101,10 @@ $(document).ready(function() {
         detailGridItem2.id = "User Contribution Ratio";
         detailGridItem2.setAttribute("style", "height: 470px; width: 350px");
         detailGridItem3.className = "grid-item file-detail contributor-table";
-        detailGridItem3.id = fileName + " Contributors";
+        detailGridItem3.id = "Other " + fileName + " Contributors";
         detailGridItem1.innerHTML = "<h1>Individual Contributions</h1>";
         detailGridItem2.innerHTML = "<h1>User Contribution Ratio</h1>";
-        detailGridItem3.innerHTML = "<h1>" + fileName + " Contributors</h1>";
+        detailGridItem3.innerHTML = "<h1>Other " + fileName + " Contributors</h1>";
 
         // add graphs to relevant grid items
         detailGridItem1.appendChild(barGraph);
@@ -210,6 +212,13 @@ $(document).ready(function() {
         })
     }
 
+    function getUser() {
+        const accessToken = window.localStorage.getItem("accessToken")
+        fetch(apiUrl + `/user?access_token=${accessToken}`).then(data => {
+            userData = data.json();
+        })
+    }
+
     getFiles = (reponame) => {
 
         if (reponame === currentRepo)
@@ -230,7 +239,7 @@ $(document).ready(function() {
 
         fetch(apiUrl + `/files/${reponame}?access_token=${accessToken}`).then(fetchRes => {
             fetchRes.json().then(json => {
-                console.log(json)
+                repoData = json;
                 json.forEach(file => {
                     let newGridItem = document.createElement("div");
                     let fileIcon = getFileIcon(file.filename);
@@ -258,11 +267,11 @@ $(document).ready(function() {
 
     getContributorInfo = (repoName, fileName, gridItemClass) => {
         let graphData = [];
-        fetch(apiUrl + `/files-mock/${repoName}`).then(fetchRes => {
-            fetchRes.json().then(json => {
-                json.forEach(file => {
+        //fetch(apiUrl + `/files-mock/${repoName}`).then(fetchRes => {
+            //fetchRes.json().then(json => {
+                repoData.forEach(file => {
                     // check for correct file
-                    if (file.filename === fileName) {
+                     if (file.filename === fileName) {
                         // create table elements
                         let contributorInfo = document.createElement("table");
                         let tableHeader = document.createElement("tr");
@@ -281,6 +290,9 @@ $(document).ready(function() {
 
                         // add header to table
                         contributorInfo.appendChild(tableHeader);
+
+                        let dataItem = {name: `${userData.username}`, cont: Number(`${file.yourContributions.lineChangeCount}`)};
+                         graphData.push(dataItem);
 
                         // add contributor info
                         file.otherContributors.forEach(contributor => {
@@ -319,8 +331,8 @@ $(document).ready(function() {
                         gridItem.appendChild(contributorInfo);
                     }
                 })
-            })
-        })
+        //    })
+       // })
     }
 
     getFileIcon = (fileName) => {
@@ -554,6 +566,7 @@ $(document).ready(function() {
     $("#getReposButton").on("click", getRepos);
 
     // On page load
+    getUser();
     getRepos();
     //getFiles();
 });
