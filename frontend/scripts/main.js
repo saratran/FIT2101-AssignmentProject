@@ -1,5 +1,7 @@
 // Function headers
 
+
+
 function expandFile() {}
 function returnToRepos() {}
 function getRepos() {}
@@ -10,6 +12,7 @@ function highlightFile() {}
 function goToUserPage() {}
 function getBarGraph() {}
 function getPieChart() {}
+function getUser() {}
 
 $(document).ready(function() {
     // All code goes in this function to ensure JQuery and the page are ready before JS code is run
@@ -212,10 +215,12 @@ $(document).ready(function() {
         })
     }
 
-    function getUser() {
+    getUser = () => {
         const accessToken = window.localStorage.getItem("accessToken")
         fetch(apiUrl + `/user?access_token=${accessToken}`).then(data => {
-            userData = data.json();
+            data.json().then(json => {
+                userData = json
+            })
         })
     }
 
@@ -247,9 +252,14 @@ $(document).ready(function() {
                     newGridItem.id = reponame;
                     newGridItem.setAttribute("onclick", "expandFile(this)");
                     newGridItem.innerHTML = `<h1><img alt="file icon" src="` + fileIcon + `" style="height: 20px; width: 20px;">&nbsp; ${file.filename}</h1><p>Other Contributors:</p>`;
-                    file.otherContributors.forEach(contributor => {
-                        newGridItem.innerHTML = newGridItem.innerHTML + `<p>${contributor.name}</p>`;
-                    })
+                    if (Object.keys(file.otherContributors).length === 0){
+                        newGridItem.innerHTML = newGridItem.innerHTML + `<p>None</p>`;
+                    }
+                    else {
+                        file.otherContributors.forEach(contributor => {
+                            newGridItem.innerHTML = newGridItem.innerHTML + `<p>${contributor.name}</p>`;
+                        })
+                    }
 
 
                     // add grid element to repo grid
@@ -290,8 +300,7 @@ $(document).ready(function() {
 
                         // add header to table
                         contributorInfo.appendChild(tableHeader);
-
-                        let dataItem = {name: `${userData.username}`, cont: Number(`${file.yourContributions.lineChangeCount}`)};
+                        let dataItem = {name: `${userData.name === null? userData.login: userData.name}`, cont: Number(`${file.yourContributions.lineChangeCount}`)};
                          graphData.push(dataItem);
 
                         // add contributor info
@@ -308,7 +317,7 @@ $(document).ready(function() {
                             contactInfo.innerHTML = `${contributor.email}`;
 
                             // get graph data from contributor
-                            let dataItem = {name: `${contributor.username}`, cont: Number(`${contributor.contribution.lineChangeCount}`)};
+                            let dataItem = {name: `${contributor.name === null? contributor.username: contributor.name}`, cont: Number(`${contributor.contribution.lineChangeCount}`)};
                             graphData.push(dataItem);
 
                             // set row attributes

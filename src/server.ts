@@ -552,6 +552,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
      */
 
     // Identify unique files that were changed
+    const contributorData =  {};
     const files = {};
     commits.forEach(commit => {
       commit.files.forEach(file => {
@@ -562,6 +563,9 @@ app.get(`/api/files/:repo`, async (req, res) => {
           lineChangeCount: file.changes,
           author: commit.author
         };
+        if (!Object.keys(contributorData).includes(commit.author.login)){
+          contributorData[commit.author.login] = {email: commit.author.email, name: commit.author.name}
+        }
 
         if (Object.keys(files).includes(name)) {
           files[name].changes.push(lineChanges);
@@ -607,8 +611,8 @@ app.get(`/api/files/:repo`, async (req, res) => {
         if (username !== ownUserInfo.username) {
           const contributor: Contributor = {
             username,
-            email: "John",
-            name: "John",
+            email: contributorData[username].email,
+            name: contributorData[username].name,
             contribution: contributionByUser[username]
           };
           otherContributors.push(contributor);
@@ -631,7 +635,6 @@ app.get(`/api/files/:repo`, async (req, res) => {
         otherContributors
       }
     });
-    console.log(filesArrangedByUser)
     res.send(filesArrangedByUser);
   })
 });
