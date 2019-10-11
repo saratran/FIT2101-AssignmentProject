@@ -57,16 +57,19 @@ app.get('/callback', (req, res) => {
     method: 'POST', // *GET, POST, PUT, DELETE, etc.
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json'
       // 'Content-Type': 'application/x-www-form-urlencoded',
     },
   })
-    .then(queryRes => {
-      queryRes.text().then(text => {
-        console.log(text);
-        res.redirect(`/login.html?${text}`);
+    .then( queryRes => {
+      queryRes.json().then(async json => {
+        let username = await getUserAsync(json.access_token);
+        let email = await getUserEmailAsync(json.access_token);
+        addUser(email, username.login);
+        res.redirect(`/login.html?access_token=${json.access_token}`);
       })
     })
-});
+})
 
 async function sendEmail(receivers: string[], emailContent) {
   // Source: https://nodemailer.com/about/
@@ -125,6 +128,37 @@ app.post('/api/github', function (req, res) {
   res.status(200)
 });
 
+function addUser(email, githubUsername) {
+
+  pool.query('SELECT * FROM public.users WHERE email_address=$1 AND github_username=$2', [email, githubUsername], (err, queryRes) => {
+
+    if (err) {
+      console.log(err);
+      return
+    } else {
+      console.log(queryRes.rows);
+
+      // If user does not exist, create an account for them
+      if (queryRes.rows.length) { // user exists already, get their ID?
+        const { id } = queryRes.rows[0];
+        return { id }
+      } else { // user does not exist
+        pool.query('INSERT INTO public.users (email_address, github_username, first_login_date) VALUES ($1, $2, NOW()) RETURNING id', [email, githubUsername], (err, queryRes2) => {
+
+          if (err) {
+            console.log(err);
+            return
+          } else {
+            console.log("User created");
+            const { id } = queryRes2.rows[0];
+            return {id}
+          }
+        })
+      }
+    }
+  })
+}
+
 app.post('/api/authenticate', function (req, res) {
   /**
    * Register a user in the database:
@@ -177,6 +211,17 @@ async function getUserAsync(accessToken) {
   return fetchAsync(`https://api.github.com/user?access_token=${accessToken}`)
 }
 
+async function getUserEmailAsync(accessToken) {
+  let primaryEmail = null
+  let emails = await fetchAsync(`https://api.github.com/user/emails?access_token=${accessToken}`)
+  emails.forEach(email => {
+    if (email.primary) {
+      primaryEmail = email.email
+    }
+  })
+  return primaryEmail
+}
+
 async function getPullEvents(username, accessToken) {
   // Closed pull events
   return fetchAsync(`https://api.github.com/search/issues?q=type:pr+state:closed+author:${username}&per_page=100&page=1&access_token=${accessToken}`)
@@ -202,18 +247,25 @@ app.get('/api/user', async function (req, res) {
   res.send(userData)
 });
 
+/*
+app.get('/api/emails', async function (req, res) {
+  const accessToken = req.query.access_token;
+  let userData = await getUserEmailAsync(accessToken); // data of authorized user
+  res.send(userData)
+});*/
+
 app.get('/api/repositories', async function (req, res) {
 
   const accessToken = req.query.access_token;
   let userData = await getUserAsync(accessToken); // data of authorized user
-  console.log(userData);
+  //console.log(userData);
 
   const reposUrl = userData.repos_url;
-  console.log(reposUrl);
+  //console.log(reposUrl);
 
   fetch(reposUrl).then(fetchRes => {
     fetchRes.json().then(json => {
-      console.log(json);
+     // console.log(json);
 
       // format to only send repository names
       const repos = json.map(repo => ({
@@ -237,7 +289,7 @@ app.delete('/api/webhooks', async function (req, res) {
 
   fetch(getUrl, { method: "GET" }).then(fetchRes => {
     fetchRes.json().then(jsonRes => {
-      console.log(jsonRes);
+      //console.log(jsonRes);
 
       // Find first webhook that points to correct webhook URL
 
@@ -247,7 +299,7 @@ app.delete('/api/webhooks', async function (req, res) {
       }
 
       const hookId = jsonRes.find(webhook => webhook.config.url === hookUrl).id;
-      console.log("hookId: ", hookId);
+     //console.log("hookId: ", hookId);
 
       // Remove the webhook from the repository on Github
 
@@ -300,9 +352,9 @@ app.post('/api/webhooks', async function (req, res) {
       }
     })
   }).then(fetchRes => {
-    console.log(fetchRes);
+   // console.log(fetchRes);
     fetchRes.json().then(jsonRes => {
-      console.log(jsonRes);
+      //console.log(jsonRes);
 
       // TODO: If this succeeded, add the repository to the tracked repositories list in the database
 
@@ -368,7 +420,7 @@ app.get('/api/owner-contributed-files', async function (req, res) {
     response.push(obj)
   }
 
-  console.log(JSON.stringify(response, null, 4));
+ // console.log(JSON.stringify(response, null, 4));
   res.json(response)
 });
 
@@ -435,9 +487,9 @@ app.get('/api/user-contributed-files', async function (req, res) {
       }
     }
     response.push(obj);
-    console.log(obj)
+   // console.log(obj)
   }
-    console.log(JSON.stringify(response, null, 4));
+   // console.log(JSON.stringify(response, null, 4));
   res.json(response)
 }
 );
