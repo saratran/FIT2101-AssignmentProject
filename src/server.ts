@@ -396,13 +396,14 @@ app.get('/api/owner-contributed-files/:repo', async function (req, res) {
 
         // Get more data for each commit, specifically about the files that were committed
         for (let commit of commits) {
+            console.log(commit.url)
           let commit_files = (await fetchAsync(commit.url + `?client_id=${clientID}&client_secret=${clientSecret}`)).files;
 
           for (let file of commit_files) {
             // If file has already been added before, don't check again
               //console.log(file.filename)
 
-            if (!response.some(f => f.name === file.filename)) {
+            if (!response.some(f => f.filename === file.filename)) {
               let file_commits = await (fetchAsync(repoUrl + `/commits?path=${file.filename}&client_id=${clientID}&client_secret=${clientSecret}`));
               let other_contributors = [];
               // Go through each commit on file
