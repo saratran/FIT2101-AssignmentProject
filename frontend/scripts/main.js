@@ -16,6 +16,7 @@ $(document).ready(function() {
 
   const isDev = true;
   const apiUrl = isDev ? `http://localhost:3000/api` : `https://devalarm.com/api`;
+  let currentRepo = null;
 
   let gridItemInfo = "";
 
@@ -195,16 +196,30 @@ $(document).ready(function() {
 
         repoList.empty();
         json.forEach(repo => {
-          const repoElement = $.parseHTML(`<a>${repo.name} | ${repo.description}</a>`)
+          /*
+          let repoElement = document.createElement("a");
+          repoElement.setAttribute("onclick", `getFiles(${repo.name})`);
+          repoElement.innerHTML = `${repo.name} | ${repo.description}`
+          repoList.append(repoElement);*/
+
+          const repoElement = $.parseHTML(`<a onclick="getFiles('${repo.name}')">${repo.name} | ${repo.description}</a>`)
           repoList.append(repoElement)
+
         })
       })
     })
   }
 
   getFiles = (reponame) => {
-    // Getting mock repo data
+
+    if (reponame === currentRepo)
+      return
+    currentRepo = reponame
+    const accessToken = window.localStorage.getItem("accessToken")
     let repoFileGrid = document.getElementById("repoFiles");
+    while (repoFileGrid.firstChild) {
+      repoFileGrid.removeChild(repoFileGrid.firstChild);
+    }
     let repoFileMsnry = new Masonry(repoFileGrid, {
       // options
       itemSelector: '.grid-item',
@@ -213,7 +228,7 @@ $(document).ready(function() {
       originLeft: true
     });
 
-    fetch(apiUrl + `/files-mock/${reponame}`).then(fetchRes => {
+    fetch(apiUrl + `/owner-contributed-files/${reponame}?access_token=${accessToken}`).then(fetchRes => {
       fetchRes.json().then(json => {
         console.log(json)
         json.forEach(file => {
@@ -234,12 +249,11 @@ $(document).ready(function() {
 
           // make repo grid visible
           repoFileGrid.className = "grid slide-in-bck";
-
-          // refresh repo grid layout
-          repoFileMsnry.layout();
         })
       })
     })
+    // refresh repo grid layout
+    repoFileMsnry.layout();
   }
 
   getContributorInfo = (repoName, fileName, gridItemClass) => {
@@ -541,5 +555,5 @@ $(document).ready(function() {
 
   // On page load
   getRepos();
-  getFiles("test");
+  //getFiles();
 });

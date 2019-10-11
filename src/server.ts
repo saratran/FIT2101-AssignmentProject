@@ -363,7 +363,7 @@ app.post('/api/webhooks', async function (req, res) {
   })
 });
 
-app.get('/api/owner-contributed-files', async function (req, res) {
+app.get('/api/owner-contributed-files/:repo', async function (req, res) {
   /**
    * This will return the repositories of the authenticated user and the files that they have committed to
    *
@@ -372,27 +372,27 @@ app.get('/api/owner-contributed-files', async function (req, res) {
    * - Check for performance, currently I think it's quite slow because of the many API calls
    * - Check with larger repos
    */
-  let response = [];
-  const accessToken = req.query.access_token;
-  const username = (await fetchAsync(`https://api.github.com/user?access_token=${accessToken}`)).login;
-  const userRepos = await fetchAsync(`http://api.github.com/user/repos?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`);
 
-  // Check each repo
-  for (let repo of userRepos) {
-    let obj = {};
-    obj["repo_name"] = repo.name;
-    obj["repo_url"] = repo.url;
-    obj["files_contributed"] = [];
+    const {repo} = req.params;
+    const accessToken = req.query.access_token;
+    const user = await getUserAsync(accessToken)
+    const username = user.login
+
+    // Fetch all push events
+    const repoUrl = `https://api.github.com/repos/${username}/${repo}`
+    const eventsUrl = repoUrl + `/events?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
+    const repoEvents = await fetchAsync(eventsUrl);
+    let response = [];
+
 
     // Get all events related to the repo
-    const repoEvents = await fetchAsync(repo.events_url + `?client_id=${clientID}&client_secret=${clientSecret}`); // Contain many events of the repo
-    // console.log(repoEvents)
-
     // It pains me to write this horrible nested loops :'(
     // go through each event, see which one is PushEvent
     for (let event of repoEvents) {
+     //   console.log(event)
       if (event.type === "PushEvent") {
         let commits = event.payload.commits;
+        //console.log(commits)
 
         // Get more data for each commit, specifically about the files that were committed
         for (let commit of commits) {
@@ -400,28 +400,25 @@ app.get('/api/owner-contributed-files', async function (req, res) {
 
           for (let file of commit_files) {
             // If file has already been added before, don't check again
-            if (!obj["files_contributed"].includes(file.filename)) {
-              let file_commits = await (fetchAsync(repo.url + `/commits?path=${file.filename}&client_id=${clientID}&client_secret=${clientSecret}`));
+              //console.log(file.filename)
 
-              // Go through each commit on the file
+            if (!response.some(f => f.name === file.filename)) {
+              let file_commits = await (fetchAsync(repoUrl + `/commits?path=${file.filename}&client_id=${clientID}&client_secret=${clientSecret}`));
+              let other_contributors = [];
+              // Go through each commit on file
               for (let file_commit of file_commits) {
-                if (file_commit.commit.author.name === username) {
-                  // user has committed to this file before
-                  obj["files_contributed"].push(file.filename);
-                  break
-                }
+                  if (file_commit.author.login !== username) {
+                      other_contributors.push(file_commit.commit.author.name)
+                  }
               }
+              response.push({filename: file.filename, otherContributors: other_contributors});
             }
           }
         }
       }
     }
 
-    response.push(obj)
-  }
-
- // console.log(JSON.stringify(response, null, 4));
-  res.json(response)
+    res.json(response)
 });
 
 app.get('/api/user-contributed-files', async function (req, res) {
@@ -491,8 +488,8 @@ app.get('/api/user-contributed-files', async function (req, res) {
   }
    // console.log(JSON.stringify(response, null, 4));
   res.json(response)
-}
-);
+});
+
 
 app.get(`/api/files/:repo`, async (req, res) => {
   /**
@@ -510,10 +507,8 @@ app.get(`/api/files/:repo`, async (req, res) => {
    * -- from these commits, get the file changes for each
    * -- summarise file changes for each file and send back to the user in the form of an array of FileInfo objects (defined in definitions.d.ts)
    */
-
-  const { repo } = req.params;
-  const { accessToken } = req.query;
-
+  const {repo} = req.params;
+  const accessToken = req.query.access_token;
   const username = (await getUserAsync(accessToken)).login;
 
   // Fetch all push events
@@ -521,6 +516,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
   const eventsUrl = `https://api.github.com/repos/${username}/${repo}/events?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
 
   const repoEvents = await fetchAsync(eventsUrl);
+  console.log(repoEvents);
   const pushEvents = repoEvents.filter(({ type }) => type === "PushEvent");
   console.log(pushEvents);
 
