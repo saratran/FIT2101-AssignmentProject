@@ -32,18 +32,16 @@ app.get('/callback', (req, res) => {
       // 'Content-Type': 'application/x-www-form-urlencoded',
     },
   })
-    .then( queryRes => {
+    .then(queryRes => {
       queryRes.json().then(async json => {
         let username = await getUserAsync(json.access_token);
         let email = await getUserEmailAsync(json.access_token);
-        addUser(email, username.login);
+        await addUser(email, username.login);
         res.redirect(`/login.html?access_token=${json.access_token}`);
       })
     })
 })
 
-
-// sendEmail(['utra0001@student.monash.edu','saraut1479@gmail.com'],'Sara Tran').catch(console.error)
 
 app.get('/api', function (req, res) { // demo API homepage to verify that backend works
   const response = { cool: { have: "fun" } };
@@ -76,78 +74,91 @@ app.post('/api/github', function (req, res) {
   res.status(200)
 });
 
-function addUser(email, githubUsername) {
+async function addUser(email, githubUsername) {
+  const userId = getUserId(email, githubUsername)
+  if(userId == null){
+    let rows = await executeQuery('INSERT INTO public.users (email_address, github_username, first_login_date) VALUES ($1, $2, NOW()) RETURNING id', [email, githubUsername])
+    console.log('User created')
+    return rows[0].id
+  } else {
+    console.log('User already exist')
+  }
+  // pool.query('SELECT * FROM public.users WHERE email_address=$1 AND github_username=$2', [email, githubUsername], (err, queryRes) => {
 
-  pool.query('SELECT * FROM public.users WHERE email_address=$1 AND github_username=$2', [email, githubUsername], (err, queryRes) => {
+  //   if (err) {
+  //     console.log(err);
+  //     return
+  //   } else {
+  //     console.log(queryRes.rows);
+  //     // If user does not exist, create an account for them
+  //     if (queryRes.rows.length) { // user exists already, get their ID?
+  //       const { id } = queryRes.rows[0];
+  //       return { id }
+  //     } else { // user does not exist
+  //       pool.query('INSERT INTO public.users (email_address, github_username, first_login_date) VALUES ($1, $2, NOW()) RETURNING id', [email, githubUsername], (err, queryRes2) => {
 
-    if (err) {
-      console.log(err);
-      return
-    } else {
-      console.log(queryRes.rows);
-
-      // If user does not exist, create an account for them
-      if (queryRes.rows.length) { // user exists already, get their ID?
-        const { id } = queryRes.rows[0];
-        return { id }
-      } else { // user does not exist
-        pool.query('INSERT INTO public.users (email_address, github_username, first_login_date) VALUES ($1, $2, NOW()) RETURNING id', [email, githubUsername], (err, queryRes2) => {
-
-          if (err) {
-            console.log(err);
-            return
-          } else {
-            console.log("User created");
-            const { id } = queryRes2.rows[0];
-            return {id}
-          }
-        })
-      }
-    }
-  })
+  //         if (err) {
+  //           console.log(err);
+  //           return
+  //         } else {
+  //           console.log("User created");
+  //           const { id } = queryRes2.rows[0];
+  //           return { id }
+  //         }
+  //       })
+  //     }
+  //   }
+  // })
 }
 
-function addRepo(repo, email, githubUsername){
+async function executeQuery(queryString, listArgs) {
+  try {
+    let res = await pool.query(queryString, listArgs)
+    let rows = <any[]>res.rows
+    return rows
+  } catch (err) {
+    throw new Error(err)
+  }
+}
+
+async function getUserId(email, githubUsername) {
+  let rows = await executeQuery('SELECT * FROM public.users WHERE email_address=$1 AND github_username=$2', [email, githubUsername])
+  return rows.length ? rows[0].id : null
+}
+
+async function getRepoId(userId, repoName) {
+  let rows = await executeQuery('SELECT * FROM public.repos WHERE user_id=$1 AND name=$2', [userId, repoName])
+  return rows.length ? rows[0].id : null
+}
+
+async function addRepo(repo, email, githubUsername) {
   /**
    * Need user(id) to insert as FK
    * get user(id) from email and githubUsername
    */
-  pool.query('SELECT id FROM public.users WHERE email_address=$1 AND github_username=$2', [email, githubUsername], (err, queryRes) => {
-    if (err) {
-      console.log(err);
-      return
-    } else {
-      if (queryRes.rows.length) { // user exists already, get their ID?
-        const { id } = queryRes.rows[0];
-        pool.query('SELECT * FROM public.repos WHERE user_id=$1 AND name=$2', [id, repo.name], (err, queryRes) => {
-          if (err) {
-            console.log(err);
-            return
-          } else {
-            if (!queryRes.rows.length) { 
-              pool.query('INSERT INTO public.repos (name, user_id, url, description) VALUES ($1, $2, $3, $4) RETURNING id', [repo.name, id, repo.url, repo.description], (err, queryRes2) => {
-                if (err) {
-                  console.log(err);
-                  return
-                } else {
-                  console.log("Repo saved");
-                  const { id } = queryRes2.rows[0];
-                  return {id}
-                }
-              })
-            }
-          }
-        })
-      }      
+
+  let userId = await getUserId(email, githubUsername)
+  if (userId != null) {
+    let repoId = await getRepoId(userId, repo.name);
+    // console.log(repoId)
+    if (repoId == null) {
+      let rows = await executeQuery('INSERT INTO public.repos (name, user_id, url, description) VALUES ($1, $2, $3, $4) RETURNING id', [repo.name, userId, repo.url, repo.description])
+      console.log("Repo saved");
+      const { id } = rows[0];
+      return id
     }
-  })
+    else {
+      console.log("Repo already exist")
+    }
+  }
 }
+
 let repo = {
-  name: 'repo2',
-  url:'http://something.com',
-  description:'some description'
+  name: 'repo3',
+  url: 'http://something.com',
+  description: 'some description'
 }
-addRepo(repo, 'pkbrett40@gmail.com','patrickbrett5')
+addRepo(repo, 'pkbrett40@gmail.com', 'patrickbrett5')
 
 app.post('/api/authenticate', function (req, res) {
   /**
@@ -255,7 +266,7 @@ app.get('/api/repositories', async function (req, res) {
 
   fetch(reposUrl).then(fetchRes => {
     fetchRes.json().then(json => {
-     // console.log(json);
+      // console.log(json);
 
       // format to only send repository names
       const repos = json.map(repo => ({
@@ -291,7 +302,7 @@ app.delete('/api/webhooks', async function (req, res) {
       }
 
       const hookId = jsonRes.find(webhook => webhook.config.url === hookUrl).id;
-     //console.log("hookId: ", hookId);
+      //console.log("hookId: ", hookId);
 
       // Remove the webhook from the repository on Github
 
@@ -344,7 +355,7 @@ app.post('/api/webhooks', async function (req, res) {
       }
     })
   }).then(fetchRes => {
-   // console.log(fetchRes);
+    // console.log(fetchRes);
     fetchRes.json().then(jsonRes => {
       //console.log(jsonRes);
 
@@ -412,7 +423,7 @@ app.get('/api/owner-contributed-files', async function (req, res) {
     response.push(obj)
   }
 
- // console.log(JSON.stringify(response, null, 4));
+  // console.log(JSON.stringify(response, null, 4));
   res.json(response)
 });
 
@@ -479,9 +490,9 @@ app.get('/api/user-contributed-files', async function (req, res) {
       }
     }
     response.push(obj);
-   // console.log(obj)
+    // console.log(obj)
   }
-   // console.log(JSON.stringify(response, null, 4));
+  // console.log(JSON.stringify(response, null, 4));
   res.json(response)
 }
 );
@@ -596,7 +607,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
           contributionByUser[authorLogin].lineChangeCount += change.lineChangeCount;
           contributionByUser[authorLogin].commitCount++;
         } else {
-            contributionByUser[authorLogin] = {
+          contributionByUser[authorLogin] = {
             lineChangeCount: change.lineChangeCount,
             commitCount: 1
           }
@@ -675,7 +686,7 @@ app.get(`/api/files-mock/:repo`, (req, res) => {
           lineChangeCount: randInt(30, 70)
         }
       }]
-  }));
+    }));
 
   res.send(files)
 });
