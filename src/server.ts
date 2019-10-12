@@ -149,16 +149,19 @@ async function addRepo(repo, email, githubUsername) {
     }
     else {
       console.log("Repo already exist")
+      // TODO: may need to update info such as description
     }
+  } else {
+    console.log("user not found")
   }
 }
 
-let repo = {
-  name: 'repo3',
-  url: 'http://something.com',
-  description: 'some description'
-}
-addRepo(repo, 'pkbrett40@gmail.com', 'patrickbrett5')
+// let repo = {
+//   name: 'repo3',
+//   url: 'http://something.com',
+//   description: 'some description'
+// }
+// addRepo(repo, 'pkbrett40@gmail.com', 'patrickbrett5')
 
 app.post('/api/authenticate', function (req, res) {
   /**
@@ -259,27 +262,35 @@ app.get('/api/repositories', async function (req, res) {
 
   const accessToken = req.query.access_token;
   let userData = await getUserAsync(accessToken); // data of authorized user
-  //console.log(userData);
+  // console.log(userData);
 
   const reposUrl = userData.repos_url;
   //console.log(reposUrl);
 
-  fetch(reposUrl).then(fetchRes => {
-    fetchRes.json().then(json => {
+  const repos = await fetch(reposUrl).then(async fetchRes => {
+    return await fetchRes.json().then(json => {
       // console.log(json);
-
       // format to only send repository names
       const repos = json.map(repo => ({
         name: repo.name,
         url: repo.html_url,
         description: repo.description
       }));
-
-
-
-      res.send(repos)
+      return repos;
     })
   })
+
+  // todo: may excess api call
+  let username = await getUserAsync(accessToken);
+  let email = await getUserEmailAsync(accessToken);
+  // console.log(username)
+  // console.log(email)
+  repos.forEach(async repo => {
+    // console.log(repo)
+    await addRepo(repo, email, username.login)
+  })
+  res.send(repos)
+
 });
 
 app.delete('/api/webhooks', async function (req, res) {
