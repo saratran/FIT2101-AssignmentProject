@@ -286,7 +286,7 @@ $(document).ready(function() {
                     repoFileGrid.className = "grid slide-in-bck";
                 })
             })
-        })
+        }).then(()=>{
 
         fetch(apiUrl + `/issues/${reponame}?access_token=${accessToken}`).then(fetchRes => {
             fetchRes.json().then(json => {
@@ -338,12 +338,13 @@ $(document).ready(function() {
                         $(this).nextUntil('tr.issueTitle').toggle();
                     }
                 }
+                // refresh repo grid layout
+                repoFileMsnry.layout();
+                document.getElementById("loadScreen").remove()
             })
-
-            document.getElementById("loadScreen").remove()
         })
-        // refresh repo grid layout
-        repoFileMsnry.layout();
+        })
+
     }
 
     getContributorInfo = (repoName, fileName, gridItemClass) => {
