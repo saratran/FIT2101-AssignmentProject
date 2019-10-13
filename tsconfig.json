@@ -6,6 +6,7 @@
   "files": [
     "src/server.ts",
     "src/definitions.d.ts",
-    "src/email-service.ts"
+    "src/email-service.ts",
+    "src/database.ts"
   ]
 }
