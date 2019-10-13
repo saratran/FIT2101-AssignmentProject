@@ -87,8 +87,8 @@ $(document).ready(function() {
         });
 
         // add grid to page
-        let gridArea = document.getElementsByClassName("repo-information")[0];
-        gridArea.style.width = "80%";
+        const gridArea = $('.repo-information').first()
+        gridArea.addClass("expanded-repo-information")
         gridArea.prepend(detailGrid);
 
         // create detail grid elements
@@ -154,8 +154,8 @@ $(document).ready(function() {
         let masterSidebar = document.getElementsByClassName("master-file")[0];
         master.removeChild(masterSidebar);
 
-        let gridArea = document.getElementsByClassName("repo-information")[0];
-        gridArea.style.width = "50%";
+        const gridArea = $('.repo-information').first()
+        gridArea.removeClass("expanded-repo-information")
         // set up repo file grid to return
         let repoFileGrid = document.getElementById("repoFiles");
         let repoFileMsnry = new Masonry(repoFileGrid, {
