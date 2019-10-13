@@ -76,7 +76,7 @@ app.post('/api/github', function (req, res) {
 
 async function addUser(email, githubUsername) {
   const userId = getUserId(email, githubUsername)
-  if(userId == null){
+  if (userId == null) {
     let rows = await executeQuery('INSERT INTO public.users (email_address, github_username, first_login_date) VALUES ($1, $2, NOW()) RETURNING id', [email, githubUsername])
     console.log('User created')
     return rows[0].id
@@ -131,6 +131,11 @@ async function getRepoId(userId, repoName) {
   return rows.length ? rows[0].id : null
 }
 
+async function getFileId(userId, repoId, fileName){
+  let rows = await executeQuery('SELECT * FROM public.files WHERE user_id=$1 AND repo_id=$2 AND name=$3', [userId, repoId, fileName])
+  return rows.length ? rows[0].id : null
+}
+
 async function addRepo(repo, email, githubUsername) {
   /**
    * Need user(id) to insert as FK
@@ -143,7 +148,7 @@ async function addRepo(repo, email, githubUsername) {
     // console.log(repoId)
     if (repoId == null) {
       let rows = await executeQuery('INSERT INTO public.repos (name, user_id, url, description) VALUES ($1, $2, $3, $4) RETURNING id', [repo.name, userId, repo.url, repo.description])
-      console.log("Repo saved");
+      console.log("New repo saved");
       const { id } = rows[0];
       return id
     }
@@ -152,7 +157,26 @@ async function addRepo(repo, email, githubUsername) {
       // TODO: may need to update info such as description
     }
   } else {
-    console.log("user not found")
+    console.log("Cannot find the user in the database")
+  }
+}
+
+async function addFile(fileInfo, repoName, email, githubUsername) {
+  const userId = await getUserId(email, githubUsername)
+  const repoId = await getRepoId(userId, repoName);
+  const fileId = await getFileId(userId, repoId, fileInfo.filename)
+  if(userId != null && repoId != null){
+    if(fileId == null){
+      // TODO: may need to save more data about the file like number of line changes
+      let rows = await executeQuery('INSERT INTO public.files (name, user_id, repo_id) VALUES ($1, $2, $3) RETURNING id', [fileInfo.filename, userId, repoId])
+      console.log("New file saved");
+      const { id } = rows[0];
+      return id
+    } else {
+      console.log("File already exist")
+    }
+  } else {
+    console.log("Cannot find the user or repo in the database")
   }
 }
 
@@ -387,53 +411,53 @@ app.get('/api/owner-contributed-files/:repo', async function (req, res) {
    * - Check with larger repos
    */
 
-    const {repo} = req.params;
-    const accessToken = req.query.access_token;
-    const user = await getUserAsync(accessToken)
-    const username = user.login
+  const { repo } = req.params;
+  const accessToken = req.query.access_token;
+  const user = await getUserAsync(accessToken)
+  const username = user.login
 
-    // Fetch all push events
-    const repoUrl = `https://api.github.com/repos/${username}/${repo}`
-    const eventsUrl = repoUrl + `/events?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
-    const repoEvents = await fetchAsync(eventsUrl);
-    let response = [];
+  // Fetch all push events
+  const repoUrl = `https://api.github.com/repos/${username}/${repo}`
+  const eventsUrl = repoUrl + `/events?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
+  const repoEvents = await fetchAsync(eventsUrl);
+  let response = [];
 
 
-    // Get all events related to the repo
-    // It pains me to write this horrible nested loops :'(
-    // go through each event, see which one is PushEvent
-    for (let event of repoEvents) {
-     //   console.log(event)
-      if (event.type === "PushEvent") {
-        let commits = event.payload.commits;
-        //console.log(commits)
+  // Get all events related to the repo
+  // It pains me to write this horrible nested loops :'(
+  // go through each event, see which one is PushEvent
+  for (let event of repoEvents) {
+    //   console.log(event)
+    if (event.type === "PushEvent") {
+      let commits = event.payload.commits;
+      //console.log(commits)
 
-        // Get more data for each commit, specifically about the files that were committed
-        for (let commit of commits) {
-            console.log(commit.url)
-          let commit_files = (await fetchAsync(commit.url + `?client_id=${clientID}&client_secret=${clientSecret}`)).files;
+      // Get more data for each commit, specifically about the files that were committed
+      for (let commit of commits) {
+        console.log(commit.url)
+        let commit_files = (await fetchAsync(commit.url + `?client_id=${clientID}&client_secret=${clientSecret}`)).files;
 
-          for (let file of commit_files) {
-            // If file has already been added before, don't check again
-              //console.log(file.filename)
+        for (let file of commit_files) {
+          // If file has already been added before, don't check again
+          //console.log(file.filename)
 
-            if (!response.some(f => f.filename === file.filename)) {
-              let file_commits = await (fetchAsync(repoUrl + `/commits?path=${file.filename}&client_id=${clientID}&client_secret=${clientSecret}`));
-              let other_contributors = [];
-              // Go through each commit on file
-              for (let file_commit of file_commits) {
-                  if (file_commit.author.login !== username) {
-                      other_contributors.push(file_commit.commit.author.name)
-                  }
+          if (!response.some(f => f.filename === file.filename)) {
+            let file_commits = await (fetchAsync(repoUrl + `/commits?path=${file.filename}&client_id=${clientID}&client_secret=${clientSecret}`));
+            let other_contributors = [];
+            // Go through each commit on file
+            for (let file_commit of file_commits) {
+              if (file_commit.author.login !== username) {
+                other_contributors.push(file_commit.commit.author.name)
               }
-              response.push({filename: file.filename, otherContributors: other_contributors});
             }
+            response.push({ filename: file.filename, otherContributors: other_contributors });
           }
         }
       }
     }
+  }
 
-    res.json(response)
+  res.json(response)
 });
 
 app.get('/api/user-contributed-files', async function (req, res) {
@@ -522,17 +546,18 @@ app.get(`/api/files/:repo`, async (req, res) => {
    * -- from these commits, get the file changes for each
    * -- summarise file changes for each file and send back to the user in the form of an array of FileInfo objects (defined in definitions.d.ts)
    */
-  const {repo} = req.params;
+  // TODO: I (Sara) notice that sometimes the author maybe null (ie for commits that are made by not GitHub user through a git client) and can throw an exception
+  const { repo } = req.params;
   const accessToken = req.query.access_token;
   const user = await getUserAsync(accessToken);
   const username = user.login;
-  const userEmail = user.email;
+  const userEmail = await getUserEmailAsync(accessToken);
   const userRealName = user.name;
 
   // Fetch all push events
 
   const eventsUrl = `https://api.github.com/repos/${username}/${repo}/events?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
- 
+
   const repoEvents = await fetchAsync(eventsUrl);
   const pushEvents = repoEvents.filter(({ type }) => type === "PushEvent");
 
@@ -558,15 +583,15 @@ app.get(`/api/files/:repo`, async (req, res) => {
   });
 
   // @ts-ignore
-  Promise.all(commitInfoProms).then(() => {
-      /*
-     console.log("***********************")
-     console.log(commits)
-     console.log("***********************")
-     */
+  Promise.all(commitInfoProms).then(async () => {
+    /*
+   console.log("***********************")
+   console.log(commits)
+   console.log("***********************")
+   */
 
     // Identify unique files that were changed
-    const contributorData =  {};
+    const contributorData = {};
     const files = {};
     commits.forEach(commit => {
       commit.files.forEach(file => {
@@ -577,8 +602,9 @@ app.get(`/api/files/:repo`, async (req, res) => {
           lineChangeCount: file.changes,
           author: commit.author
         };
-        if (!Object.keys(contributorData).includes(commit.author.login)){
-          contributorData[commit.author.login] = {email: commit.author.email, name: commit.author.name}
+        if (!Object.keys(contributorData).includes(commit.author.login)) {
+          // todo: consider getting using getUserEmailAsync() because this get the github email
+          contributorData[commit.author.login] = { email: commit.author.email, name: commit.author.name }
         }
 
         if (Object.keys(files).includes(name)) {
@@ -601,7 +627,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
 
     const filesArrangedByUser: FileInfo[] = Object.keys(files).map(filename => {
       const file = files[filename]
-      const contributionByUser: {[username: string]: Contribution } = {};
+      const contributionByUser: { [username: string]: Contribution } = {};
 
 
       file.changes.forEach(change => {
@@ -612,13 +638,14 @@ app.get(`/api/files/:repo`, async (req, res) => {
           contributionByUser[authorLogin].commitCount++;
         } else {
 
-            contributionByUser[authorLogin] = {
-              lineChangeCount: change.lineChangeCount,
-              commitCount: 1,
-            }
+          contributionByUser[authorLogin] = {
+            lineChangeCount: change.lineChangeCount,
+            commitCount: 1,
+          }
         }
       });
 
+      // Note: when the owner accepts a pull request, it counts that they have contributed to the files
       const yourContributions = contributionByUser[ownUserInfo.username];
       const otherContributors = [];
       Object.keys(contributionByUser).forEach(username => {
@@ -633,15 +660,15 @@ app.get(`/api/files/:repo`, async (req, res) => {
         }
       });
 
-     /* const contributor1: Contributor = {
-        username: "",
-        email: "",
-        name: "",
-        contribution: {
-          commitCount: 0,
-          lineChangeCount: 0
-        }
-      };*/
+      /* const contributor1: Contributor = {
+         username: "",
+         email: "",
+         name: "",
+         contribution: {
+           commitCount: 0,
+           lineChangeCount: 0
+         }
+       };*/
 
       return {
         filename,
@@ -649,9 +676,19 @@ app.get(`/api/files/:repo`, async (req, res) => {
         otherContributors
       }
     });
+
+    filesArrangedByUser.forEach(async file =>{
+      if(file.yourContributions != null){
+        // Note: only add file user has contributed to?
+        await addFile(file, repo, userEmail, username)
+      }
+    })
+
     res.send(filesArrangedByUser);
   })
 });
+
+
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -688,7 +725,7 @@ app.get(`/api/files-mock/:repo`, (req, res) => {
           lineChangeCount: randInt(30, 70)
         }
       }]
-  }));
+    }));
   res.send(files)
 });
 
