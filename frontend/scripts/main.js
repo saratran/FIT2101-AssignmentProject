@@ -61,6 +61,9 @@ $(document).ready(function() {
         newSidebar.appendChild(newSidebarHeader);
         gridItem.removeAttribute("onclick");
 
+        // remove Issues menu
+        $("#issueInformation").hide()
+
         // remove file from grid
         gridItem.remove();
 
@@ -85,6 +88,7 @@ $(document).ready(function() {
 
         // add grid to page
         let gridArea = document.getElementsByClassName("repo-information")[0];
+        gridArea.style.width = "80%";
         gridArea.prepend(detailGrid);
 
         // create detail grid elements
@@ -142,12 +146,16 @@ $(document).ready(function() {
     }
 
     returnToRepos = (file) => {
+
+        $("#issueInformation").show()
         // remove master sidebar
         file.classList.remove("master-file", "detailToMaster-target");
         let master = document.getElementsByClassName("master")[0];
         let masterSidebar = document.getElementsByClassName("master-file")[0];
         master.removeChild(masterSidebar);
 
+        let gridArea = document.getElementsByClassName("repo-information")[0];
+        gridArea.style.width = "50%";
         // set up repo file grid to return
         let repoFileGrid = document.getElementById("repoFiles");
         let repoFileMsnry = new Masonry(repoFileGrid, {
@@ -235,14 +243,12 @@ $(document).ready(function() {
     getFiles = (reponame) => {
         if (reponame === currentRepo)
             return
-        if (document.getElementById("start")!=null) document.getElementById("start").remove()
+        if ($("#start")) { $("#start").remove(); }
         const load = document.createElement("div")
         load.setAttribute("id", "loadScreen")
         load.innerHTML = `<p>Loading...</br>This may take a while.</p>`
 
-        if (document.body != null){
-            document.body.appendChild(load);
-        }
+        $("body")[0].append(load)
 
         currentRepo = reponame
         const accessToken = window.localStorage.getItem("accessToken")
@@ -270,7 +276,7 @@ $(document).ready(function() {
                     newGridItem.id = reponame;
                     newGridItem.setAttribute("onclick", "expandFile(this)");
                     newGridItem.innerHTML = `<h1><img alt="file icon" src="` + fileIcon + `" style="height: 20px; width: 20px;">&nbsp; ${file.filename}</h1><p>Other Contributors:</p>`;
-                    if (Object.keys(file.otherContributors).length === 0){
+                    if (!Object.keys(file.otherContributors).length){
                         newGridItem.innerHTML = newGridItem.innerHTML + `<p>None</p>`;
                     }
                     else {
@@ -303,24 +309,24 @@ $(document).ready(function() {
                         <th><b>Your Issues</b></th>
                     </tr>`
 
-                if (Object.keys(json).length === 0){
+                if (!Object.keys(json).length){
                     let newIssue = document.createElement("tr");
                     newIssue.innerHTML = '<td style="background-color:white">No relevant issues to display.</td>';
                     repoIssueTable.appendChild(newIssue)
                 }
                 else {
-                    for (let i = 0; i < json.length; i++){
+                    json.forEach(item => {
                         let newIssue = document.createElement("tr")
                         newIssue.setAttribute("class", "issueTitle issueHeader");
-                        newIssue.innerHTML = `<td><b>${json[i].title}</b></td>`
+                        newIssue.innerHTML = `<td><b>${item.title}</b></td>`
                         repoIssueTable.appendChild(newIssue)
                         let issueBody = document.createElement("tr")
-                        issueBody.innerHTML = `<td>${json[i].body}</td>`
+                        issueBody.innerHTML = `<td>${item.body}</td>`
                         repoIssueTable.appendChild(issueBody)
                         let issueCreator = document.createElement("tr")
-                        issueCreator.innerHTML = `<td><i>Issue opened by ${json[i].createdBy}</i></td>`
+                        issueCreator.innerHTML = `<td><i>Issue opened by ${item.createdBy}</i></td>`
                         repoIssueTable.appendChild(issueCreator)
-                    }
+                    })
                 }
 
 

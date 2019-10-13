@@ -208,7 +208,7 @@ app.get('/api/repositories', async function (req, res) {
   let userData = await getUserAsync(accessToken); // data of authorized user
   //console.log(userData);
 
-  const reposUrl = userData.repos_url+`?access_token=${accessToken}`;
+  const reposUrl = `${userData.repos_url}?access_token=${accessToken}`
   //console.log(reposUrl);
 
   fetch(reposUrl).then(fetchRes => {
@@ -438,17 +438,14 @@ app.get('/api/user-contributed-files', async function (req, res) {
 });
 
 app.get(`/api/issues/:repo`, async (req, res) => {
-    const {repo} = req.params;
-    const accessToken = req.query.access_token;
-    const user = await getUserAsync(accessToken);
-    const username = user.login;
+    const {repo} = req.params
+    const accessToken = req.query.access_token
+    const user = await getUserAsync(accessToken)
+    const username = user.login
 
-    const issuesUrl = `https://api.github.com/repos/${username}/${repo}/issues?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}&assignee=${username}&state=open`;
-    const issues = await fetchAsync(issuesUrl);
-    let issueData = []
-    issues.forEach(issue => {
-        issueData.push({title: issue.title, body: issue.body, url: issue.url, createdBy: issue.user.login, lastUpdated: issue.updated_at})
-    })
+    const issuesUrl = `https://api.github.com/repos/${username}/${repo}/issues?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}&assignee=${username}&state=open`
+    const issues = await fetchAsync(issuesUrl)
+    const issueData = issues.map(({ title, body, url, user, updated_at }) => ({ title, body, url, createdBy: user.login, lastUpdated: updated_at }))
     res.send(issueData)
 })
 
