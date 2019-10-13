@@ -498,7 +498,7 @@ button:hover {
 button:focus {
     outline: none;
 }
-button:active:not(#saveEmailPriorities) {
+button:active {
     position:relative;
     top:1px;
 }
@@ -605,77 +605,5 @@ rect {
     stroke-width: 2;
 }
 
-/* The Modal (background) */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 80; /* Sit on top */
-    left: 0;
-    top: 0;
-    padding-top: 8%;
-    font-size: 20px;
-    line-height: 40px;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
 
-#saveEmailPriorities {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
-}
-
-
-#saveEmailPriorities:active {
-   bottom: 14px;
-}
-
-.modal-content p{
-    font-size: 14px;
-    color: #787878;
-    line-height: 20px;
-}
-
-.show-modal {
-    display: block !important;
-}
-
-/* Modal Content/Box */
-.modal-content {
-    position: relative;
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px;
-    border-radius: 15px;
-    border: 1px solid #888;
-    width: 350px;
-    height: 400px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.4),0 6px 20px 0 rgba(0,0,0,0.4);
-    animation-name: animatetop;
-    animation-duration: 0.4s
-}
-
-/* Add Animation */
-@keyframes animatetop {
-    from {top: -300px; opacity: 0}
-    to {top: 0; opacity: 1}
-}
-
-/* The Close Button */
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
 
