@@ -13,6 +13,8 @@ function goToUserPage() {}
 function getBarGraph() {}
 function getPieChart() {}
 function getUser() {}
+function hideModal() {}
+function showModal() {}
 
 $(document).ready(function() {
     // All code goes in this function to ensure JQuery and the page are ready before JS code is run
@@ -234,8 +236,8 @@ $(document).ready(function() {
                 userData = json
                 let header = document.getElementsByClassName("sidebar-header")[0]
                 header.innerHTML = `<b>${json.login}</b>`
-                header.setAttribute('href',json.html_url);
-                header.setAttribute('target',"_blank");
+                header.setAttribute('href', json.html_url);
+                header.setAttribute('target', "_blank");
             })
         })
     }
@@ -243,7 +245,9 @@ $(document).ready(function() {
     getFiles = (reponame) => {
         if (reponame === currentRepo)
             return
-        if ($("#start")) { $("#start").remove(); }
+        if ($("#start")) {
+            $("#start").remove();
+        }
         const load = document.createElement("div")
         load.setAttribute("id", "loadScreen")
         load.innerHTML = `<p>Loading...</br>This may take a while.</p>`
@@ -276,10 +280,9 @@ $(document).ready(function() {
                     newGridItem.id = reponame;
                     newGridItem.setAttribute("onclick", "expandFile(this)");
                     newGridItem.innerHTML = `<h1><img alt="file icon" src="` + fileIcon + `" style="height: 20px; width: 20px;">&nbsp; ${file.filename}</h1><p>Other Contributors:</p>`;
-                    if (!Object.keys(file.otherContributors).length){
+                    if (!Object.keys(file.otherContributors).length) {
                         newGridItem.innerHTML = newGridItem.innerHTML + `<p>None</p>`;
-                    }
-                    else {
+                    } else {
                         file.otherContributors.forEach(contributor => {
                             newGridItem.innerHTML = newGridItem.innerHTML + `<p>${contributor.name}</p>`;
                         })
@@ -292,63 +295,62 @@ $(document).ready(function() {
                     repoFileGrid.className = "grid slide-in-bck";
                 })
             })
-        }).then(()=>{
+        }).then(() => {
 
-        fetch(apiUrl + `/issues/${reponame}?access_token=${accessToken}`).then(fetchRes => {
-            fetchRes.json().then(json => {
+            fetch(apiUrl + `/issues/${reponame}?access_token=${accessToken}`).then(fetchRes => {
+                fetchRes.json().then(json => {
 
-                console.log(json)
-                let issueInfo = document.createElement("div");
-                issueInfo.setAttribute("id", "issueInformation")
-                repoContent.appendChild(issueInfo)
+                    console.log(json)
+                    let issueInfo = document.createElement("div");
+                    issueInfo.setAttribute("id", "issueInformation")
+                    repoContent.appendChild(issueInfo)
 
-                let repoIssueTable = document.createElement("table")
-                repoIssueTable.setAttribute("id", "issueTable")
-                repoIssueTable.innerHTML = `
+                    let repoIssueTable = document.createElement("table")
+                    repoIssueTable.setAttribute("id", "issueTable")
+                    repoIssueTable.innerHTML = `
                     <tr>
                         <th><b>Your Issues</b></th>
                     </tr>`
 
-                if (!Object.keys(json).length){
-                    let newIssue = document.createElement("tr");
-                    newIssue.innerHTML = '<td style="background-color:white">No relevant issues to display.</td>';
-                    repoIssueTable.appendChild(newIssue)
-                }
-                else {
-                    json.forEach(item => {
-                        let newIssue = document.createElement("tr")
-                        newIssue.setAttribute("class", "issueTitle issueHeader");
-                        newIssue.innerHTML = `<td><b>${item.title}</b></td>`
+                    if (!Object.keys(json).length) {
+                        let newIssue = document.createElement("tr");
+                        newIssue.innerHTML = '<td style="background-color:white">No relevant issues to display.</td>';
                         repoIssueTable.appendChild(newIssue)
-                        let issueBody = document.createElement("tr")
-                        issueBody.innerHTML = `<td>${item.body}</td>`
-                        repoIssueTable.appendChild(issueBody)
-                        let issueCreator = document.createElement("tr")
-                        issueCreator.innerHTML = `<td><i>Issue opened by ${item.createdBy}</i></td>`
-                        repoIssueTable.appendChild(issueCreator)
-                    })
-                }
-
-
-                let bottom = document.createElement("tr");
-                bottom.setAttribute("class", "issueTitle");
-                bottom.innerHTML = '<td id = "issueBottom"></td>'
-                repoIssueTable.appendChild(bottom)
-                repoIssueTable.className = "slide-in-bck"
-                issueInfo.appendChild(repoIssueTable)
-
-                const titles = document.getElementsByClassName('issueTitle')
-                for (let title of titles) {
-                    $(title).nextUntil('tr.issueTitle').toggle();
-                    title.onclick = function () {
-                        $(this).nextUntil('tr.issueTitle').toggle();
+                    } else {
+                        json.forEach(item => {
+                            let newIssue = document.createElement("tr")
+                            newIssue.setAttribute("class", "issueTitle issueHeader");
+                            newIssue.innerHTML = `<td><b>${item.title}</b></td>`
+                            repoIssueTable.appendChild(newIssue)
+                            let issueBody = document.createElement("tr")
+                            issueBody.innerHTML = `<td>${item.body}</td>`
+                            repoIssueTable.appendChild(issueBody)
+                            let issueCreator = document.createElement("tr")
+                            issueCreator.innerHTML = `<td><i>Issue opened by ${item.createdBy}</i></td>`
+                            repoIssueTable.appendChild(issueCreator)
+                        })
                     }
-                }
-                // refresh repo grid layout
-                repoFileMsnry.layout();
-                document.getElementById("loadScreen").remove()
+
+
+                    let bottom = document.createElement("tr");
+                    bottom.setAttribute("class", "issueTitle");
+                    bottom.innerHTML = '<td id = "issueBottom"></td>'
+                    repoIssueTable.appendChild(bottom)
+                    repoIssueTable.className = "slide-in-bck"
+                    issueInfo.appendChild(repoIssueTable)
+
+                    const titles = document.getElementsByClassName('issueTitle')
+                    for (let title of titles) {
+                        $(title).nextUntil('tr.issueTitle').toggle();
+                        title.onclick = function () {
+                            $(this).nextUntil('tr.issueTitle').toggle();
+                        }
+                    }
+                    // refresh repo grid layout
+                    repoFileMsnry.layout();
+                    document.getElementById("loadScreen").remove()
+                })
             })
-        })
         })
 
     }
@@ -356,71 +358,77 @@ $(document).ready(function() {
     getContributorInfo = (repoName, fileName, gridItemClass) => {
         let graphData = [];
         //fetch(apiUrl + `/files-mock/${repoName}`).then(fetchRes => {
-            //fetchRes.json().then(json => {
-                repoData.forEach(file => {
-                    // check for correct file
-                     if (file.filename === fileName) {
-                        // create table elements
-                        let contributorInfo = document.createElement("table");
-                        contributorInfo.setAttribute("id", "contributorTable")
-                        let tableHeader = document.createElement("tr");
-                        let tableHeader1 = document.createElement("th");
-                        let tableHeader2 = document.createElement("th");
-                        let tableHeader3 = document.createElement("th");
-                        tableHeader1.innerHTML = "Name";
-                        tableHeader2.innerHTML = "Username";
-                        tableHeader3.innerHTML = "Contact Information";
+        //fetchRes.json().then(json => {
+        repoData.forEach(file => {
+            // check for correct file
+            if (file.filename === fileName) {
+                // create table elements
+                let contributorInfo = document.createElement("table");
+                contributorInfo.setAttribute("id", "contributorTable")
+                let tableHeader = document.createElement("tr");
+                let tableHeader1 = document.createElement("th");
+                let tableHeader2 = document.createElement("th");
+                let tableHeader3 = document.createElement("th");
+                tableHeader1.innerHTML = "Name";
+                tableHeader2.innerHTML = "Username";
+                tableHeader3.innerHTML = "Contact Information";
 
-                        // set header and cells
-                        tableHeader.className = "header";
-                        tableHeader.appendChild(tableHeader1);
-                        tableHeader.appendChild(tableHeader2);
-                        tableHeader.appendChild(tableHeader3);
+                // set header and cells
+                tableHeader.className = "header";
+                tableHeader.appendChild(tableHeader1);
+                tableHeader.appendChild(tableHeader2);
+                tableHeader.appendChild(tableHeader3);
 
-                        // add header to table
-                        contributorInfo.appendChild(tableHeader);
-                        let dataItem = {name: `${userData.name === null? userData.login: userData.name}`, cont: Number(`${file.yourContributions.lineChangeCount}`)};
-                         graphData.push(dataItem);
+                // add header to table
+                contributorInfo.appendChild(tableHeader);
+                let dataItem = {
+                    name: `${userData.name === null ? userData.login : userData.name}`,
+                    cont: Number(`${file.yourContributions.lineChangeCount}`)
+                };
+                graphData.push(dataItem);
 
-                        // add contributor info
-                        file.otherContributors.forEach(contributor => {
-                            // create new row and cells
-                            let newContributor = document.createElement("tr");
-                            let contributorName = document.createElement("td");
-                            let userName = document.createElement("td");
-                            let contactInfo = document.createElement("td");
+                // add contributor info
+                file.otherContributors.forEach(contributor => {
+                    // create new row and cells
+                    let newContributor = document.createElement("tr");
+                    let contributorName = document.createElement("td");
+                    let userName = document.createElement("td");
+                    let contactInfo = document.createElement("td");
 
-                            // add contributor information to cells
-                            contributorName.innerHTML = `${contributor.name}`;
-                            userName.innerHTML = `${contributor.username}`;
-                            contactInfo.innerHTML = `${contributor.email}`;
+                    // add contributor information to cells
+                    contributorName.innerHTML = `${contributor.name}`;
+                    userName.innerHTML = `${contributor.username}`;
+                    contactInfo.innerHTML = `${contributor.email}`;
 
-                            // get graph data from contributor
-                            let dataItem = {name: `${contributor.name === null? contributor.username: contributor.name}`, cont: Number(`${contributor.contribution.lineChangeCount}`)};
-                            graphData.push(dataItem);
+                    // get graph data from contributor
+                    let dataItem = {
+                        name: `${contributor.name === null ? contributor.username : contributor.name}`,
+                        cont: Number(`${contributor.contribution.lineChangeCount}`)
+                    };
+                    graphData.push(dataItem);
 
-                            // set row attributes
-                            newContributor.id = userName.innerHTML
-                            newContributor.setAttribute("onclick", "goToUserPage(this)")
-                            newContributor.appendChild(contributorName);
-                            newContributor.appendChild(userName);
-                            newContributor.appendChild(contactInfo);
+                    // set row attributes
+                    newContributor.id = userName.innerHTML
+                    newContributor.setAttribute("onclick", "goToUserPage(this)")
+                    newContributor.appendChild(contributorName);
+                    newContributor.appendChild(userName);
+                    newContributor.appendChild(contactInfo);
 
-                            // add row to table
-                            contributorInfo.appendChild(newContributor);
-                        });
+                    // add row to table
+                    contributorInfo.appendChild(newContributor);
+                });
 
-                        // create pie chart and bar graph and add to relevant grid elements
-                        getBarGraph(graphData, "barGraph");
-                        getPieChart(graphData, "pieChart");
+                // create pie chart and bar graph and add to relevant grid elements
+                getBarGraph(graphData, "barGraph");
+                getPieChart(graphData, "pieChart");
 
-                        // add table to relevant grid element
-                        let gridItem = document.getElementsByClassName(gridItemClass)[0];
-                        gridItem.appendChild(contributorInfo);
-                    }
-                })
+                // add table to relevant grid element
+                let gridItem = document.getElementsByClassName(gridItemClass)[0];
+                gridItem.appendChild(contributorInfo);
+            }
+        })
         //    })
-       // })
+        // })
     }
 
     getFileIcon = (fileName) => {
@@ -430,11 +438,9 @@ $(document).ready(function() {
         // check for file type and return relevant image path for icon
         if (["JPG", "PNG", "GIF", "WEBP", "TIFF", "PSD", "RAW", "BMP", "HEIF", "INDD", "JPEG", "SVG", "AI", "EPS", "PDF"].includes(fileType)) {
             imagePath = "https://www.pngrepo.com/png/141793/170/image-file.png";
-        }
-        else if (["HTML", "MD", "CSS", "TXT"].includes(fileType)) {
+        } else if (["HTML", "MD", "CSS", "TXT"].includes(fileType)) {
             imagePath = "https://icon-library.net/images/file-icon-png/file-icon-png-23.jpg";
-        }
-        else {
+        } else {
             imagePath = "https://www.pngrepo.com/png/26279/170/code-file.png";
         }
 
@@ -454,7 +460,9 @@ $(document).ready(function() {
         itemToHighlight.classList.add("highlight-pulsate");
 
         // remove pulse attribute so it can be repeated multiple times after 1 second (duration of pulse animation)
-        setTimeout(function(){ itemToHighlight.classList.remove("highlight-pulsate") }, 1000);
+        setTimeout(function () {
+            itemToHighlight.classList.remove("highlight-pulsate")
+        }, 1000);
     }
 
     goToUserPage = (username) => {
@@ -474,7 +482,7 @@ $(document).ready(function() {
 
         //find the max contribution
         for (i = 0; i < graphData.length; i++) {
-            if (graphData[i].cont > max){
+            if (graphData[i].cont > max) {
                 max = graphData[i].cont
             }
         }
@@ -484,7 +492,7 @@ $(document).ready(function() {
         var chart = svg.append("g").attr("transform", "translate(" + margin + "," + margin + ")")
 
         //set the color scheme for the data
-        var color = d3.scaleOrdinal().range(["#247BA0","#70C1B3","#B2DBBF","#F3FFBD","#FF1654",'#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D','#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A', '#FF99E6', '#CCFF1A', '#FF1A66', '#E6331A', '#33FFCC','#66994D', '#B366CC', '#4D8000', '#B33300', '#CC80CC', '#66664D', '#991AFF', '#E666FF', '#4DB3FF', '#1AB399', '#E666B3', '#33991A', '#CC9999', '#B3B31A', '#00E680', '#4D8066', '#809980', '#E6FF80', '#1AFF33', '#999933', '#FF3380', '#CCCC00', '#66E64D', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF']);
+        var color = d3.scaleOrdinal().range(["#247BA0", "#70C1B3", "#B2DBBF", "#F3FFBD", "#FF1654", '#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D', '#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A', '#FF99E6', '#CCFF1A', '#FF1A66', '#E6331A', '#33FFCC', '#66994D', '#B366CC', '#4D8000', '#B33300', '#CC80CC', '#66664D', '#991AFF', '#E666FF', '#4DB3FF', '#1AB399', '#E666B3', '#33991A', '#CC9999', '#B3B31A', '#00E680', '#4D8066', '#809980', '#E6FF80', '#1AFF33', '#999933', '#FF3380', '#CCCC00', '#66E64D', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF']);
 
         //set the linear domain and split it linearly within the height
         var yScale = d3.scaleLinear().range([height, 0]).domain([0, max]);
@@ -509,7 +517,7 @@ $(document).ready(function() {
             .attr("width", xScale.bandwidth())
             .attr("fill", (s) => color(s.name))
             //add a funtion to highlight the bar when cursor hovers over it
-            .on("mouseenter",function(s, i){
+            .on("mouseenter", function (s, i) {
                 d3
                     .select(this)
                     .transition()
@@ -520,22 +528,23 @@ $(document).ready(function() {
                 var y = yScale(s.cont);
                 chart
                     .append("line")
-                    .attr("x1",0)
+                    .attr("x1", 0)
                     .attr("y1", y)
-                    .attr("x2",width)
+                    .attr("x2", width)
                     .attr("y2", y)
-                    .attr("stroke","#D85F7D")
-                    .style("stroke-dasharray","5,5");
+                    .attr("stroke", "#D85F7D")
+                    .style("stroke-dasharray", "5,5");
                 chart
                     .append("text")
-                    .attr("id","contNum")
+                    .attr("id", "contNum")
                     .attr("x", width + 20)
                     .attr("y", y + 4)
-                    .attr("text-anchor","middle")
+                    .attr("text-anchor", "middle")
                     .text(s.cont + " lines")
-                    .attr("font-size", "10px")})
+                    .attr("font-size", "10px")
+            })
             //add a function to remove any changes when cursor leave the bar
-            .on("mouseleave",function(actual, i){
+            .on("mouseleave", function (actual, i) {
                 d3
                     .select(this)
                     .transition()
@@ -548,13 +557,14 @@ $(document).ready(function() {
                     .remove();
                 chart
                     .selectAll("#contNum")
-                    .remove();});
+                    .remove();
+            });
 
         //add label to y axis
-        svg.append("text").attr("x", -(height / 2) - margin).attr("y", margin / 2.4).attr("transform", "rotate(-90)").attr("text-anchor","middle").text("Number of Lines Contributed").attr("font-size", "11px");
+        svg.append("text").attr("x", -(height / 2) - margin).attr("y", margin / 2.4).attr("transform", "rotate(-90)").attr("text-anchor", "middle").text("Number of Lines Contributed").attr("font-size", "11px");
 
         //add label to the x axis
-        svg.append("text").attr("x", width / 2 + margin).attr("y", height + 2 * margin - 20).attr("text-anchor","middle").text("Names of Contributors").attr("font-size", "11px")
+        svg.append("text").attr("x", width / 2 + margin).attr("y", height + 2 * margin - 20).attr("text-anchor", "middle").text("Names of Contributors").attr("font-size", "11px")
     }
 
     getPieChart = (chartData, gridElementClass) => {
@@ -576,7 +586,7 @@ $(document).ready(function() {
         var number = 0;
 
         //set the color range for the data in the piechart
-        var color = d3.scaleOrdinal().range(["#247BA0","#70C1B3","#B2DBBF","#F3FFBD","#FF1654",'#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D','#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A', '#FF99E6', '#CCFF1A', '#FF1A66', '#E6331A', '#33FFCC','#66994D', '#B366CC', '#4D8000', '#B33300', '#CC80CC', '#66664D', '#991AFF', '#E666FF', '#4DB3FF', '#1AB399', '#E666B3', '#33991A', '#CC9999', '#B3B31A', '#00E680', '#4D8066', '#809980', '#E6FF80', '#1AFF33', '#999933', '#FF3380', '#CCCC00', '#66E64D', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF']);
+        var color = d3.scaleOrdinal().range(["#247BA0", "#70C1B3", "#B2DBBF", "#F3FFBD", "#FF1654", '#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6', '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D', '#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A', '#FF99E6', '#CCFF1A', '#FF1A66', '#E6331A', '#33FFCC', '#66994D', '#B366CC', '#4D8000', '#B33300', '#CC80CC', '#66664D', '#991AFF', '#E666FF', '#4DB3FF', '#1AB399', '#E666B3', '#33991A', '#CC9999', '#B3B31A', '#00E680', '#4D8066', '#809980', '#E6FF80', '#1AFF33', '#999933', '#FF3380', '#CCCC00', '#66E64D', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF']);
 
         //append svg to the body tag in html and then append an object and translate it to middle
         var svg = d3
@@ -586,7 +596,7 @@ $(document).ready(function() {
             .attr("height", height)
             .style("background", "white")
             .append("g")
-            .attr("transform","translate(" + width/2 + "," + height/2 + ")");
+            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
         //find the total number of lines contributed
         for (i = 0; i < chartData.length; i++) {
@@ -596,14 +606,16 @@ $(document).ready(function() {
         //find the percentage of contribution and append as a property
         for (i = 0; i < chartData.length; i++) {
             number = (chartData[i].cont / total) * 100;
-            chartData[i].perc = Math.round( number * 10 ) / 10;
+            chartData[i].perc = Math.round(number * 10) / 10;
         }
 
         //bind the data to a piechart in d3
         var data = d3
             .pie()
             .sort(null)
-            .value(function(d){return d.perc;})(chartData);
+            .value(function (d) {
+                return d.perc;
+            })(chartData);
 
         //set the radii of the piechart and add padding
         var sectors = d3
@@ -618,7 +630,9 @@ $(document).ready(function() {
         sections.enter()
             .append("path")
             .attr("d", sectors)
-            .attr("fill", function(d,i){return color(d.data.name);})
+            .attr("fill", function (d, i) {
+                return color(d.data.name);
+            })
 
         //add a legend to the middle of the donut chart
         var legend = svg
@@ -626,8 +640,8 @@ $(document).ready(function() {
             .data(color.domain())
             .enter()
             .append("g")
-            .attr("class","legend")
-            .attr("transform",function(d,i){
+            .attr("class", "legend")
+            .attr("transform", function (d, i) {
                 var height = legRectSize + legSpacing;
                 var offset = height * color.domain().length / 2;
                 var horz = -4 * legRectSize;
@@ -639,7 +653,7 @@ $(document).ready(function() {
         legend
             .append("rect")
             .attr("width", legRectSize)
-            .attr("height",legRectSize)
+            .attr("height", legRectSize)
             .style("fill", color)
             .style("stroke", color);
 
@@ -647,11 +661,34 @@ $(document).ready(function() {
         legend
             .append("text")
             .attr("x", legRectSize + legSpacing)
-            .attr("y",legRectSize - legSpacing + 4)
-            .text(function(d, i){return color.domain()[i] + " - " + chartData[i].perc + "%";});
+            .attr("y", legRectSize - legSpacing + 4)
+            .text(function (d, i) {
+                return color.domain()[i] + " - " + chartData[i].perc + "%";
+            });
+    }
+
+    hideModal = () => {
+        let modal = $("#emailModal")
+        modal.removeClass("show-modal")
+    }
+
+    showModal = () => {
+        let modal = $("#emailModal")
+        modal.addClass("show-modal")
     }
 
     $("#getReposButton").on("click", getRepos);
+
+    let span = $(".close").first()
+    span.on("click", hideModal)
+
+    let button = $("#emailPriorities")
+    button.on("click", showModal)
+
+    window.onclick = function(event) {
+        if (event.target === document.getElementById("emailModal")) hideModal()
+    }
+
 
     // On page load
     getUser();
