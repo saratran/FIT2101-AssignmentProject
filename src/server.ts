@@ -209,7 +209,7 @@ app.get('/api/repositories', async function (req, res) {
   // console.log(email)
   repos.forEach(async repo => {
     // console.log(repo)
-    await db.addRepo(repo, email, username.login)
+    await db.addRepo(repo, username.login)
   })
   res.send(repos)
 
@@ -578,7 +578,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
     filesArrangedByUser.forEach(async file =>{
       if(file.yourContributions != null){
         // Note: only add file user has contributed to?
-        await db.addFile(file, repo, userEmail, username)
+        await db.addFile(file, repo, username)
       }
     })
 

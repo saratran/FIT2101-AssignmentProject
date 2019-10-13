@@ -3,7 +3,7 @@ import pg = require('pg'); // PostgreSQL (PG) database interface
 export const pool = new pg.Pool(); // Create a DB query pool. The database connection only works if you have valid DB credentials in the .env file
 
 export async function addUser(email, githubUsername) {
-    const userId = getUserId(email, githubUsername)
+    const userId = getUserId(githubUsername)
     if (userId == null) {
       let rows = await executeQuery('INSERT INTO public.users (email_address, github_username, first_login_date) VALUES ($1, $2, NOW()) RETURNING id', [email, githubUsername])
       console.log('User created')
@@ -49,8 +49,8 @@ export async function addUser(email, githubUsername) {
     }
   }
   
-  export async function getUserId(email, githubUsername) {
-    let rows = await executeQuery('SELECT * FROM public.users WHERE email_address=$1 AND github_username=$2', [email, githubUsername])
+  export async function getUserId(githubUsername) {
+    let rows = await executeQuery('SELECT * FROM public.users WHERE github_username=$1', [githubUsername])
     return rows.length ? rows[0].id : null
   }
   
@@ -64,13 +64,13 @@ export async function addUser(email, githubUsername) {
     return rows.length ? rows[0].id : null
   }
   
-  export async function addRepo(repo, email, githubUsername) {
+  export async function addRepo(repo, githubUsername) {
     /**
      * Need user(id) to insert as FK
      * get user(id) from email and githubUsername
      */
   
-    let userId = await getUserId(email, githubUsername)
+    let userId = await getUserId(githubUsername)
     if (userId != null) {
       let repoId = await getRepoId(userId, repo.name);
       // console.log(repoId)
@@ -89,8 +89,8 @@ export async function addUser(email, githubUsername) {
     }
   }
   
- export async function addFile(fileInfo, repoName, email, githubUsername) {
-    const userId = await getUserId(email, githubUsername)
+ export async function addFile(fileInfo, repoName, githubUsername) {
+    const userId = await getUserId(githubUsername)
     const repoId = await getRepoId(userId, repoName);
     const fileId = await getFileId(userId, repoId, fileInfo.filename)
     if(userId != null && repoId != null){
