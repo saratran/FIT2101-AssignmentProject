@@ -224,6 +224,10 @@ $(document).ready(function() {
         fetch(apiUrl + `/user?access_token=${accessToken}`).then(data => {
             data.json().then(json => {
                 userData = json
+                let header = document.getElementsByClassName("sidebar-header")[0]
+                header.innerHTML = `<b>${json.login}</b>`
+                header.setAttribute('href',json.html_url);
+                header.setAttribute('target',"_blank");
             })
         })
     }
@@ -231,6 +235,7 @@ $(document).ready(function() {
     getFiles = (reponame) => {
         if (reponame === currentRepo)
             return
+        if (document.getElementById("start")!=null) document.getElementById("start").remove()
         const load = document.createElement("div")
         load.setAttribute("id", "loadScreen")
         load.innerHTML = `<p>Loading...</br>This may take a while.</p>`
