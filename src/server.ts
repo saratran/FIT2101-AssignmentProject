@@ -36,8 +36,8 @@ app.get('/callback', (req, res) => {
   })
     .then(queryRes => {
       queryRes.json().then(async json => {
-        let username = await getUserAsync(json.access_token);
-        let email = await getUserEmailAsync(json.access_token);
+        const username = await getUserAsync(json.access_token);
+        const email = await getUserEmailAsync(json.access_token);
         await db.addUser(email, username.login);
         res.redirect(`/login.html?access_token=${json.access_token}`);
       })
@@ -203,8 +203,7 @@ app.get('/api/repositories', async function (req, res) {
   })
 
   // todo: may excess api call
-  let username = await getUserAsync(accessToken);
-  let email = await getUserEmailAsync(accessToken);
+  const username = await getUserAsync(accessToken);
   // console.log(username)
   // console.log(email)
   repos.forEach(async repo => {
