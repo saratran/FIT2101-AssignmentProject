@@ -155,13 +155,15 @@ div.repo-information {
     margin-top: 100px;
     height: 100%;
     position: relative;
+
 }
 
 #issueTable {
     width: 100%;
     border-collapse: separate !important;
-
     border-spacing: 0;
+    border-radius: 15px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
 
 }
 
@@ -177,8 +179,16 @@ div.repo-information {
     /*box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);*/
 }
 
+#issueTable tr {
+    background-color: #fff0f0;
+    /*border-radius: 15px;*/
+    text-align: center;
+    color: black;
+    font-size: 14px;
+    /*box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);*/
+}
+
 #issueTable td {
-    background-color: white;
     height: 30px;
     padding: 8px;
     /*border-radius: 15px;*/
@@ -188,9 +198,21 @@ div.repo-information {
     /*box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);*/
 }
 
-#issueTable .final{
+.issueHeader {
+    cursor: pointer;
+    background-color: white !important;
+}
+
+.issueHeader:hover {
+    background-color: #e6e6e6 !important;
+}
+
+#issueBottom {
     border-bottom-left-radius: 15px;
     border-bottom-right-radius: 15px;
+    background-color: #fff0f0;
+    padding: 0 !important;
+    height: 15px !important;
 }
 
 /* search bar behavior */

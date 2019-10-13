@@ -447,7 +447,7 @@ app.get(`/api/issues/:repo`, async (req, res) => {
     const issues = await fetchAsync(issuesUrl);
     let issueData = []
     issues.forEach(issue => {
-        issueData.push({title: issue.title, body: issue.body, url: issue.url, updatedAt: issue.updated_at})
+        issueData.push({title: issue.title, body: issue.body, url: issue.url, createdBy: issue.user.login, lastUpdated: issue.updated_at})
     })
     res.send(issueData)
 })

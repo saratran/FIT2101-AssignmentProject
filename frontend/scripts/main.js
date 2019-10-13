@@ -20,6 +20,7 @@ $(document).ready(function() {
     let userData;
 
     const isDev = true;
+    let loading = false;
     const apiUrl = isDev ? `http://localhost:3000/api` : `https://devalarm.com/api`;
     let currentRepo = null;
 
@@ -225,14 +226,17 @@ $(document).ready(function() {
     }
 
     getFiles = (reponame) => {
-        if (reponame === currentRepo)
+        if (reponame === currentRepo || loading === true)
             return
         currentRepo = reponame
+        loading = true
         const accessToken = window.localStorage.getItem("accessToken")
         let repoFileGrid = document.getElementById("repoFiles");
         while (repoFileGrid.firstChild) {
             repoFileGrid.removeChild(repoFileGrid.firstChild);
         }
+        const repoContent = document.getElementById("repoContent")
+        $("#issueInformation").remove()
         let repoFileMsnry = new Masonry(repoFileGrid, {
             // options
             itemSelector: '.grid-item',
@@ -240,8 +244,6 @@ $(document).ready(function() {
             gutter: 60,
             originLeft: true
         });
-        const repoContent = document.getElementById("repoContent")
-        $("#issueInformation").remove()
 
         fetch(apiUrl + `/files/${reponame}?access_token=${accessToken}`).then(fetchRes => {
             fetchRes.json().then(json => {
@@ -274,13 +276,14 @@ $(document).ready(function() {
 
         fetch(apiUrl + `/issues/${reponame}?access_token=${accessToken}`).then(fetchRes => {
             fetchRes.json().then(json => {
+
                 console.log(json)
                 let issueInfo = document.createElement("div");
                 issueInfo.setAttribute("id", "issueInformation")
                 issueInfo.innerHTML = `
                 <table id = "issueTable" border="0">
                     <tr>
-                        <th><b>Issues</b></th>
+                        <th><b>Your Issues</b></th>
                     </tr>
                 </table>`
                 repoContent.appendChild(issueInfo)
@@ -288,24 +291,41 @@ $(document).ready(function() {
 
                 if (Object.keys(json).length === 0){
                     let newIssue = document.createElement("tr");
-                    newIssue.innerHTML = '<td class="final">No relevant issues to display.</td>';
+                    newIssue.innerHTML = '<td style="background-color:white">No relevant issues to display.</td>';
                     repoIssueTable.appendChild(newIssue)
                 }
                 else {
                     for (let i = 0; i < json.length; i++){
-                        let newIssue = document.createElement("tr");
-                        if (i === json.length-1)
-                            newIssue.innerHTML = `<td class="final">${json[i].title}</td>`;
-                        else
-                            newIssue.innerHTML = `<td>${json[i].title}</td>`;
+                        let newIssue = document.createElement("tr")
+                        newIssue.setAttribute("class", "issueTitle issueHeader");
+                        newIssue.innerHTML = `<td><b>${json[i].title}</b></td>`
                         repoIssueTable.appendChild(newIssue)
+                        let issueBody = document.createElement("tr")
+                        issueBody.innerHTML = `<td>${json[i].body}</td>`
+                        repoIssueTable.appendChild(issueBody)
+                        let issueCreator = document.createElement("tr")
+                        issueCreator.innerHTML = `<td><i>Issue opened by ${json[i].createdBy}</i></td>`
+                        repoIssueTable.appendChild(issueCreator)
+                    }
+                }
+                const titles = document.getElementsByClassName('issueTitle')
+                for (let title of titles) {
+                    $(title).nextUntil('tr.issueTitle').slideToggle(0);
+                    title.onclick = function () {
+                        $(this).nextUntil('tr.issueTitle').slideToggle(0);
                     }
                 }
 
+                let bottom = document.createElement("tr");
+                bottom.setAttribute("class", "issueTitle");
+                bottom.innerHTML = '<td id = "issueBottom"></td>'
+                repoIssueTable.appendChild(bottom)
+                repoIssueTable.className = "slide-in-bck"
             })
         })
         // refresh repo grid layout
         repoFileMsnry.layout();
+        loading = false;
     }
 
     getContributorInfo = (repoName, fileName, gridItemClass) => {
