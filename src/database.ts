@@ -3,7 +3,9 @@ import pg = require('pg'); // PostgreSQL (PG) database interface
 export const pool = new pg.Pool(); // Create a DB query pool. The database connection only works if you have valid DB credentials in the .env file
 
 export async function addUser(email, githubUsername) {
-    const userId = getUserId(githubUsername)
+    const userId = await getUserId(githubUsername)
+    console.log(userId)
+    console.log(githubUsername)
     if (userId == null) {
       let rows = await executeQuery('INSERT INTO public.users (email_address, github_username, first_login_date) VALUES ($1, $2, NOW()) RETURNING id', [email, githubUsername])
       console.log('User created')
@@ -86,6 +88,14 @@ export async function addUser(email, githubUsername) {
       }
     } else {
       console.log("Cannot find the user in the database")
+    }
+  }
+
+  export async function getReposToNotify(githubUsername){
+    let userId = await getUserId(githubUsername)
+    if (userId != null) {
+        let rows = await executeQuery('SELECT * FROM public.repos WHERE user_id=$1 AND need_to_notify=true',[userId])
+        return rows
     }
   }
   
