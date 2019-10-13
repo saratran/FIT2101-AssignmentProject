@@ -35,7 +35,7 @@ body {
     flex-direction: column;
     justify-content: center;
     position: fixed;
-    z-index: 1000;
+    z-index: 2000;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
 }
 
@@ -127,7 +127,7 @@ body {
 
 /* colour of repo when clicked */
 .repo-sidebar a.active {
-    background-color: var(--color-2);
+    background-color: #787878;
     color: white;
 }
 
@@ -213,6 +213,23 @@ div.repo-information {
     background-color: #fff0f0;
     padding: 0 !important;
     height: 15px !important;
+}
+
+#loadScreen {
+    position:fixed;
+    width:100%;
+    height:100%;
+    z-index: 1000;
+    background: rgba(0,0,0, 0.7);
+    text-align: center;
+    display: table;
+    color:white;
+    font-size: 20px;
+}
+
+#loadScreen p {
+    display: table-cell;
+    vertical-align: middle;
 }
 
 /* search bar behavior */

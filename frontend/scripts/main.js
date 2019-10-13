@@ -20,7 +20,6 @@ $(document).ready(function() {
     let userData;
 
     const isDev = true;
-    let loading = false;
     const apiUrl = isDev ? `http://localhost:3000/api` : `https://devalarm.com/api`;
     let currentRepo = null;
 
@@ -208,7 +207,11 @@ $(document).ready(function() {
                     repoElement.innerHTML = `${repo.name} | ${repo.description}`
                     repoList.append(repoElement);*/
 
-                    const repoElement = $.parseHTML(`<a onclick="getFiles('${repo.name}')">${repo.name} | ${repo.description}</a>`)
+                    const repoElement = $.parseHTML(`<a onclick="
+                        getFiles('${repo.name}');
+                        Array.from(document.getElementsByClassName('active')).map(i => i.setAttribute('class',''));
+                        this.setAttribute('class','active');
+                        ">${repo.name} | ${repo.description}</a>`)
                     repoList.append(repoElement)
 
                 })
@@ -226,10 +229,17 @@ $(document).ready(function() {
     }
 
     getFiles = (reponame) => {
-        if (reponame === currentRepo || loading === true)
+        if (reponame === currentRepo)
             return
+        const load = document.createElement("div")
+        load.setAttribute("id", "loadScreen")
+        load.innerHTML = `<p>Loading...</br>This may take a while.</p>`
+
+        if (document.body != null){
+            document.body.appendChild(load);
+        }
+
         currentRepo = reponame
-        loading = true
         const accessToken = window.localStorage.getItem("accessToken")
         let repoFileGrid = document.getElementById("repoFiles");
         while (repoFileGrid.firstChild) {
@@ -267,7 +277,6 @@ $(document).ready(function() {
                     // add grid element to repo grid
                     repoFileGrid.appendChild(newGridItem);
                     repoFileMsnry.appended(newGridItem);
-
                     // make repo grid visible
                     repoFileGrid.className = "grid slide-in-bck";
                 })
@@ -280,14 +289,14 @@ $(document).ready(function() {
                 console.log(json)
                 let issueInfo = document.createElement("div");
                 issueInfo.setAttribute("id", "issueInformation")
-                issueInfo.innerHTML = `
-                <table id = "issueTable" border="0">
+                repoContent.appendChild(issueInfo)
+
+                let repoIssueTable = document.createElement("table")
+                repoIssueTable.setAttribute("id", "issueTable")
+                repoIssueTable.innerHTML = `
                     <tr>
                         <th><b>Your Issues</b></th>
-                    </tr>
-                </table>`
-                repoContent.appendChild(issueInfo)
-                let repoIssueTable = document.getElementById("issueTable");
+                    </tr>`
 
                 if (Object.keys(json).length === 0){
                     let newIssue = document.createElement("tr");
@@ -308,24 +317,28 @@ $(document).ready(function() {
                         repoIssueTable.appendChild(issueCreator)
                     }
                 }
-                const titles = document.getElementsByClassName('issueTitle')
-                for (let title of titles) {
-                    $(title).nextUntil('tr.issueTitle').slideToggle(0);
-                    title.onclick = function () {
-                        $(this).nextUntil('tr.issueTitle').slideToggle(0);
-                    }
-                }
+
 
                 let bottom = document.createElement("tr");
                 bottom.setAttribute("class", "issueTitle");
                 bottom.innerHTML = '<td id = "issueBottom"></td>'
                 repoIssueTable.appendChild(bottom)
                 repoIssueTable.className = "slide-in-bck"
+                issueInfo.appendChild(repoIssueTable)
+
+                const titles = document.getElementsByClassName('issueTitle')
+                for (let title of titles) {
+                    $(title).nextUntil('tr.issueTitle').toggle();
+                    title.onclick = function () {
+                        $(this).nextUntil('tr.issueTitle').toggle();
+                    }
+                }
             })
+
+            document.getElementById("loadScreen").remove()
         })
         // refresh repo grid layout
         repoFileMsnry.layout();
-        loading = false;
     }
 
     getContributorInfo = (repoName, fileName, gridItemClass) => {
