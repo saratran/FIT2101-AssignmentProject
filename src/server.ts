@@ -208,13 +208,11 @@ app.get('/api/repositories', async function (req, res) {
   let userData = await getUserAsync(accessToken); // data of authorized user
   //console.log(userData);
 
-  const reposUrl = userData.repos_url;
+  const reposUrl = userData.repos_url+`?access_token=${accessToken}`;
   //console.log(reposUrl);
 
   fetch(reposUrl).then(fetchRes => {
     fetchRes.json().then(json => {
-     // console.log(json);
-
       // format to only send repository names
       const repos = json.map(repo => ({
         name: repo.name,

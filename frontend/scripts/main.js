@@ -225,7 +225,6 @@ $(document).ready(function() {
     }
 
     getFiles = (reponame) => {
-
         if (reponame === currentRepo)
             return
         currentRepo = reponame
@@ -241,12 +240,8 @@ $(document).ready(function() {
             gutter: 60,
             originLeft: true
         });
-
-        fetch(apiUrl + `/issues/${reponame}?access_token=${accessToken}`).then(fetchRes => {
-            fetchRes.json().then(json => {
-                console.log(json)
-            })
-        })
+        const repoContent = document.getElementById("repoContent")
+        $("#issueInformation").remove()
 
         fetch(apiUrl + `/files/${reponame}?access_token=${accessToken}`).then(fetchRes => {
             fetchRes.json().then(json => {
@@ -267,7 +262,6 @@ $(document).ready(function() {
                         })
                     }
 
-
                     // add grid element to repo grid
                     repoFileGrid.appendChild(newGridItem);
                     repoFileMsnry.appended(newGridItem);
@@ -275,6 +269,39 @@ $(document).ready(function() {
                     // make repo grid visible
                     repoFileGrid.className = "grid slide-in-bck";
                 })
+            })
+        })
+
+        fetch(apiUrl + `/issues/${reponame}?access_token=${accessToken}`).then(fetchRes => {
+            fetchRes.json().then(json => {
+                console.log(json)
+                let issueInfo = document.createElement("div");
+                issueInfo.setAttribute("id", "issueInformation")
+                issueInfo.innerHTML = `
+                <table id = "issueTable" border="0">
+                    <tr>
+                        <th><b>Issues</b></th>
+                    </tr>
+                </table>`
+                repoContent.appendChild(issueInfo)
+                let repoIssueTable = document.getElementById("issueTable");
+
+                if (Object.keys(json).length === 0){
+                    let newIssue = document.createElement("tr");
+                    newIssue.innerHTML = '<td class="final">No relevant issues to display.</td>';
+                    repoIssueTable.appendChild(newIssue)
+                }
+                else {
+                    for (let i = 0; i < json.length; i++){
+                        let newIssue = document.createElement("tr");
+                        if (i === json.length-1)
+                            newIssue.innerHTML = `<td class="final">${json[i].title}</td>`;
+                        else
+                            newIssue.innerHTML = `<td>${json[i].title}</td>`;
+                        repoIssueTable.appendChild(newIssue)
+                    }
+                }
+
             })
         })
         // refresh repo grid layout
@@ -290,6 +317,7 @@ $(document).ready(function() {
                      if (file.filename === fileName) {
                         // create table elements
                         let contributorInfo = document.createElement("table");
+                        contributorInfo.setAttribute("id", "contributorTable")
                         let tableHeader = document.createElement("tr");
                         let tableHeader1 = document.createElement("th");
                         let tableHeader2 = document.createElement("th");
