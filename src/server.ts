@@ -439,6 +439,16 @@ app.get('/api/user-contributed-files', async function (req, res) {
   res.json(response)
 });
 
+app.get(`/api/issues/:repo`, async (req, res) => {
+    const {repo} = req.params;
+    const accessToken = req.query.access_token;
+    const user = await getUserAsync(accessToken);
+    const username = user.login;
+
+    const issuesUrl = `https://api.github.com/repos/${username}/${repo}/issues?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}&assignee=${username}`;
+    const issues = await fetchAsync(issuesUrl);
+    res.send(issues)
+})
 
 app.get(`/api/files/:repo`, async (req, res) => {
   /**

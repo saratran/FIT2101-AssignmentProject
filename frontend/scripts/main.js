@@ -242,6 +242,12 @@ $(document).ready(function() {
             originLeft: true
         });
 
+        fetch(apiUrl + `/issues/${reponame}?access_token=${accessToken}`).then(fetchRes => {
+            fetchRes.json().then(json => {
+                console.log(json)
+            })
+        })
+
         fetch(apiUrl + `/files/${reponame}?access_token=${accessToken}`).then(fetchRes => {
             fetchRes.json().then(json => {
                 repoData = json;
