@@ -61,6 +61,9 @@ $(document).ready(function() {
         newSidebar.appendChild(newSidebarHeader);
         gridItem.removeAttribute("onclick");
 
+        // remove Issues menu
+        $("#issueInformation").hide()
+
         // remove file from grid
         gridItem.remove();
 
@@ -84,7 +87,8 @@ $(document).ready(function() {
         });
 
         // add grid to page
-        let gridArea = document.getElementsByClassName("repo-information")[0];
+        const gridArea = $('.repo-information').first()
+        gridArea.addClass("expanded-repo-information")
         gridArea.prepend(detailGrid);
 
         // create detail grid elements
@@ -142,12 +146,16 @@ $(document).ready(function() {
     }
 
     returnToRepos = (file) => {
+
+        $("#issueInformation").show()
         // remove master sidebar
         file.classList.remove("master-file", "detailToMaster-target");
         let master = document.getElementsByClassName("master")[0];
         let masterSidebar = document.getElementsByClassName("master-file")[0];
         master.removeChild(masterSidebar);
 
+        const gridArea = $('.repo-information').first()
+        gridArea.removeClass("expanded-repo-information")
         // set up repo file grid to return
         let repoFileGrid = document.getElementById("repoFiles");
         let repoFileMsnry = new Masonry(repoFileGrid, {
@@ -207,7 +215,11 @@ $(document).ready(function() {
                     repoElement.innerHTML = `${repo.name} | ${repo.description}`
                     repoList.append(repoElement);*/
 
-                    const repoElement = $.parseHTML(`<a onclick="getFiles('${repo.name}')">${repo.name} | ${repo.description}</a>`)
+                    const repoElement = $.parseHTML(`<a onclick="
+                        getFiles('${repo.name}');
+                        Array.from(document.getElementsByClassName('active')).map(i => i.setAttribute('class',''));
+                        this.setAttribute('class','active');
+                        ">${repo.name} | ${repo.description}</a>`)
                     repoList.append(repoElement)
 
                 })
@@ -220,20 +232,32 @@ $(document).ready(function() {
         fetch(apiUrl + `/user?access_token=${accessToken}`).then(data => {
             data.json().then(json => {
                 userData = json
+                let header = document.getElementsByClassName("sidebar-header")[0]
+                header.innerHTML = `<b>${json.login}</b>`
+                header.setAttribute('href',json.html_url);
+                header.setAttribute('target',"_blank");
             })
         })
     }
 
     getFiles = (reponame) => {
-
         if (reponame === currentRepo)
             return
+        if ($("#start")) { $("#start").remove(); }
+        const load = document.createElement("div")
+        load.setAttribute("id", "loadScreen")
+        load.innerHTML = `<p>Loading...</br>This may take a while.</p>`
+
+        $("body")[0].append(load)
+
         currentRepo = reponame
         const accessToken = window.localStorage.getItem("accessToken")
         let repoFileGrid = document.getElementById("repoFiles");
         while (repoFileGrid.firstChild) {
             repoFileGrid.removeChild(repoFileGrid.firstChild);
         }
+        const repoContent = document.getElementById("repoContent")
+        $("#issueInformation").remove()
         let repoFileMsnry = new Masonry(repoFileGrid, {
             // options
             itemSelector: '.grid-item',
@@ -252,7 +276,7 @@ $(document).ready(function() {
                     newGridItem.id = reponame;
                     newGridItem.setAttribute("onclick", "expandFile(this)");
                     newGridItem.innerHTML = `<h1><img alt="file icon" src="` + fileIcon + `" style="height: 20px; width: 20px;">&nbsp; ${file.filename}</h1><p>Other Contributors:</p>`;
-                    if (Object.keys(file.otherContributors).length === 0){
+                    if (!Object.keys(file.otherContributors).length){
                         newGridItem.innerHTML = newGridItem.innerHTML + `<p>None</p>`;
                     }
                     else {
@@ -261,18 +285,72 @@ $(document).ready(function() {
                         })
                     }
 
-
                     // add grid element to repo grid
                     repoFileGrid.appendChild(newGridItem);
                     repoFileMsnry.appended(newGridItem);
-
                     // make repo grid visible
                     repoFileGrid.className = "grid slide-in-bck";
                 })
             })
+        }).then(()=>{
+
+        fetch(apiUrl + `/issues/${reponame}?access_token=${accessToken}`).then(fetchRes => {
+            fetchRes.json().then(json => {
+
+                console.log(json)
+                let issueInfo = document.createElement("div");
+                issueInfo.setAttribute("id", "issueInformation")
+                repoContent.appendChild(issueInfo)
+
+                let repoIssueTable = document.createElement("table")
+                repoIssueTable.setAttribute("id", "issueTable")
+                repoIssueTable.innerHTML = `
+                    <tr>
+                        <th><b>Your Issues</b></th>
+                    </tr>`
+
+                if (!Object.keys(json).length){
+                    let newIssue = document.createElement("tr");
+                    newIssue.innerHTML = '<td style="background-color:white">No relevant issues to display.</td>';
+                    repoIssueTable.appendChild(newIssue)
+                }
+                else {
+                    json.forEach(item => {
+                        let newIssue = document.createElement("tr")
+                        newIssue.setAttribute("class", "issueTitle issueHeader");
+                        newIssue.innerHTML = `<td><b>${item.title}</b></td>`
+                        repoIssueTable.appendChild(newIssue)
+                        let issueBody = document.createElement("tr")
+                        issueBody.innerHTML = `<td>${item.body}</td>`
+                        repoIssueTable.appendChild(issueBody)
+                        let issueCreator = document.createElement("tr")
+                        issueCreator.innerHTML = `<td><i>Issue opened by ${item.createdBy}</i></td>`
+                        repoIssueTable.appendChild(issueCreator)
+                    })
+                }
+
+
+                let bottom = document.createElement("tr");
+                bottom.setAttribute("class", "issueTitle");
+                bottom.innerHTML = '<td id = "issueBottom"></td>'
+                repoIssueTable.appendChild(bottom)
+                repoIssueTable.className = "slide-in-bck"
+                issueInfo.appendChild(repoIssueTable)
+
+                const titles = document.getElementsByClassName('issueTitle')
+                for (let title of titles) {
+                    $(title).nextUntil('tr.issueTitle').toggle();
+                    title.onclick = function () {
+                        $(this).nextUntil('tr.issueTitle').toggle();
+                    }
+                }
+                // refresh repo grid layout
+                repoFileMsnry.layout();
+                document.getElementById("loadScreen").remove()
+            })
         })
-        // refresh repo grid layout
-        repoFileMsnry.layout();
+        })
+
     }
 
     getContributorInfo = (repoName, fileName, gridItemClass) => {
@@ -284,6 +362,7 @@ $(document).ready(function() {
                      if (file.filename === fileName) {
                         // create table elements
                         let contributorInfo = document.createElement("table");
+                        contributorInfo.setAttribute("id", "contributorTable")
                         let tableHeader = document.createElement("tr");
                         let tableHeader1 = document.createElement("th");
                         let tableHeader2 = document.createElement("th");

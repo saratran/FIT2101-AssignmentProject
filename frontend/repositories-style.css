@@ -35,15 +35,32 @@ body {
     flex-direction: column;
     justify-content: center;
     position: fixed;
-    z-index: 1000;
+    z-index: 10;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+#start {
+    z-index: 20;
+    background: rgba(0,0,0,0.7);
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top:0;
+    font-size: 20px;
+    line-height: 30vh;
+    text-align: center;
+    color: white;
+    padding: 0;
+    margin: 0;
 }
 
 /* set master sidebar container to contain one hidden and one visible sidebar */
 .master {
-    left: -300px;
+    left: 0;
     width: 550px;
     height: 100%;
+    top: 10vh;
+    position: relative;
 }
 
 /* style attributes for master file view (sidebar) */
@@ -92,6 +109,7 @@ body {
     overflow: auto;
     border-top-left-radius: 15px;
     border-top-right-radius: 15px;
+    z-index: 30;
 }
 
 /* Repositories */
@@ -125,7 +143,7 @@ body {
 
 /* colour of repo when clicked */
 .repo-sidebar a.active {
-    background-color: var(--color-2);
+    background-color: #787878;
     color: white;
 }
 
@@ -141,7 +159,98 @@ div.repo-information {
     margin-left: 268px;
     margin-top: 100px;
     padding: 1px 16px;
+    height: auto;
+    width: 50%;
+    position: absolute;
+}
+
+.expanded-repo-information {
+    width: 80% !important;
+}
+
+#issueInformation {
+    width: 28%;
+    float: right;
+    padding: 1px 16px;
+    margin-top: 100px;
     height: 100%;
+    position: relative;
+
+}
+
+#issueTable {
+    width: 100%;
+    border-collapse: separate !important;
+    border-spacing: 0;
+    border-radius: 15px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+
+}
+
+#issueTable th {
+    background: #FFA0A0;
+    height: 30px;
+    padding: 8px;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    text-align: center;
+    color: white;
+    font-size: 24px;
+    /*box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);*/
+}
+
+#issueTable tr {
+    background-color: #fff0f0;
+    /*border-radius: 15px;*/
+    text-align: center;
+    color: black;
+    font-size: 14px;
+    /*box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);*/
+}
+
+#issueTable td {
+    height: 30px;
+    padding: 8px;
+    /*border-radius: 15px;*/
+    text-align: center;
+    color: black;
+    font-size: 14px;
+    /*box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);*/
+}
+
+.issueHeader {
+    cursor: pointer;
+    background-color: white !important;
+}
+
+.issueHeader:hover {
+    background-color: #e6e6e6 !important;
+}
+
+#issueBottom {
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    background-color: #fff0f0;
+    padding: 0 !important;
+    height: 15px !important;
+}
+
+#loadScreen {
+    position:fixed;
+    width:100%;
+    height:100%;
+    z-index: 40;
+    top: 0;
+    background: rgba(0,0,0, 0.7);
+    text-align: center;
+    display: table;
+    color:white;
+    font-size: 20px;
+}
+
+#loadScreen p {
+    display: table-cell;
+    vertical-align: middle;
 }
 
 /* search bar behavior */
@@ -400,7 +509,7 @@ button:active {
 }
 
 /* table styling */
-table {
+#contributorTable {
     border-collapse: collapse;
     background: white;
     border-radius: 10px;
@@ -409,46 +518,46 @@ table {
     margin: 0 auto;
     position: relative;
 }
-table * {
+#contributorTable * {
     position: relative;
 }
-table td, table th {
+#contributorTable td, #contributorTable th {
     padding: 15px;
 }
-table thead tr {
+#contributorTable thead tr {
     height: 60px;
     background: #36304a;
     align-content: center;
     text-align: center;
 }
-table tr {
+#contributorTable tr {
     height: 50px;
 }
-table tr:last-child {
+#contributorTable tr:last-child {
     border: 0;
 }
-table td, table th {
+#contributorTable td, #contributorTable th {
     text-align: left;
 }
-table td.l, table th.l {
+#contributorTable td.l, #contributorTable th.l {
     text-align: right;
 }
-table td.c, table th.c {
+#contributorTable td.c, #contributorTable th.c {
     text-align: center;
 }
-table td.r, table th.r {
+#contributorTable td.r, #contributorTable th.r {
     text-align: center;
 }
-tr:nth-child(odd) {
+#contributorTable tr:nth-child(odd) {
     background-color: #f5f5f5;
 }
-tr {
+#contributorTable tr {
     font-size: 15px;
     color: black;
     line-height: 1.2;
     font-weight: unset;
 }
-tr:hover:not(.header) {
+#contributorTable tr:hover:not(.header) {
     color: #555555;
     background-color: #f5f5f5;
     cursor: pointer;
