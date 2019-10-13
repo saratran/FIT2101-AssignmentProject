@@ -445,9 +445,13 @@ app.get(`/api/issues/:repo`, async (req, res) => {
     const user = await getUserAsync(accessToken);
     const username = user.login;
 
-    const issuesUrl = `https://api.github.com/repos/${username}/${repo}/issues?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}&assignee=${username}`;
+    const issuesUrl = `https://api.github.com/repos/${username}/${repo}/issues?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}&assignee=${username}&state=open`;
     const issues = await fetchAsync(issuesUrl);
-    res.send(issues)
+    let issueData = []
+    issues.forEach(issue => {
+        issueData.push({title: issue.title, body: issue.body, url: issue.url, updatedAt: issue.updated_at})
+    })
+    res.send(issueData)
 })
 
 app.get(`/api/files/:repo`, async (req, res) => {
