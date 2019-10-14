@@ -25,56 +25,47 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-const handlebarsOption = {
-  viewEngine: {
-    extName: '.hbs',
-    partialsDir: './emails',
-    layoutsDir: './emails',
-    defaultLayout: 'index.handlebars',
-  },
-  viewPath: "./emails"
-};
+// const handlebarsOption = {
+//   viewEngine: {
+//     extName: '.handlebars',
+//     partialsDir: './emails',
+//     layoutsDir: './emails',
+//     // defaultLayout: 'index.handlebars',
+//     defaultLayout: false
+//   },
+//   viewPath: "./emails"
+// };
 
-// Use handlebars to render
-transporter.use('compile', hbs(handlebarsOption));
+// // Use handlebars to render
+// transporter.use('compile', hbs(handlebarsOption));
 
 export async function sendEmail(receivers: string[], emailContent: EmailContent, callback) {
   // Source: https://nodemailer.com/about/
   /* TODO:
   - email content
    */
+  const handlebarsOption = {
+    viewEngine: {
+      extName: '.handlebars',
+      partialsDir: './emails',
+      layoutsDir: './emails',
+      // defaultLayout: 'index.handlebars',
+      defaultLayout: emailContent.template +".handlebars"
+    },
+    viewPath: "./emails"
+  };
+  
+  // Use handlebars to render
+  transporter.use('compile', hbs(handlebarsOption));
 
   let mailOptions = {
     from: `${sender.name} <${sender.email}>`,
     to: `${receivers}`,
     subject: 'DevAlarm Test',
-    text: 'Wooohooo it works!!',
-    template: 'index',
-    // context: {
-    //   name: emailContent
-    // } // TODO: send extra values to template
-    context: emailContent,
-    attachments: [{
-      filename: 'logo.png',
-      path: path.join(__dirname, '../emails/email-img/logo.png'),
-      cid: 'logo.png'
-    },
-    {
-      filename: 'file-details.png',
-      path: path.join(__dirname, '../emails/email-img/file-details.png'),
-      cid: 'file-details.png'
-    },{
-      filename: 'files-issues.png',
-      path: path.join(__dirname, '../emails/email-img/files-issues.png'),
-      cid: 'files-issues.png'
-    },{
-      filename: 'repositories.png',
-      path: path.join(__dirname, '../emails/email-img/repositories.png'),
-      cid: 'repositories.png'
-    },
-  ]
+    // template: emailContent.template,
+    context: emailContent.content,
+    attachments: emailContent.attachments,
   };
-  // console.log(path.join(__dirname, '../emails/email-img'))
 
   transporter.sendMail(mailOptions, (err, data) => {
     if (err) {

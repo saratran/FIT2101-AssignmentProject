@@ -7,6 +7,8 @@ import dotenv = require('dotenv'); // environment variables
 import flatMap = require('flatmap');
 import emailService = require('./email-service');
 import db = require('./database');
+import path = require('path')
+
 
 const app = express(); // initialise app
 app.use(cors()); // allow Cross-Origin Resource Sharing
@@ -656,7 +658,29 @@ async function forTesting() {
   // await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
 
   const emailContent: Welcome = {
-    name: 'Sara'
+    content:{
+      name: 'Sara'
+    },
+    attachments:[{
+      filename: 'logo.png',
+      path: path.join(__dirname, '../emails/email-img/logo.png'),
+      cid: 'logo.png'
+    },
+    {
+      filename: 'file-details.png',
+      path: path.join(__dirname, '../emails/email-img/file-details.png'),
+      cid: 'file-details.png'
+    }, {
+      filename: 'files-issues.png',
+      path: path.join(__dirname, '../emails/email-img/files-issues.png'),
+      cid: 'files-issues.png'
+    }, {
+      filename: 'repositories.png',
+      path: path.join(__dirname, '../emails/email-img/repositories.png'),
+      cid: 'repositories.png'
+    }
+    ],
+    template: "daily"
   }
 
   console.log(emailContent)

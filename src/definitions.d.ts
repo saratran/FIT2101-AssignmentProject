@@ -18,7 +18,17 @@ interface FileInfo {
 }
 
 interface Welcome{
-  name: string
+  content:{
+    name: string
+  }
+  attachments: EmailAttachment[],
+  template: string
+}
+
+interface EmailAttachment{
+  filename: string,
+  path: string,
+  cid: string
 }
 
 type EmailContent = Welcome
