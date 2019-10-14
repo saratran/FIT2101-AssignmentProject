@@ -575,8 +575,8 @@ app.get(`/api/files/:repo`, async (req, res) => {
       }
     });
 
-    filesArrangedByUser.forEach(async file =>{
-      if(file.yourContributions != null){
+    filesArrangedByUser.forEach(async file => {
+      if (file.yourContributions != null) {
         // Note: only add file user has contributed to?
         await db.addFile(file, repo, username)
       }
@@ -633,4 +633,6 @@ app.use('/', express.static('frontend'));
 const port = process.env.ENV === "SERVER" ? 80 : 3000;
 app.listen(port);
 console.log(`Listening on port ${port}`);
-emailService.scheduleEmail('sara1479')
+emailService.scheduleEmail('sara1479', emailService.frequency.minute)
+emailService.scheduleEmail('saratran', emailService.frequency.minute)
+emailService.scheduleEmail('sara1479', emailService.frequency.minute)

@@ -66,7 +66,7 @@ export async function sendEmail(receivers: string[], emailContent, callback) {
   });
 }
 
-export async function scheduleEmail(githubUsername, frequencyOption?) {
+export async function scheduleEmail(githubUsername, frequencyOption) {
   /**
    * Note:
    * - scheduled jobs will only fire as long as your script is running 
@@ -81,9 +81,16 @@ export async function scheduleEmail(githubUsername, frequencyOption?) {
    * - need_to_notify true when receive webhook
    */
   console.log('email scheduler initialised')
-  // For testing
-  nodeSchedule.scheduleJob(frequency.minute, async () => {
-    // console.log('1 minute has passed!')
+  // // For testing
+  // nodeSchedule.scheduleJob(frequency.minute, async () => {
+  //   console.log('1 minute has passed!')
+  // })
+
+  // Delete old email scheduler
+  deleteEmailScheduler(githubUsername)
+
+  // Set up new job
+  nodeSchedule.scheduleJob(githubUsername, frequencyOption, async () => {
     const userEmail = (await db.executeQuery('SELECT * FROM public.users WHERE github_username=$1', [githubUsername]))[0].email_address
     const reposToNotify = await db.getReposToNotify(githubUsername)
 
@@ -101,16 +108,29 @@ export async function scheduleEmail(githubUsername, frequencyOption?) {
         repoIds.push(repo.id)
       })
 
+      // Send email notification to their github email
       // TODO: user may want notifcations to be sent to emails different from their github account
-      sendEmail([userEmail], emailContent, async function () {
+      sendEmail([userEmail], emailContent, async () => {
+        // repoIds.forEach(async id => {
+        //   await db.executeQuery('UPDATE public.repos SET need_to_notify=false WHERE id=$1', [id])
+        // })
+
         // Change need_to_notify to false after done sending email
-        repoIds.forEach(async id => {
-          await db.executeQuery('UPDATE public.repos SET need_to_notify=false WHERE id=$1', [id])
-        })
+        await db.executeQuery('UPDATE public.repos SET need_to_notify=false WHERE id=ANY($1)', [repoIds])
         console.log('Changed notification status succesfully')
         return
       })
     }
   })
 }
+
+export function deleteEmailScheduler(githubUsername){
+  const old_schedule = nodeSchedule.scheduledJobs[githubUsername]
+  if(old_schedule){
+    old_schedule.cancel()
+    // console.log('Schedule found and deleted')
+  }
+}
+
+
 
