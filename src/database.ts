@@ -109,6 +109,12 @@ export async function addFile(fileInfo, repoName, githubUsername) {
     }
 }
 
+/**
+ * Stores frequency in database. (Currently in public.users, in the email_frequency column)
+ *
+ * @param githubUsername - username of gi
+ * @param frequency - currently just a string in the set {'never', 'individual', 'daily', 'weekly'}
+ */
 export async function setEmailFrequency(githubUsername, frequency) {
     const userId = await getUserId(githubUsername)
     if (userId) {

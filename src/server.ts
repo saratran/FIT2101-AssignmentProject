@@ -588,11 +588,15 @@ app.get(`/api/files/:repo`, async (req, res) => {
   })
 });
 
+/** Calls setEmailFrequency in database.ts
+ * You can modify where in the database the frequency is stored in setEmailFrequency
+ * Is POST better than GET here?
+ * Currently doesn't return anything
+ */
 app.get(`/api/email-frequency/:frequency`, async(req, res) => {
   const {frequency} = req.params
   const accessToken = req.query.access_token
   const username = (await getUserAsync(accessToken)).login
-  console.log(frequency)
   await db.setEmailFrequency(username, frequency)
   console.log("Set email frequency: " + frequency)
   res.send()

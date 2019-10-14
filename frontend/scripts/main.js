@@ -680,7 +680,7 @@ $(document).ready(function() {
 
     setEmailFrequencies = () => {
         const accessToken = window.localStorage.getItem("accessToken")
-        const radioIds = ['#individualRadio', '#dailyRadio', '#weeklyRadio']
+        const radioIds = ['#individualRadio', '#dailyRadio', '#weeklyRadio', '#neverRadio']
         let frequency;
         for (const id of radioIds){
             if ($(id).is(':checked')) {
