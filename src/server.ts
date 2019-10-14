@@ -197,20 +197,13 @@ app.get('/api/repositories', async function (req, res) {
         url: repo.html_url,
         description: repo.description
       }));
-      return repos;
+      repos.forEach(async repo => {
+        // console.log(repo)
+        await db.addRepo(repo, userData.login)
+      })
+      res.send(repos)
     })
   })
-
-  // todo: may excess api call
-  const username = await getUserAsync(accessToken);
-  // console.log(username)
-  // console.log(email)
-  repos.forEach(async repo => {
-    // console.log(repo)
-    await db.addRepo(repo, username.login)
-  })
-  res.send(repos)
-
 });
 
 app.delete('/api/webhooks', async function (req, res) {
@@ -595,6 +588,15 @@ app.get(`/api/files/:repo`, async (req, res) => {
   })
 });
 
+app.get(`/api/email-frequency/:frequency`, async(req, res) => {
+  const {frequency} = req.params
+  const accessToken = req.query.access_token
+  const username = (await getUserAsync(accessToken)).login
+  console.log(frequency)
+  await db.setEmailFrequency(username, frequency)
+  console.log("Set email frequency: " + frequency)
+  res.send()
+})
 
 
 function randInt(min, max) {

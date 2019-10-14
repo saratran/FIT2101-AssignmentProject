@@ -498,11 +498,11 @@ button:hover {
 button:focus {
     outline: none;
 }
-button:active:not(#saveEmailPriorities) {
+button:active:not(#saveEmailFrequencies) {
     position:relative;
     top:1px;
 }
-#emailPriorities {
+#emailFrequencies {
     position: absolute;
     top: 5px;
     right: 10px;
@@ -622,14 +622,14 @@ rect {
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
-#saveEmailPriorities {
+#saveEmailFrequencies {
     position: absolute;
     bottom: 15px;
     right: 15px;
 }
 
 
-#saveEmailPriorities:active {
+#saveEmailFrequencies:active {
    bottom: 14px;
 }
 

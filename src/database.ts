@@ -9,7 +9,7 @@ export async function addUser(email, githubUsername) {
         console.log('User created')
         return rows[0].id
     } else {
-        console.log('User already exist')
+        console.log('User already exists')
     }
     // pool.query('SELECT * FROM public.users WHERE email_address=$1 AND github_username=$2', [email, githubUsername], (err, queryRes) => {
 
@@ -102,10 +102,20 @@ export async function addFile(fileInfo, repoName, githubUsername) {
             console.log("New file saved");
             return rows[0].id
         } else {
-            console.log("File already exist")
+            console.log("File already exists")
         }
     } else {
         console.log("Cannot find the user or repo in the database")
+    }
+}
+
+export async function setEmailFrequency(githubUsername, frequency) {
+    const userId = await getUserId(githubUsername)
+    if (userId) {
+        let rows = await executeQuery('UPDATE public.users SET email_frequency = ($1) WHERE id = ($2) RETURNING id', [frequency, userId])
+        return rows[0].id
+    } else {
+        console.log("Cannot find the user in the database")
     }
 }
 

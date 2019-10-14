@@ -15,22 +15,20 @@
         <!-- Modal content -->
         <div class="modal-content">
             <span class="close">&times;</span>
-            <form action="">
-                <input type="radio" name="priority" value="1"> Individual Mail<br>
+            <form>
+                <input type="radio" id="individualRadio" name="frequency" value="individual" checked="checked"><label for="individualRadio">Individual Mail</label><br>
                 <p> Receive an email notification for every change made to your contributions.</p>
-                <input type="radio" name="priority" value="2"> Daily Digest<br>
+                <input type="radio" id="dailyRadio" name="frequency" value="daily"><label for="dailyRadio"> Daily Digest</label><br>
                 <p> Receive a daily digest of changes made to your contributions.</p>
-                <input type="radio" name="priority" value="3"> Weekly Digest<br>
+                <input type="radio" id="weeklyRadio" name="frequency" value="weekly"><label for="weeklyRadio"> Weekly Digest</label><br>
                 <p> Receive a weekly digest of changes made to your contributions.</p>
             </form>
-            <a><button id="saveEmailPriorities">Save Preference</button></a>
+            <a><button id="saveEmailFrequencies">Save Preference</button></a>
         </div>
     </div>
     <div class="page-header">
-        <a href="index.html">
             <img src="img/logo.png" style="height: 30px; width: 165px; margin-left: calc(50% - 82px)">
-        </a>
-        <a id="emailPriorities"><button>Email Priorities</button></a>
+        <a id="emailFrequencies"><button>Email Settings</button></a>
     </div>
     <main class="repository-content" id="repoContent">
         <div id="start">Click on a repository in the sidebar to start.</div>
@@ -40,6 +38,7 @@
                 <div class="search-bar">
                     <div style="height: 30px; background-color: white; width: 230px; border-color: #555555; border-radius: 5px; margin-top: 5px;">
                         <img src="img/search-512.png" style="height: 20px; width: 20px; margin: 5px;">
+                        <input id="repo-search" type="text"  placeholder="Search" oninput="searchRepos()">
                         <input id="repo-search" type="text"  placeholder="Search" oninput="searchRepos()">
                     </div>
                 </div>

@@ -15,6 +15,7 @@ function getPieChart() {}
 function getUser() {}
 function hideModal() {}
 function showModal() {}
+function setEmailFrequencies() {}
 
 $(document).ready(function() {
     // All code goes in this function to ensure JQuery and the page are ready before JS code is run
@@ -677,12 +678,31 @@ $(document).ready(function() {
         modal.addClass("show-modal")
     }
 
+    setEmailFrequencies = () => {
+        const accessToken = window.localStorage.getItem("accessToken")
+        const radioIds = ['#individualRadio', '#dailyRadio', '#weeklyRadio']
+        let frequency;
+        for (const id of radioIds){
+            if ($(id).is(':checked')) {
+                frequency = $(id).attr("value")
+                break
+            }
+        }
+        if (frequency) {
+            fetch(apiUrl + `/email-frequency/${frequency}?access_token=${accessToken}`).then(fetchRes => {})
+        }
+    }
+
     $("#getReposButton").on("click", getRepos);
 
     let span = $(".close").first()
     span.on("click", hideModal)
 
-    let button = $("#emailPriorities")
+    let saveButton = $("#saveEmailFrequencies")
+    saveButton.on("click", hideModal)
+    saveButton.on("click", setEmailFrequencies)
+
+    let button = $("#emailFrequencies")
     button.on("click", showModal)
 
     window.onclick = function(event) {
