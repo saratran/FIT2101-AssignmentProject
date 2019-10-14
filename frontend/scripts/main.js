@@ -1,7 +1,5 @@
 // Function headers
 
-
-
 function expandFile() {}
 function returnToRepos() {}
 function getRepos() {}
@@ -207,29 +205,40 @@ $(document).ready(function() {
             fetchRes.json().then(json => {
                 console.log(json)
 
-                repoList.empty();
+                repoList.empty()
                 json.forEach(repo => {
-                    /*
-                    let repoElement = document.createElement("a");
-                    repoElement.setAttribute("onclick", `getFiles(${repo.name})`);
-                    repoElement.innerHTML = `${repo.name} | ${repo.description}`
-                    repoList.append(repoElement);*/
-
-                    const clickElement = () => {
-                      getFiles('${repo.name}');
-                      Array.from(document.getElementsByClassName('active')).map(i => i.setAttribute('class',''));
-                      this.setAttribute('class','active');
-                    }
-
                     const repoElement = $.parseHTML(
-                        `<a onclick="clickElement();">
-                        ${repo.name} | ${repo.description} | watching: <input type="checkbox" ${repo.isWatching && `checked=checked`} /></a>
+                        `<a onclick="clickElement(this, '${ repo.name }')">
+                        ${repo.name} | ${repo.description} | watching: <input type="checkbox" ${repo.isWatching && `checked=checked`} onChange="toggleWatching(this, '${ repo.name }')" /></a>
                     `)
 
                     repoList.append(repoElement)
                 })
             })
         })
+    }
+
+    clickElement = (thisElem, repoName) => {
+        getFiles(repoName);
+        Array.from(document.getElementsByClassName('active')).forEach(activeRepoElem => activeRepoElem.setAttribute('class',''));
+        thisElem.setAttribute('class','active');
+    }
+
+    toggleWatching = (checkboxElem, repoName) => {
+      const accessToken = window.localStorage.getItem("accessToken")
+
+      fetch(`${apiUrl}/repos?access_token=${accessToken}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          op: "replace",
+          path: `/${repoName}/is_watching`,
+          value: checkboxElem.checked
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+      })
     }
 
     getUser = () => {

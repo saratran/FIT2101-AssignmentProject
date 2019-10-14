@@ -26,7 +26,7 @@ const hookUrl = `https://devalarm.com/api/github`;
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code;
   fetch(`https://github.com/login/oauth/access_token?client_id=${clientID}&client_secret=${clientSecret}&code=${requestToken}`, {
-    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
@@ -489,12 +489,6 @@ app.get(`/api/files/:repo`, async (req, res) => {
 
   // @ts-ignore
   Promise.all(commitInfoProms).then(async () => {
-    /*
-   console.log("***********************")
-   console.log(commits)
-   console.log("***********************")
-   */
-
     // Identify unique files that were changed
     const contributorData = {};
     const files = {};
@@ -525,7 +519,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
     // Now evaluate the files by user and run a reduction algorithm on the changes
 
     const ownUserInfo = {
-      username: username,
+      username,
       email: userEmail,
       name: userRealName
     }
@@ -593,46 +587,35 @@ app.get(`/api/files/:repo`, async (req, res) => {
   })
 });
 
+app.patch(`/api/repos`, async (req, res) => {
+  console.log("*** PATCH repos ***")
 
+  const { accessToken } = req.query
+  const { op, path, value } = req.body
+
+  // Current support is only for PATCH /repos/[reponame]/is_watching
+  if (op !== 'replace' || !path.includes('is_watching')) {
+    res.sendStatus(404)
+    return
+  }
+
+  const repoName = path.split('/')[1]
+  const user = await getUserAsync(accessToken)
+  const userId = await db.getUserId(user.login)
+  const repoId = db.getRepoId(userId, repoName)
+
+  console.log(repoName, user, userId, repoId)
+
+  await db.executeQuery(`UPDATE public.repos SET is_watching=$1 WHERE id=$2`, [value, repoId])
+
+  console.log(`Updated isWatching to ${value} for ${repoId} (${repoName})`)
+
+  res.send(204)
+})
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
-app.get(`/api/files-mock/:repo`, (req, res) => {
-  /**
-   * Mock endpoint for loading some random data on the frontend
-   */
-  const { repo } = req.params;
-
-  const files = ["index.js", "server.js", "soup.js", "beans.js", "rmrfslash.sh"]
-    .map((filename: string): FileInfo => ({
-      filename,
-      // lineCount: randInt(300, 500),
-      yourContributions: {
-        commitCount: randInt(2, 5),
-        lineChangeCount: randInt(100, 200)
-      },
-      otherContributors: [{
-        username: "coolhavefun3",
-        email: "coolhavefun3@gmail.com",
-        name: "Coolhave Fun3",
-        contribution: {
-          commitCount: randInt(1, 3),
-          lineChangeCount: randInt(50, 120)
-        }
-      }, {
-        username: "coolhavefun4",
-        email: "coolhavefun4@gmail.com",
-        name: "Coolhave Fun4",
-        contribution: {
-          commitCount: randInt(1, 3),
-          lineChangeCount: randInt(30, 70)
-        }
-      }]
-    }));
-  res.send(files)
-});
 
 // Serve frontend
 app.use('/', express.static('frontend'));
