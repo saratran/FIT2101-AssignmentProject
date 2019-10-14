@@ -25,6 +25,8 @@ const hookUrl = `https://devalarm.com/api/github`;
 
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code;
+  console.log("req token: ", requestToken)
+
   fetch(`https://github.com/login/oauth/access_token?client_id=${clientID}&client_secret=${clientSecret}&code=${requestToken}`, {
     method: 'POST',
     headers: {
@@ -32,9 +34,9 @@ app.get('/callback', (req, res) => {
       'Accept': 'application/json'
       // 'Content-Type': 'application/x-www-form-urlencoded',
     },
-  })
-    .then(queryRes => {
+  }).then(queryRes => {
       queryRes.json().then(async json => {
+        console.log("json: ", json)
         const username = await getUserAsync(json.access_token);
         const email = await getUserEmailAsync(json.access_token);
         await db.addUser(email, username.login);
@@ -128,14 +130,15 @@ async function getUserAsync(accessToken) {
 }
 
 async function getUserEmailAsync(accessToken) {
-  let primaryEmail = null
   let emails = await fetchAsync(`https://api.github.com/user/emails?access_token=${accessToken}`)
-  emails.forEach(email => {
-    if (email.primary) {
-      primaryEmail = email.email
-    }
-  })
-  return primaryEmail
+  if (emails.length) {
+    emails.forEach(email => {
+      if (email.primary) {
+        return email.email
+      }
+    })
+  }
+  return null
 }
 
 async function getPullEvents(username, accessToken) {
