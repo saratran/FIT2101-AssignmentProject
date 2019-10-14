@@ -659,12 +659,13 @@ async function forTesting() {
 
   const emailContent: Welcome = {
     content:{
-      name: 'Sara'
+      name: 'Sara' // <------ replacing {{name}} in the template
     },
-    attachments:[{
+    attachments: // <---- Edit this to add more attachements/images to the emails
+    [{
       filename: 'logo.png',
       path: path.join(__dirname, '../emails/email-img/logo.png'),
-      cid: 'logo.png'
+      cid: 'logo.png' // <------ Change the src of image in the template to "src=cid:logo.png" if the image is not showing up
     },
     {
       filename: 'file-details.png',
@@ -677,10 +678,10 @@ async function forTesting() {
     }, {
       filename: 'repositories.png',
       path: path.join(__dirname, '../emails/email-img/repositories.png'),
-      cid: 'repositories.png'
+      cid: 'repositories.png' 
     }
     ],
-    template: "daily"
+    template: "daily" // <----- This suppose to be determining which template to use but I'm not sure if it's working yet
   }
 
   console.log(emailContent)

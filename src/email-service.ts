@@ -25,44 +25,26 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// const handlebarsOption = {
-//   viewEngine: {
-//     extName: '.handlebars',
-//     partialsDir: './emails',
-//     layoutsDir: './emails',
-//     // defaultLayout: 'index.handlebars',
-//     defaultLayout: false
-//   },
-//   viewPath: "./emails"
-// };
+const handlebarsOption = {
+  viewEngine: {
+    extName: '.handlebars',
+    partialsDir: './emails',
+    layoutsDir: './emails',
+    defaultLayout: 'index.handlebars', //<------ Edit this in the mean time to change the template use
+    // defaultLayout: false
+  },
+  viewPath: "./emails"
+};
 
-// // Use handlebars to render
-// transporter.use('compile', hbs(handlebarsOption));
+// Use handlebars to render
+transporter.use('compile', hbs(handlebarsOption));
 
 export async function sendEmail(receivers: string[], emailContent: EmailContent, callback) {
-  // Source: https://nodemailer.com/about/
-  /* TODO:
-  - email content
-   */
-  const handlebarsOption = {
-    viewEngine: {
-      extName: '.handlebars',
-      partialsDir: './emails',
-      layoutsDir: './emails',
-      // defaultLayout: 'index.handlebars',
-      defaultLayout: emailContent.template +".handlebars"
-    },
-    viewPath: "./emails"
-  };
-  
-  // Use handlebars to render
-  transporter.use('compile', hbs(handlebarsOption));
-
-  let mailOptions = {
+   let mailOptions = {
     from: `${sender.name} <${sender.email}>`,
     to: `${receivers}`,
     subject: 'DevAlarm Test',
-    // template: emailContent.template,
+    template: emailContent.template,
     context: emailContent.content,
     attachments: emailContent.attachments,
   };
