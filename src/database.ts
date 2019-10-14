@@ -65,44 +65,20 @@ export async function getFileId(userId, repoId, fileName) {
     if (rows.length) return rows[0].id
 }
 
-export async function addRepo(repo, githubUsername) {
-    /**
-     * Need user(id) to insert as FK
-     * get user(id) from email and githubUsername
-     */
-
-    const userId = await getUserId(githubUsername)
-    if (userId) {
-        const repoId = await getRepoId(userId, repo.name);
-        // console.log(repoId)
-        if (!repoId) {
-            const rows = await executeQuery('INSERT INTO public.repos (name, user_id, url, description) VALUES ($1, $2, $3, $4) RETURNING id', [repo.name, userId, repo.url, repo.description])
-            console.log("New repo saved");
-            return rows[0].id
-        }
-        else {
-            console.log("Repo already exist")
-            // TODO: may need to update info such as description
-        }
-    } else {
-        console.log("Cannot find the user in the database")
-    }
-}
-
 export async function addRepos(repos: Repo[], githubUsername: string) {
   const userId = await getUserId(githubUsername)
 
-  if (userId) {
-    const reposInfo = repos.map(({ name, url, description }) => ([name, userId, url, description]))
-
-    const batchInsert = pgFormat('INSERT INTO public.repos (name, user_id, url, description) VALUES %L RETURNING id', reposInfo)
-
-    const rows = await executeQuery(batchInsert, [])
-    console.log("New repos saved");
-    return rows.map(( { id }) => id)
-  } else {
+  if (!userId) {
     console.log("Cannot find the user in the database")
+    return
   }
+
+  const reposInfo = repos.map(({ name, url, description }) => ([name, userId, url, description]))
+  const batchInsert = pgFormat('INSERT INTO public.repos (name, user_id, url, description) VALUES %L RETURNING id', reposInfo)
+  const rows = await executeQuery(batchInsert, [])
+  console.log("New repos saved")
+
+  return rows.map(( { id }) => id)
 }
 
 export async function addFile(fileInfo, repoName, githubUsername) {
