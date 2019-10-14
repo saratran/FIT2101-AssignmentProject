@@ -591,8 +591,8 @@ app.get(`/api/files/:repo`, async (req, res) => {
 /** Calls setEmailFrequency in database.ts
  * You can modify where in the database the frequency is stored in setEmailFrequency
  */
-app.patch(`/api/email-frequency`, async(req, res) => {
-  const frequency = req.body.frequency
+app.post(`/api/email-frequency`, async(req, res) => {
+  const {frequency} = req.body
   const accessToken = req.query.access_token
   const username = (await getUserAsync(accessToken)).login
   await db.setEmailFrequency(username, frequency)

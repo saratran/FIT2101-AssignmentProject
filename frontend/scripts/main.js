@@ -690,8 +690,8 @@ $(document).ready(function() {
         }
         if (frequency) {
             fetch(apiUrl + `/email-frequency?access_token=${accessToken}`, {
-                body: JSON.stringify({frequency: frequency}),
-                method: 'PATCH',
+                body: JSON.stringify({frequency}),
+                method: 'POST',
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
