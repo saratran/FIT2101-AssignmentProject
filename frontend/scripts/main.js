@@ -215,13 +215,18 @@ $(document).ready(function() {
                     repoElement.innerHTML = `${repo.name} | ${repo.description}`
                     repoList.append(repoElement);*/
 
-                    const repoElement = $.parseHTML(`<a onclick="
-                        getFiles('${repo.name}');
-                        Array.from(document.getElementsByClassName('active')).map(i => i.setAttribute('class',''));
-                        this.setAttribute('class','active');
-                        ">${repo.name} | ${repo.description}</a>`)
-                    repoList.append(repoElement)
+                    const clickElement = () => {
+                      getFiles('${repo.name}');
+                      Array.from(document.getElementsByClassName('active')).map(i => i.setAttribute('class',''));
+                      this.setAttribute('class','active');
+                    }
 
+                    const repoElement = $.parseHTML(
+                        `<a onclick="clickElement();">
+                        ${repo.name} | ${repo.description} | watching: <input type="checkbox" ${repo.isWatching && `checked=checked`} /></a>
+                    `)
+
+                    repoList.append(repoElement)
                 })
             })
         })
@@ -241,14 +246,15 @@ $(document).ready(function() {
     }
 
     getFiles = (reponame) => {
-        if (reponame === currentRepo)
-            return
-        if ($("#start")) { $("#start").remove(); }
+        if (reponame === currentRepo) return
+
+        $("#start").remove();
+
         const load = document.createElement("div")
         load.setAttribute("id", "loadScreen")
         load.innerHTML = `<p>Loading...</br>This may take a while.</p>`
 
-        $("body")[0].append(load)
+        $("body").first().append(load)
 
         currentRepo = reponame
         const accessToken = window.localStorage.getItem("accessToken")
@@ -313,8 +319,7 @@ $(document).ready(function() {
                     let newIssue = document.createElement("tr");
                     newIssue.innerHTML = '<td style="background-color:white">No relevant issues to display.</td>';
                     repoIssueTable.appendChild(newIssue)
-                }
-                else {
+                } else {
                     json.forEach(item => {
                         let newIssue = document.createElement("tr")
                         newIssue.setAttribute("class", "issueTitle issueHeader");

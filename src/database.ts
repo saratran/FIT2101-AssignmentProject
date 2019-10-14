@@ -65,15 +65,8 @@ export async function getFileId(userId, repoId, fileName) {
     if (rows.length) return rows[0].id
 }
 
-export async function addRepos(repos: Repo[], githubUsername: string) {
-  const userId = await getUserId(githubUsername)
-
+export async function addRepos(repos: Repo[], userId: string) {
   console.log("*** Add repos ***")
-
-  if (!userId) {
-    console.log("Cannot find the user in the database")
-    return
-  }
 
   // Identify any repos that are not currently in the database and only insert those
 
@@ -83,20 +76,22 @@ export async function addRepos(repos: Repo[], githubUsername: string) {
     .filter(({ url }) => !existingReposUrls.includes(url))
     .map(({ name, url, description }) => ([name, userId, url, description]))
 
-
-  console.log(repos, newRepos)
-
   if (newRepos.length) {
     const batchInsert = pgFormat('INSERT INTO public.repos (name, user_id, url, description) VALUES %L RETURNING id', newRepos)
     const rows = await executeQuery(batchInsert, [])
     console.log(`Saved ${newRepos.length} new repos.`)
 
     // Return IDs of the newly saved repos
-    return rows.map(( { id }) => id)
+    return rows.map(({ id }) => id)
   } else {
     console.log(`No new repos to save.`)
     return []
   }
+}
+
+export async function getReposForUser(userId: string) {
+  console.log("*** Get repos ***")
+  return await executeQuery('SELECT * FROM public.repos WHERE user_id=$1', [userId])
 }
 
 export async function addFile(fileInfo, repoName, githubUsername) {

@@ -191,16 +191,22 @@ app.get('/api/repositories', async function (req, res) {
   fetch(reposUrl).then(fetchRes => {
     fetchRes.json().then(async json => {
       // format to only send repository names
-      const repos: Repo[] = json.map(({ name, html_url, description }) => ({
+      let repos: Repo[] = json.map(({ name, html_url, description }) => ({
         name,
         url: html_url,
         description
       }));
 
       const username = await getUserAsync(accessToken);
-      await db.addRepos(repos, username.login)
 
-      res.send(repos)
+      const userId = await db.getUserId(username.login)
+      await db.addRepos(repos, userId)
+
+      const dbRepos = (await db.getReposForUser(userId))
+        .filter(dbRepo => repos.map(({ url }) => url).includes(dbRepo.url))
+        .map(({ name, url, description, is_watching }) => ({ name, url, description, isWatching: is_watching }))
+
+      res.send(dbRepos)
     })
   })
 });
