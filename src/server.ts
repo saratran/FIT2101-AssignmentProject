@@ -189,8 +189,9 @@ app.get('/api/repositories', async function (req, res) {
   const reposUrl = `${userData.repos_url}?access_token=${accessToken}`
   //console.log(reposUrl);
 
-  fetch(reposUrl).then(fetchRes => {
-    fetchRes.json().then(json => {
+  const repos = await fetch(reposUrl).then(async fetchRes => {
+    return await fetchRes.json().then(json => {
+      // console.log(json);
       // format to only send repository names
       const repos = json.map(repo => ({
         name: repo.name,
@@ -585,7 +586,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
     });
 
     filesArrangedByUser.forEach(async file => {
-      if (file.yourContributions != null) {
+      if (file.yourContributions) {
         // Note: only add file user has contributed to?
         await db.addFile(file, repo, username)
       }
@@ -644,10 +645,11 @@ app.listen(port);
 console.log(`Listening on port ${port}`);
 
 async function forTesting() {
+  // await emailService.sendEmail([null],'somehting', ()=>{})
+
   await emailService.initialiseEmailSchedulers()
   await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
   await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
-  // await emailService.setEmailScheduler('sara1479', emailService.frequency.daily)
 }
 
 forTesting()

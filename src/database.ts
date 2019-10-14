@@ -74,10 +74,10 @@ export async function addRepo(repo, githubUsername) {
      */
 
     const userId = await getUserId(githubUsername)
-    if (userId != null) {
+    if (userId) {
         const repoId = await getRepoId(userId, repo.name);
         // console.log(repoId)
-        if (repoId == null) {
+        if (!repoId) {
             const rows = await executeQuery('INSERT INTO public.repos (name, user_id, url, description) VALUES ($1, $2, $3, $4) RETURNING id', [repo.name, userId, repo.url, repo.description])
             console.log("New repo saved");
             return rows[0].id
@@ -93,7 +93,7 @@ export async function addRepo(repo, githubUsername) {
 
   export async function getReposToNotify(githubUsername){
     let userId = await getUserId(githubUsername)
-    if (userId != null) {
+    if (userId) {
         let rows = await executeQuery('SELECT * FROM public.repos WHERE user_id=$1 AND need_to_notify=true',[userId])
         return rows
     }

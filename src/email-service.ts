@@ -57,7 +57,7 @@ export async function sendEmail(receivers: string[], emailContent, callback) {
 
   transporter.sendMail(mailOptions, (err, data) => {
     if (err) {
-      console.log('Error occurs')
+      console.log('Error occurs when sending email')
       return
     }
     console.log('Email sent!!!');
@@ -73,33 +73,29 @@ export async function setEmailScheduler(githubUsername, frequencyOption) {
    * - after sending email, set the need_to_notfiy to false
    * - need_to_notify true when receive webhook
    */
-  console.log('Setting email scheduler')
+  console.log(`Setting email scheduler: ${githubUsername}, ${JSON.stringify(frequencyOption)}`)
 
   // Delete old email scheduler so that each user can only have 1 instance of email scheduler running
-  deleteEmailSchedulerInstance(githubUsername)
+  await deleteEmailSchedulerInstance(githubUsername)
 
   // Add/Update new scheduler to database
   await db.executeQuery('INSERT INTO public.email_schedules (github_username, frequency) VALUES($1,$2) ON CONFLICT (github_username) DO UPDATE SET frequency=$2', [githubUsername, frequencyOption])
 
 
   // Set up new scheduler
-  nodeSchedule.scheduleJob(githubUsername, frequencyOption, async () => {
-    const userEmail = (await db.executeQuery('SELECT * FROM public.users WHERE github_username=$1', [githubUsername]))[0].email_address
+  await nodeSchedule.scheduleJob(githubUsername, frequencyOption, async () => {
+    const userRows = await db.executeQuery('SELECT * FROM public.users WHERE github_username=$1', [githubUsername])
+    if (!userRows.length) {
+      console.log('Email scheduler: Cannot find user')
+      return
+    }
+    const userEmail = userRows[0].email_address
     const reposToNotify = await db.getReposToNotify(githubUsername)
 
-    if (reposToNotify.length > 0) {
-      let repoIds = []
-      console.log(reposToNotify)
-      let emailContent = ""
-      let prefix = ""
-
-      // Create email content
-      // TODO: do we prefer just sending the repo names or specific file names?
-      reposToNotify.forEach(repo => {
-        emailContent += prefix + repo.name
-        prefix = ", "
-        repoIds.push(repo.id)
-      })
+    // console.log(reposToNotify)
+    if (reposToNotify.length) {
+      const repoIds = reposToNotify.map(({ id }) => id)
+      const emailContent = reposToNotify.map(({ name }) => name).join(`, `)
 
       // Send email notification to their github email
       // TODO: user may want notifcations to be sent to emails different from their github account
@@ -113,11 +109,12 @@ export async function setEmailScheduler(githubUsername, frequencyOption) {
   })
 }
 
-function deleteEmailSchedulerInstance(githubUsername) {
+async function deleteEmailSchedulerInstance(githubUsername) {
   /**
    * Delete running instance of email scheduler
    */
-  const oldSchedule = nodeSchedule.scheduledJobs[githubUsername]
+  const oldSchedule = await nodeSchedule.scheduledJobs[githubUsername]
+  // console.log(`${oldSchedule}, ${githubUsername}`)
   // await db.executeQuery('DELETE FROM public.email_schedules WHERE github_username=$1', [githubUsername])
   if (oldSchedule) {
     oldSchedule.cancel()
@@ -125,12 +122,12 @@ function deleteEmailSchedulerInstance(githubUsername) {
   }
 }
 
-export async function removeEmailScheduler(githubUsername){
+export async function removeEmailScheduler(githubUsername) {
   /**
    * Delete running instance of email scheduler and remove it from database (to essentially stop sending email at a frequency)
    */
   await db.executeQuery('DELETE FROM public.email_schedules WHERE github_username=$1', [githubUsername])
-  deleteEmailSchedulerInstance(githubUsername)
+  await deleteEmailSchedulerInstance(githubUsername)
 }
 
 export async function initialiseEmailSchedulers() {
@@ -139,7 +136,7 @@ export async function initialiseEmailSchedulers() {
    */
   // Get all users
   const usersRows = await db.executeQuery('SELECT github_username FROM public.users', [])
-  const usernames = usersRows.map((row) => { return row.github_username })
+  const usernames = usersRows.map(({ github_username }) => github_username)
   // console.log(usernames)
 
   // Get email schedulers for each user
@@ -147,9 +144,14 @@ export async function initialiseEmailSchedulers() {
   // console.log(emailScheduleRows)
 
   // Set the schedules
-  emailScheduleRows.forEach(row => {
-    setEmailScheduler(row.github_username, row.frequency)
+  await asyncForEach(emailScheduleRows, async row => {
+    await setEmailScheduler(row.github_username, JSON.parse(row.frequency))
   })
 }
 
+async function asyncForEach(array, callback) {
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index], index, array);
+  }
+}
 
