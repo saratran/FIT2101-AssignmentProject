@@ -25,7 +25,6 @@ const hookUrl = `https://devalarm.com/api/github`;
 
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code;
-  console.log("req token: ", requestToken)
 
   fetch(`https://github.com/login/oauth/access_token?client_id=${clientID}&client_secret=${clientSecret}&code=${requestToken}`, {
     method: 'POST',
@@ -69,6 +68,16 @@ app.post('/api/github', function (req, res) {
 
   console.log("body", body);
   console.log("header", headers);
+
+  /**
+   * TODO here: send emails when webhooks arrive
+   *
+   * Emails for:
+   * * issues
+   * * code changes
+   *
+   * Also: mark repos as 'need_to_notify' in the DB when messages arrive about those repos.
+   */
 
   // console.log("sending email");
   // emailService.sendEmail(['utra0001@student.monash.edu'], 'Sara Tran').catch(console.error);
