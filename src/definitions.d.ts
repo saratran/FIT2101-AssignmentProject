@@ -16,3 +16,9 @@ interface FileInfo {
   yourContributions: Contribution;
   otherContributors: Contributor[];
 }
+
+interface Welcome{
+  name: string
+}
+
+type EmailContent = Welcome

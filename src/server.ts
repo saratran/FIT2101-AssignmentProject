@@ -420,15 +420,15 @@ app.get('/api/user-contributed-files', async function (req, res) {
 });
 
 app.get(`/api/issues/:repo`, async (req, res) => {
-    const {repo} = req.params
-    const accessToken = req.query.access_token
-    const user = await getUserAsync(accessToken)
-    const username = user.login
+  const { repo } = req.params
+  const accessToken = req.query.access_token
+  const user = await getUserAsync(accessToken)
+  const username = user.login
 
-    const issuesUrl = `https://api.github.com/repos/${username}/${repo}/issues?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}&assignee=${username}&state=open`
-    const issues = await fetchAsync(issuesUrl)
-    const issueData = issues.map(({ title, body, url, user, updated_at }) => ({ title, body, url, createdBy: user.login, lastUpdated: updated_at }))
-    res.send(issueData)
+  const issuesUrl = `https://api.github.com/repos/${username}/${repo}/issues?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}&assignee=${username}&state=open`
+  const issues = await fetchAsync(issuesUrl)
+  const issueData = issues.map(({ title, body, url, user, updated_at }) => ({ title, body, url, createdBy: user.login, lastUpdated: updated_at }))
+  res.send(issueData)
 })
 
 app.get(`/api/files/:repo`, async (req, res) => {
@@ -592,8 +592,8 @@ app.get(`/api/files/:repo`, async (req, res) => {
 /** Calls setEmailFrequency in database.ts
  * You can modify where in the database the frequency is stored in setEmailFrequency
  */
-app.post(`/api/email-frequency`, async(req, res) => {
-  const {frequency} = req.body
+app.post(`/api/email-frequency`, async (req, res) => {
+  const { frequency } = req.body
   const accessToken = req.query.access_token
   const username = (await getUserAsync(accessToken)).login
   await db.setEmailFrequency(username, frequency)
@@ -651,9 +651,16 @@ console.log(`Listening on port ${port}`);
 async function forTesting() {
   // await emailService.sendEmail([null],'somehting', ()=>{})
 
-  await emailService.initialiseEmailSchedulers()
-  await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
-  await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
+  // await emailService.initialiseEmailSchedulers()
+  // await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
+  // await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
+
+  const emailContent: Welcome = {
+    name: 'Sara'
+  }
+
+  console.log(emailContent)
+  emailService.sendEmail(['saraut1479@gmail.com'], emailContent, () => { })
 }
 
 forTesting()
