@@ -590,7 +590,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
 app.patch(`/api/repos`, async (req, res) => {
   console.log("*** PATCH repos ***")
 
-  const { accessToken } = req.query
+  const accessToken = req.query.access_token
   const { op, path, value } = req.body
 
   // Current support is only for PATCH /repos/[reponame]/is_watching
@@ -602,9 +602,7 @@ app.patch(`/api/repos`, async (req, res) => {
   const repoName = path.split('/')[1]
   const user = await getUserAsync(accessToken)
   const userId = await db.getUserId(user.login)
-  const repoId = db.getRepoId(userId, repoName)
-
-  console.log(repoName, user, userId, repoId)
+  const repoId = await db.getRepoId(userId, repoName)
 
   await db.executeQuery(`UPDATE public.repos SET is_watching=$1 WHERE id=$2`, [value, repoId])
 
