@@ -689,7 +689,14 @@ $(document).ready(function() {
             }
         }
         if (frequency) {
-            fetch(apiUrl + `/email-frequency/${frequency}?access_token=${accessToken}`).then(fetchRes => {})
+            fetch(apiUrl + `/email-frequency?access_token=${accessToken}`, {
+                body: JSON.stringify({frequency: frequency}),
+                method: 'PATCH',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }).then(fetchRes => {})
         }
     }
 

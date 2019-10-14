@@ -112,14 +112,13 @@ export async function addFile(fileInfo, repoName, githubUsername) {
 /**
  * Stores frequency in database. (Currently in public.users, in the email_frequency column)
  *
- * @param githubUsername - username of gi
+ * @param githubUsername
  * @param frequency - currently just a string in the set {'never', 'individual', 'daily', 'weekly'}
  */
 export async function setEmailFrequency(githubUsername, frequency) {
     const userId = await getUserId(githubUsername)
     if (userId) {
-        let rows = await executeQuery('UPDATE public.users SET email_frequency = ($1) WHERE id = ($2) RETURNING id', [frequency, userId])
-        return rows[0].id
+        let rows = await executeQuery('UPDATE public.users SET email_frequency = ($1) WHERE id = ($2)', [frequency, userId])
     } else {
         console.log("Cannot find the user in the database")
     }
