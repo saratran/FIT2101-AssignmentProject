@@ -36,8 +36,8 @@ app.get('/callback', (req, res) => {
   })
     .then(queryRes => {
       queryRes.json().then(async json => {
-        let username = await getUserAsync(json.access_token);
-        let email = await getUserEmailAsync(json.access_token);
+        const username = await getUserAsync(json.access_token);
+        const email = await getUserEmailAsync(json.access_token);
         await db.addUser(email, username.login);
         res.redirect(`/login.html?access_token=${json.access_token}`);
       })
@@ -186,12 +186,11 @@ app.get('/api/repositories', async function (req, res) {
   let userData = await getUserAsync(accessToken); // data of authorized user
   // console.log(userData);
 
-  const reposUrl = userData.repos_url;
+  const reposUrl = `${userData.repos_url}?access_token=${accessToken}`
   //console.log(reposUrl);
 
-  const repos = await fetch(reposUrl).then(async fetchRes => {
-    return await fetchRes.json().then(json => {
-      // console.log(json);
+  fetch(reposUrl).then(fetchRes => {
+    fetchRes.json().then(json => {
       // format to only send repository names
       const repos = json.map(repo => ({
         name: repo.name,
@@ -203,8 +202,7 @@ app.get('/api/repositories', async function (req, res) {
   })
 
   // todo: may excess api call
-  let username = await getUserAsync(accessToken);
-  let email = await getUserEmailAsync(accessToken);
+  const username = await getUserAsync(accessToken);
   // console.log(username)
   // console.log(email)
   repos.forEach(async repo => {
@@ -427,6 +425,17 @@ app.get('/api/user-contributed-files', async function (req, res) {
   res.json(response)
 });
 
+app.get(`/api/issues/:repo`, async (req, res) => {
+    const {repo} = req.params
+    const accessToken = req.query.access_token
+    const user = await getUserAsync(accessToken)
+    const username = user.login
+
+    const issuesUrl = `https://api.github.com/repos/${username}/${repo}/issues?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}&assignee=${username}&state=open`
+    const issues = await fetchAsync(issuesUrl)
+    const issueData = issues.map(({ title, body, url, user, updated_at }) => ({ title, body, url, createdBy: user.login, lastUpdated: updated_at }))
+    res.send(issueData)
+})
 
 app.get(`/api/files/:repo`, async (req, res) => {
   /**
