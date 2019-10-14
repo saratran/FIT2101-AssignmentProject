@@ -21,8 +21,10 @@ interface Welcome{
   content:{
     name: string
   }
-  attachments: EmailAttachment[],
-  template: string
+  template: {
+    name: string,
+    attachments: EmailAttachment[]
+  }
 }
 
 interface EmailAttachment{

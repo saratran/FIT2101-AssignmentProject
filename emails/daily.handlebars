@@ -6,66 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
-</head>
-<body>
-<div class="main-content">
-    <div class="header">
-        <a href="https://devalarm.com"><img alt="DevAlarm" src="email-img/logo.png" style="height: 30px; width: 165px; margin-bottom: 20px;"></a>
-        <b style="color: #555555;"> <br> A customisable change alarm for GitHub repositories. </b>
-    </div>
-    <div class="email-subject">
-        <div class="heading-flag">
-            <b style="margin-top: 0">Daily Digest</b>
-        </div>
-    </div>
-    <div class="welcome-body">
-        <h2>Hi, {{name}}!</h2>
-        <p style="line-height: 30px;">Here's your daily digest for</p>
-        <p style="line-height: 30px; color:#555555;">{{dateAndDay}}</p>
-    </div>
-    <div class="digest-items">
-        <h2 class="section-heading">File Changes</h2>
-        <p style="text-align: left">Here are the file changes that have occurred today.</p>
-        <table>
-            <thead>
-                <td class="l">Repository</td>
-                <td class="c">File Name</td>
-                <td class="r">Contributor</td>
-            </thead>
-            <!-- links to repo dashboard on devalarm -->
-            <tr class="list-item" onclick="window.location = {{devalarmDashboard}};">
-                <td class="l">{{repoName}}</td>
-                <td class="c">{{fileName}}</td>
-                <td class="r">{{contributor}}</td>
-            </tr>
-        </table>
-    </div>
-    <div class="digest-items">
-        <h2 class="section-heading">Issues</h2>
-        <p style="text-align: left">Here are the issues that have been opened today.</p>
-        <table>
-            <thead>
-                <td class="l">Repository</td>
-                <td class="c">Issue</td>
-                <td class="r">Opened By</td>
-            </thead>
-            <!-- links to repo dashboard on devalarm -->
-            <tr class="list-item" onclick="window.location = {{devalarmDashboard}};">
-                <td class="l">{{repoName}}</td>
-                <td class="c">{{issue}}</td>
-                <td class="r">{{contributor}}</td>
-            </tr>
-        </table>
-    </div>
-    <div class="footer">
-        <p><a class="footer-links" href="">About</a></p>
-        <p><a class="footer-links" href="https://devalarm.com/">Home</a></p>
-        <p><a class="footer-links" href="">Contact</a></p>
-    </div>
-</div>
-</body>
-</html>
-<style>
+    <style>
     @import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');
     @import url('https://fonts.googleapis.com/css?family=Comfortaa');
 
@@ -212,3 +153,62 @@
         color: var(--color-5);
     }
 </style>
+</head>
+<body>
+<div class="main-content">
+    <div class="header">
+        <a href="https://devalarm.com"><img alt="DevAlarm" src="cid:logo.png" style="height: 30px; width: 165px; margin-bottom: 20px;"></a>
+        <b style="color: #555555;"> <br> A customisable change alarm for GitHub repositories. </b>
+    </div>
+    <div class="email-subject">
+        <div class="heading-flag">
+            <b style="margin-top: 0">Daily Digest</b>
+        </div>
+    </div>
+    <div class="welcome-body">
+        <h2>Hi, {{name}}!</h2>
+        <p style="line-height: 30px;">Here's your daily digest for</p>
+        <p style="line-height: 30px; color:#555555;">{{dateAndDay}}</p>
+    </div>
+    <div class="digest-items">
+        <h2 class="section-heading">File Changes</h2>
+        <p style="text-align: left">Here are the file changes that have occurred today.</p>
+        <table>
+            <thead>
+                <td class="l">Repository</td>
+                <td class="c">File Name</td>
+                <td class="r">Contributor</td>
+            </thead>
+            <!-- links to repo dashboard on devalarm -->
+            <tr class="list-item" onclick="window.location = {{devalarmDashboard}};">
+                <td class="l">{{repoName}}</td>
+                <td class="c">{{fileName}}</td>
+                <td class="r">{{contributor}}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="digest-items">
+        <h2 class="section-heading">Issues</h2>
+        <p style="text-align: left">Here are the issues that have been opened today.</p>
+        <table>
+            <thead>
+                <td class="l">Repository</td>
+                <td class="c">Issue</td>
+                <td class="r">Opened By</td>
+            </thead>
+            <!-- links to repo dashboard on devalarm -->
+            <tr class="list-item" onclick="window.location = {{devalarmDashboard}};">
+                <td class="l">{{repoName}}</td>
+                <td class="c">{{issue}}</td>
+                <td class="r">{{contributor}}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="footer">
+        <p><a class="footer-links" href="">About</a></p>
+        <p><a class="footer-links" href="https://devalarm.com/">Home</a></p>
+        <p><a class="footer-links" href="">Contact</a></p>
+    </div>
+</div>
+</body>
+</html>

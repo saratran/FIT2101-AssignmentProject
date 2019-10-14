@@ -4,6 +4,41 @@ import nodeSchedule = require('node-schedule');
 import db = require('./database')
 import path = require('path')
 
+export const templates = { // <---- Edit this to add more templates
+  welcome: {
+    name: "index",
+    attachments: // <---- Edit this to add more attachements/images to the emails
+      [{
+        filename: 'logo.png',
+        path: path.join(__dirname, '../emails/email-img/logo.png'),
+        cid: 'logo.png' // <------ Change the src of image in the template to "src=cid:logo.png" if the image is not showing up
+      },
+      {
+        filename: 'file-details.png',
+        path: path.join(__dirname, '../emails/email-img/file-details.png'),
+        cid: 'file-details.png'
+      }, {
+        filename: 'files-issues.png',
+        path: path.join(__dirname, '../emails/email-img/files-issues.png'),
+        cid: 'files-issues.png'
+      }, {
+        filename: 'repositories.png',
+        path: path.join(__dirname, '../emails/email-img/repositories.png'),
+        cid: 'repositories.png'
+      }
+      ]
+  },
+  daily: {
+    name: "daily",
+    attachments: // <---- Edit this to add more attachements/images to the emails
+      [{
+        filename: 'logo.png',
+        path: path.join(__dirname, '../emails/email-img/logo.png'),
+        cid: 'logo.png' // <------ Change the src of image in the template to "src=cid:logo.png" if the image is not showing up
+      }]
+  }
+}
+
 export const frequency = {
   daily: { hour: 10 }, // trigger event at 10:00 am everyday
   weekly: { hour: 10, dayOfWeek: 0 }, // trigger event at 10:00am every Sunday
@@ -27,26 +62,23 @@ const transporter = nodemailer.createTransport({
 
 const handlebarsOption = {
   viewEngine: {
-    extName: '.handlebars',
-    partialsDir: './emails',
-    layoutsDir: './emails',
-    defaultLayout: 'index.handlebars', //<------ Edit this in the mean time to change the template use
-    // defaultLayout: false
+    partialsDir: 'partials/',
+    defaultLayout: false
   },
-  viewPath: "./emails"
+  viewPath: path.resolve(__dirname, '../emails')
 };
 
 // Use handlebars to render
 transporter.use('compile', hbs(handlebarsOption));
 
-export async function sendEmail(receivers: string[], emailContent: EmailContent, callback) {
-   let mailOptions = {
+export async function sendEmail(receivers: string[], emailContent: EmailContent, callback?) {
+  let mailOptions = {
     from: `${sender.name} <${sender.email}>`,
     to: `${receivers}`,
     subject: 'DevAlarm Test',
-    template: emailContent.template,
+    template: emailContent.template.name,
     context: emailContent.content,
-    attachments: emailContent.attachments,
+    attachments: emailContent.template.attachments,
   };
 
   transporter.sendMail(mailOptions, (err, data) => {

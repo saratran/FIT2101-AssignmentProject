@@ -658,34 +658,14 @@ async function forTesting() {
   // await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
 
   const emailContent: Welcome = {
-    content:{
+    content: {
       name: 'Sara' // <------ replacing {{name}} in the template
     },
-    attachments: // <---- Edit this to add more attachements/images to the emails
-    [{
-      filename: 'logo.png',
-      path: path.join(__dirname, '../emails/email-img/logo.png'),
-      cid: 'logo.png' // <------ Change the src of image in the template to "src=cid:logo.png" if the image is not showing up
-    },
-    {
-      filename: 'file-details.png',
-      path: path.join(__dirname, '../emails/email-img/file-details.png'),
-      cid: 'file-details.png'
-    }, {
-      filename: 'files-issues.png',
-      path: path.join(__dirname, '../emails/email-img/files-issues.png'),
-      cid: 'files-issues.png'
-    }, {
-      filename: 'repositories.png',
-      path: path.join(__dirname, '../emails/email-img/repositories.png'),
-      cid: 'repositories.png' 
-    }
-    ],
-    template: "daily" // <----- This suppose to be determining which template to use but I'm not sure if it's working yet
+    template: emailService.templates.daily
   }
 
   console.log(emailContent)
-  emailService.sendEmail(['saraut1479@gmail.com'], emailContent, () => { })
+  emailService.sendEmail(['saraut1479@gmail.com'], emailContent)
 }
 
 forTesting()
