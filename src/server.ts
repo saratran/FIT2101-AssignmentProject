@@ -633,6 +633,12 @@ app.use('/', express.static('frontend'));
 const port = process.env.ENV === "SERVER" ? 80 : 3000;
 app.listen(port);
 console.log(`Listening on port ${port}`);
-emailService.scheduleEmail('sara1479', emailService.frequency.minute)
-emailService.scheduleEmail('saratran', emailService.frequency.minute)
-emailService.scheduleEmail('sara1479', emailService.frequency.minute)
+
+async function forTesting() {
+  await emailService.initialiseEmailSchedulers()
+  await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
+  await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
+  // await emailService.setEmailScheduler('sara1479', emailService.frequency.daily)
+}
+
+forTesting()

@@ -17,7 +17,7 @@ const sender = {
 }; // login details for Gmail account
 
 // create reusable transporter object to send email
-let transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: sender.email,
@@ -66,30 +66,23 @@ export async function sendEmail(receivers: string[], emailContent, callback) {
   });
 }
 
-export async function scheduleEmail(githubUsername, frequencyOption) {
-  /**
-   * Note:
-   * - scheduled jobs will only fire as long as your script is running 
-   * - consider saving events in a database and mark them complete/incomplete
-   * - reschedule incomplete events at the start of the script
-  */
+export async function setEmailScheduler(githubUsername, frequencyOption) {
   /**
    * - pass in username/userid and frequency
    * - check repos related to user --> need to notify
-   * - check files in each repos to see if need to know specifically which files have changed
    * - after sending email, set the need_to_notfiy to false
    * - need_to_notify true when receive webhook
    */
-  console.log('email scheduler initialised')
-  // // For testing
-  // nodeSchedule.scheduleJob(frequency.minute, async () => {
-  //   console.log('1 minute has passed!')
-  // })
+  console.log('Setting email scheduler')
 
-  // Delete old email scheduler
-  deleteEmailScheduler(githubUsername)
+  // Delete old email scheduler so that each user can only have 1 instance of email scheduler running
+  deleteEmailSchedulerInstance(githubUsername)
 
-  // Set up new job
+  // Add/Update new scheduler to database
+  await db.executeQuery('INSERT INTO public.email_schedules (github_username, frequency) VALUES($1,$2) ON CONFLICT (github_username) DO UPDATE SET frequency=$2', [githubUsername, frequencyOption])
+
+
+  // Set up new scheduler
   nodeSchedule.scheduleJob(githubUsername, frequencyOption, async () => {
     const userEmail = (await db.executeQuery('SELECT * FROM public.users WHERE github_username=$1', [githubUsername]))[0].email_address
     const reposToNotify = await db.getReposToNotify(githubUsername)
@@ -111,10 +104,6 @@ export async function scheduleEmail(githubUsername, frequencyOption) {
       // Send email notification to their github email
       // TODO: user may want notifcations to be sent to emails different from their github account
       sendEmail([userEmail], emailContent, async () => {
-        // repoIds.forEach(async id => {
-        //   await db.executeQuery('UPDATE public.repos SET need_to_notify=false WHERE id=$1', [id])
-        // })
-
         // Change need_to_notify to false after done sending email
         await db.executeQuery('UPDATE public.repos SET need_to_notify=false WHERE id=ANY($1)', [repoIds])
         console.log('Changed notification status succesfully')
@@ -124,13 +113,43 @@ export async function scheduleEmail(githubUsername, frequencyOption) {
   })
 }
 
-export function deleteEmailScheduler(githubUsername){
-  const old_schedule = nodeSchedule.scheduledJobs[githubUsername]
-  if(old_schedule){
-    old_schedule.cancel()
-    // console.log('Schedule found and deleted')
+function deleteEmailSchedulerInstance(githubUsername) {
+  /**
+   * Delete running instance of email scheduler
+   */
+  const oldSchedule = nodeSchedule.scheduledJobs[githubUsername]
+  // await db.executeQuery('DELETE FROM public.email_schedules WHERE github_username=$1', [githubUsername])
+  if (oldSchedule) {
+    oldSchedule.cancel()
+    console.log('Old schedule found and deleted')
   }
 }
 
+export async function removeEmailScheduler(githubUsername){
+  /**
+   * Delete running instance of email scheduler and remove it from database (to essentially stop sending email at a frequency)
+   */
+  await db.executeQuery('DELETE FROM public.email_schedules WHERE github_username=$1', [githubUsername])
+  deleteEmailSchedulerInstance(githubUsername)
+}
+
+export async function initialiseEmailSchedulers() {
+  /**
+   * Reschedule pending email schedulers that have been saved to the database and should be run at the start of the script.
+   */
+  // Get all users
+  const usersRows = await db.executeQuery('SELECT github_username FROM public.users', [])
+  const usernames = usersRows.map((row) => { return row.github_username })
+  // console.log(usernames)
+
+  // Get email schedulers for each user
+  const emailScheduleRows = await db.executeQuery('SELECT * FROM public.email_schedules WHERE github_username=ANY($1)', [usernames])
+  // console.log(emailScheduleRows)
+
+  // Set the schedules
+  emailScheduleRows.forEach(row => {
+    setEmailScheduler(row.github_username, row.frequency)
+  })
+}
 
 
