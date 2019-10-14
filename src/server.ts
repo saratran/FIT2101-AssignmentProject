@@ -2,7 +2,6 @@ import express = require('express'); // for web server
 import cors = require('cors'); // allows us to make requests across domains/ports (Cross-Origin Resource Sharing)
 import fetch from 'node-fetch'; // polyfill for browser JS 'fetch' functionality
 import bodyParser = require('body-parser'); // allows express to handle body of POST requests
-import pg = require('pg'); // PostgreSQL (PG) database interface
 import dotenv = require('dotenv'); // environment variables
 import flatMap = require('flatmap');
 import emailService = require('./email-service');
@@ -190,27 +189,20 @@ app.get('/api/repositories', async function (req, res) {
   //console.log(reposUrl);
 
   fetch(reposUrl).then(fetchRes => {
-    fetchRes.json().then(json => {
+    fetchRes.json().then(async json => {
       // format to only send repository names
-      const repos = json.map(repo => ({
-        name: repo.name,
-        url: repo.html_url,
-        description: repo.description
+      const repos: Repo[] = json.map(({ name, html_url, description }) => ({
+        name,
+        url: html_url,
+        description
       }));
-      return repos;
+
+      const username = await getUserAsync(accessToken);
+      await db.addRepos(repos, username.login)
+
+      res.send(repos)
     })
   })
-
-  // todo: may excess api call
-  const username = await getUserAsync(accessToken);
-  // console.log(username)
-  // console.log(email)
-  repos.forEach(async repo => {
-    // console.log(repo)
-    await db.addRepo(repo, username.login)
-  })
-  res.send(repos)
-
 });
 
 app.delete('/api/webhooks', async function (req, res) {
