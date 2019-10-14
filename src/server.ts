@@ -70,8 +70,8 @@ app.post('/api/github', function (req, res) {
   console.log("body", body);
   console.log("header", headers);
 
-  console.log("sending email");
-  emailService.sendEmail(['utra0001@student.monash.edu'], 'Sara Tran').catch(console.error);
+  // console.log("sending email");
+  // emailService.sendEmail(['utra0001@student.monash.edu'], 'Sara Tran').catch(console.error);
 
   res.json({});
   res.status(200)
@@ -175,8 +175,9 @@ app.get('/api/repositories', async function (req, res) {
   const reposUrl = `${userData.repos_url}?access_token=${accessToken}`
   //console.log(reposUrl);
 
-  fetch(reposUrl).then(fetchRes => {
-    fetchRes.json().then(async json => {
+  const repos = await fetch(reposUrl).then(async fetchRes => {
+    return await fetchRes.json().then(async json => {
+      // console.log(json);
       // format to only send repository names
       let repos: Repo[] = json.map(({ name, html_url, description }) => ({
         name,
@@ -413,8 +414,8 @@ app.get(`/api/files/:repo`, async (req, res) => {
       }
     });
 
-    filesArrangedByUser.forEach(async file =>{
-      if(file.yourContributions != null){
+    filesArrangedByUser.forEach(async file => {
+      if (file.yourContributions) {
         // Note: only add file user has contributed to?
         await db.addFile(file, repo, username)
       }
@@ -443,6 +444,18 @@ app.patch(`/api/repos`, async (req, res) => {
 
   await db.executeQuery(`UPDATE public.repos SET is_watching=$1 WHERE id=$2`, [isWatching, repoId])
 
+  /** Calls setEmailFrequency in database.ts
+ * You can modify where in the database the frequency is stored in setEmailFrequency
+ */
+app.post(`/api/email-frequency`, async(req, res) => {
+  const {frequency} = req.body
+  const accessToken = req.query.access_token
+  const username = (await getUserAsync(accessToken)).login
+  await db.setEmailFrequency(username, frequency)
+  console.log("Set email frequency: " + frequency)
+  res.sendStatus(204);
+})
+
   if (isWatching) {
     createWebhook(accessToken, user.login, repoName)
   } else {
@@ -464,4 +477,13 @@ app.use('/', express.static('frontend'));
 const port = process.env.ENV === "SERVER" ? 80 : 3000;
 app.listen(port);
 console.log(`Listening on port ${port}`);
-emailService.scheduleEmail()
+
+async function forTesting() {
+  // await emailService.sendEmail([null],'somehting', ()=>{})
+
+  await emailService.initialiseEmailSchedulers()
+  await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
+  await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
+}
+
+forTesting()

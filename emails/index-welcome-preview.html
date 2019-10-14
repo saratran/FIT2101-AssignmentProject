@@ -1,4 +1,3 @@
-<!--TODO: passing data into template-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,44 +7,44 @@
     <title>Document</title>
 </head>
 <body>
-<div class="main-content">
-    <div class="header">
-        <a href="https://devalarm.com"><img alt="DevAlarm" src="email-img/logo.png" style="height: 30px; width: 165px; margin-bottom: 20px;"></a>
-        <b style="color: #555555;"> <br> A customisable change alarm for GitHub repositories. </b>
-    </div>
-    <div class="email-subject">
-        <div class="heading-flag">
-            <b style="margin-top: 0">Welcome</b>
+    <div class="main-content">
+        <div class="header">
+            <a href="https://devalarm.com"><img alt="DevAlarm" src="email-img/logo.png" style="height: 30px; width: 165px; margin-bottom: 20px;"></a>
+            <b style="color: #555555;"> <br> A customisable change alarm for GitHub repositories. </b>
+        </div>
+        <div class="email-subject">
+            <div class="heading-flag">
+                <b style="margin-top: 0">Welcome</b>
+            </div>
+        </div>
+        <div class="welcome-body">
+            <h2>Welcome to DevAlarm, {{name}}!</h2>
+            <p style="text-align: left; line-height: 30px;">Your life is about to get a whole lot more notified with DevAlarm. From now on, you will receive customisable updates whenever a change has been made to a file you have contributed to, or created from your repositories.</p>
+        </div>
+        <h2 style="text-align: center; padding-bottom: 40px; padding-top: 15px; color: #424242; border-bottom: solid #eeeeee; border-bottom-width: 2px;">Getting Started</h2>
+        <div class="instructions">
+            <div class="repo-info">
+                <h3 style="text-align: left">View Your Repositories</h3>
+                <p style="text-align: left"><img alt="Repository list" src="email-img/repositories.png" style="height: 150px; float: right">Go to your dashboard and view a list of all your repositories. Here you can change which repositories to be notified for, and customize the frequency at which those notifications are delivered.</p>
+                <p class="clear">&nbsp;</p>
+            </div>
+            <div class="file-details">
+                <h3 style="text-align: right">See File Statistics</h3>
+                <p style="text-align: right"><img alt="Repository list" src="email-img/file-details.png" style="height: 150px; float: left">See your files in a new way with contribution ratios, line change counts per contributor, and all contributor contact information in one place.</p>
+                <p class="clear">&nbsp;</p>
+            </div>
+            <div class="files-issues">
+                <h3 style="text-align: left">See All Files and Unresolved Issues</h3>
+                <p style="text-align: left"><img alt="Repository list" src="email-img/files-issues.png" style="height: 150px; float: right">See a list of all files within your repositories as well as all open issues in one place!</p>
+                <p class="clear">&nbsp;</p>
+            </div>
+        </div>
+        <div class="footer">
+            <p><a class="footer-links" href="">About</a></p>
+            <p><a class="footer-links" href="https://devalarm.com/">Home</a></p>
+            <p><a class="footer-links" href="">Contact</a></p>
         </div>
     </div>
-    <div class="welcome-body">
-        <h2>Welcome to DevAlarm, {{name}}!</h2>
-        <p style="text-align: left; line-height: 30px;">Your life is about to get a whole lot more notified with DevAlarm. From now on, you will receive customisable updates whenever a change has been made to a file you have contributed to, or created from your repositories.</p>
-    </div>
-    <h2 style="text-align: center; padding-bottom: 40px; padding-top: 15px; color: #424242; border-bottom: solid #eeeeee; border-bottom-width: 2px;">Getting Started</h2>
-    <div class="instructions">
-        <div class="repo-info">
-            <h3 style="text-align: left">View Your Repositories</h3>
-            <p style="text-align: left"><img alt="Repository list" src="email-img/repositories.png" style="height: 150px; float: right">Go to your dashboard and view a list of all your repositories. Here you can change which repositories to be notified for, and customize the frequency at which those notifications are delivered.</p>
-            <p class="clear">&nbsp;</p>
-        </div>
-        <div class="file-details">
-            <h3 style="text-align: right">See File Statistics</h3>
-            <p style="text-align: right"><img alt="Repository list" src="email-img/file-details.png" style="height: 150px; float: left">See your files in a new way with contribution ratios, line change counts per contributor, and all contributor contact information in one place.</p>
-            <p class="clear">&nbsp;</p>
-        </div>
-        <div class="files-issues">
-            <h3 style="text-align: left">See All Files and Unresolved Issues</h3>
-            <p style="text-align: left"><img alt="Repository list" src="email-img/files-issues.png" style="height: 150px; float: right">See a list of all files within your repositories as well as all open issues in one place!</p>
-            <p class="clear">&nbsp;</p>
-        </div>
-    </div>
-    <div class="footer">
-        <p><a class="footer-links" href="">About</a></p>
-        <p><a class="footer-links" href="https://devalarm.com/">Home</a></p>
-        <p><a class="footer-links" href="">Contact</a></p>
-    </div>
-</div>
 </body>
 </html>
 <style>
@@ -161,4 +160,4 @@
     .footer-links:hover {
         color: var(--color-5);
     }
-</style></style>
+</style>
