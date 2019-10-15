@@ -67,6 +67,18 @@ export async function getFileId(userId, repoId, fileName) {
         return rows[0].id
 }
 
+export async function getFilesToNotify(githubUsername){
+    const userId = await getUserId(githubUsername)
+    const rows = await executeQuery(`
+    SELECT files.id, files.name AS "fileName", files.last_contributors AS "contributors", repos.name AS "repoName" 
+    FROM public.files 
+    JOIN public.repos ON(files.repo_id = repos.id) 
+    WHERE files.need_to_notify=true AND files.user_id=$1
+    ORDER BY repos.name`, [userId])
+
+    
+    return rows
+}
 export async function addRepo(repo, githubUsername) {
     /**
      * Need user(id) to insert as FK

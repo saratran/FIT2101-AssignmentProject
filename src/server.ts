@@ -654,23 +654,25 @@ async function forTesting() {
   // await emailService.sendEmail([null],'somehting', ()=>{})
 
   // await emailService.initialiseEmailSchedulers()
-  // await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
+  await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
   // await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
 
-  const emailContent: EmailContent = {
-    content: {
-      name: 'Sara', // <------ replacing {{name}} in the template
-      fileChanges:[{
-        repoName: "repo1",
-        fileName: "file1",
-        contributor: "user1"
-      }]
-    },
-    template: emailService.templates.daily
-  }
+  // const emailContent: EmailContent = {
+  //   content: {
+  //     name: 'Sara', // <------ replacing {{name}} in the template
+  //     fileChanges:[{
+  //       repoName: "repo1",
+  //       fileName: "file1",
+  //       contributor: "user1"
+  //     }]
+  //   },
+  //   template: emailService.templates.daily
+  // }
 
-  console.log(emailContent)
-  emailService.sendEmail(['saraut1479@gmail.com'], emailContent)
+  // console.log(emailContent)
+  // emailService.sendEmail(['saraut1479@gmail.com'], emailContent)
+  
+  // console.log(await db.executeQuery('SELECT public.files.name, public.files.last_contributors, public.repos.name FROM public.files WHERE public.files.need_to_notify=true INNER JOIN public.repos ON public.files.repo_id == public.repos.id  ',[]))
 }
 
 forTesting()

@@ -25,8 +25,14 @@ interface EmailAttachment{
 
 interface EmailContent{
   content: any,
-  template: {
-    name: string,
-    attachments: EmailAttachment[]
-  }
+  template: any
+}
+
+interface EmailTemplate{
+  name: any,
+  attachments: EmailAttachment
+}
+interface FrequencyConfig{
+  option: any,
+  template: any
 }

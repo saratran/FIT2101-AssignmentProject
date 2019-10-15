@@ -36,7 +36,7 @@
                 <tr class="list-item" style="height: 50px; cursor: pointer; background-color: #f5f5f5; font-size: 15px; color: black; line-height: 1.2; font-weight: unset;" onclick="window.location = '{{devalarmDashboard}}';">
                     <td style="padding: 15px;"><a href="{{devalarmDashboard}}" style="text-decoration: none; color: #30A3E5;">{{repoName}}</a></td>
                     <td style="padding: 15px;">{{fileName}}</td>
-                    <td style="padding: 15px;">{{contributor}}</td>
+                    <td style="padding: 15px;">{{contributors}}</td>
                 </tr>
             {{/each}}
         </table>
@@ -50,12 +50,12 @@
             <td style="padding: 15px;">Issue</td>
             <td style="padding: 15px;">Opened By</td>
             </thead>
-            {{#each fileChanges}}
+            {{#each issues}}
                 <!-- links to repo dashboard on devalarm -->
                 <tr class="list-item" style="height: 50px; cursor: pointer; background-color: #f5f5f5; font-size: 15px; line-height: 1.2;">
                     <td style="padding: 15px;"><a href="{{devalarmDashboard}}" style="text-decoration: none; color: #30A3E5;">{{repoName}}</a></td>
                     <td style="padding: 15px;">{{issue}}</td>
-                    <td style="padding: 15px;">{{contributor}}</td>
+                    <td style="padding: 15px;">{{contributors}}</td>
                 </tr>
             {{/each}}
         </table>
