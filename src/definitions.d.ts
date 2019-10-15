@@ -17,20 +17,16 @@ interface FileInfo {
   otherContributors: Contributor[];
 }
 
-interface Welcome{
-  content:{
-    name: string
-  }
-  template: {
-    name: string,
-    attachments: EmailAttachment[]
-  }
-}
-
 interface EmailAttachment{
   filename: string,
   path: string,
   cid: string
 }
 
-type EmailContent = Welcome
+interface EmailContent{
+  content: any,
+  template: {
+    name: string,
+    attachments: EmailAttachment[]
+  }
+}

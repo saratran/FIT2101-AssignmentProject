@@ -657,9 +657,14 @@ async function forTesting() {
   // await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
   // await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
 
-  const emailContent: Welcome = {
+  const emailContent: EmailContent = {
     content: {
-      name: 'Sara' // <------ replacing {{name}} in the template
+      name: 'Sara', // <------ replacing {{name}} in the template
+      fileChanges:[{
+        repoName: "repo1",
+        fileName: "file1",
+        contributor: "user1"
+      }]
     },
     template: emailService.templates.daily
   }
