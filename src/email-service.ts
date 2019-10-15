@@ -35,7 +35,54 @@ export const templates = { // <---- Edit this to add more templates
         filename: 'logo.png',
         path: path.join(__dirname, '../emails/email-img/logo.png'),
         cid: 'logo.png' // <------ Change the src of image in the template to "src=cid:logo.png" if the image is not showing up
-      }]
+      },
+        {
+          filename: 'daily-banner.png',
+          path: path.join(__dirname, '../emails/email-img/daily-banner.png'),
+          cid: 'daily-banner.png'
+        }]
+  },
+  weekly: {
+    name: 'weekly',
+    attachments:
+        [{
+          filename: 'logo.png',
+          path: path.join(__dirname, '../emails/email-img/logo.png'),
+          cid: 'logo.png' // <------ Change the src of image in the template to "src=cid:logo.png" if the image is not showing up
+        },
+          {
+            filename: 'weekly-banner.png',
+            path: path.join(__dirname, '../emails/email-img/weekly-banner.png'),
+            cid: 'weekly-banner.png'
+          }]
+  },
+  single: {
+    name: 'single',
+    attachments:
+        [{
+          filename: 'logo.png',
+          path: path.join(__dirname, '../emails/email-img/logo.png'),
+          cid: 'logo.png' // <------ Change the src of image in the template to "src=cid:logo.png" if the image is not showing up
+        },
+          {
+            filename: 'single-banner.png',
+            path: path.join(__dirname, '../emails/email-img/single-banner.png'),
+            cid: 'single-banner.png'
+          }]
+  },
+  issue: {
+    name: 'issue',
+    attachments:
+        [{
+          filename: 'logo.png',
+          path: path.join(__dirname, '../emails/email-img/logo.png'),
+          cid: 'logo.png' // <------ Change the src of image in the template to "src=cid:logo.png" if the image is not showing up
+        },
+          {
+            filename: 'issue-banner.png',
+            path: path.join(__dirname, '../emails/email-img/issue-banner.png'),
+            cid: 'issue-banner.png'
+          }]
   }
 }
 
