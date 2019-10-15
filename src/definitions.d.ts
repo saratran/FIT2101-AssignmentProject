@@ -16,3 +16,10 @@ interface FileInfo {
   yourContributions: Contribution;
   otherContributors: Contributor[];
 }
+
+interface Repo {
+  name: string;
+  url: string;
+  description: string;
+  isWatching?: boolean;
+}
