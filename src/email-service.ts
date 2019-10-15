@@ -133,7 +133,7 @@ export async function sendEmail(receivers: string[], emailContent: EmailContent,
   let mailOptions = {
     from: `${sender.name} <${sender.email}>`,
     to: `${receivers}`,
-    subject: 'DevAlarm Test',
+    subject: 'DevAlarm Notification',
     template: emailContent.template.name,
     context: emailContent.content,
     attachments: emailContent.template.attachments,
