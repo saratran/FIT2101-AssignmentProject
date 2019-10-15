@@ -2,7 +2,42 @@ import nodemailer = require('nodemailer'); // for sending emails
 import hbs = require('nodemailer-express-handlebars');
 import nodeSchedule = require('node-schedule');
 import db = require('./database')
+import path = require('path')
 
+export const templates = { // <---- Edit this to add more templates
+  welcome: {
+    name: "index",
+    attachments: // <---- Edit this to add more attachements/images to the emails
+      [{
+        filename: 'logo.png',
+        path: path.join(__dirname, '../emails/email-img/logo.png'),
+        cid: 'logo.png' // <------ Change the src of image in the template to "src=cid:logo.png" if the image is not showing up
+      },
+      {
+        filename: 'file-details.png',
+        path: path.join(__dirname, '../emails/email-img/file-details.png'),
+        cid: 'file-details.png'
+      }, {
+        filename: 'files-issues.png',
+        path: path.join(__dirname, '../emails/email-img/files-issues.png'),
+        cid: 'files-issues.png'
+      }, {
+        filename: 'repositories.png',
+        path: path.join(__dirname, '../emails/email-img/repositories.png'),
+        cid: 'repositories.png'
+      }
+      ]
+  },
+  daily: {
+    name: "daily",
+    attachments: // <---- Edit this to add more attachements/images to the emails
+      [{
+        filename: 'logo.png',
+        path: path.join(__dirname, '../emails/email-img/logo.png'),
+        cid: 'logo.png' // <------ Change the src of image in the template to "src=cid:logo.png" if the image is not showing up
+      }]
+  }
+}
 
 export const frequency = {
   daily: { hour: 10 }, // trigger event at 10:00 am everyday
@@ -27,36 +62,28 @@ const transporter = nodemailer.createTransport({
 
 const handlebarsOption = {
   viewEngine: {
-    extName: '.hbs',
-    partialsDir: './emails',
-    layoutsDir: './emails',
-    defaultLayout: 'index.handlebars',
+    partialsDir: 'partials/',
+    defaultLayout: false
   },
-  viewPath: "./emails"
+  viewPath: path.resolve(__dirname, '../emails')
 };
 
 // Use handlebars to render
 transporter.use('compile', hbs(handlebarsOption));
 
-export async function sendEmail(receivers: string[], emailContent, callback) {
-  // Source: https://nodemailer.com/about/
-  /* TODO:
-  - email content
-   */
-
+export async function sendEmail(receivers: string[], emailContent: EmailContent, callback?) {
   let mailOptions = {
     from: `${sender.name} <${sender.email}>`,
     to: `${receivers}`,
     subject: 'DevAlarm Test',
-    text: 'Wooohooo it works!!',
-    template: 'index',
-    context: {
-      name: emailContent
-    } // TODO: send extra values to template
+    template: emailContent.template.name,
+    context: emailContent.content,
+    attachments: emailContent.template.attachments,
   };
 
   transporter.sendMail(mailOptions, (err, data) => {
     if (err) {
+      console.log(err)
       console.log('Error occurs when sending email')
       return
     }
@@ -99,12 +126,12 @@ export async function setEmailScheduler(githubUsername, frequencyOption) {
 
       // Send email notification to their github email
       // TODO: user may want notifcations to be sent to emails different from their github account
-      sendEmail([userEmail], emailContent, async () => {
-        // Change need_to_notify to false after done sending email
-        await db.executeQuery('UPDATE public.repos SET need_to_notify=false WHERE id=ANY($1)', [repoIds])
-        console.log('Changed notification status succesfully')
-        return
-      })
+      // sendEmail([userEmail], emailContent, async () => {
+      //   // Change need_to_notify to false after done sending email
+      //   await db.executeQuery('UPDATE public.repos SET need_to_notify=false WHERE id=ANY($1)', [repoIds])
+      //   console.log('Changed notification status succesfully')
+      //   return
+      // })
     }
   })
 }

@@ -16,3 +16,17 @@ interface FileInfo {
   yourContributions: Contribution;
   otherContributors: Contributor[];
 }
+
+interface EmailAttachment{
+  filename: string,
+  path: string,
+  cid: string
+}
+
+interface EmailContent{
+  content: any,
+  template: {
+    name: string,
+    attachments: EmailAttachment[]
+  }
+}
