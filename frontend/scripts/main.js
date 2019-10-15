@@ -211,8 +211,8 @@ $(document).ready(function() {
                 repoList.empty()
                 json.forEach(repo => {
                     const repoElement = $.parseHTML(
-                        `<a onclick="clickElement(this, '${ repo.name }')">
-                        ${repo.name} | ${repo.description} | watching: <input type="checkbox" ${repo.isWatching && `checked=checked`} onChange="toggleWatching(this, '${ repo.name }')" /></a>
+                        `<a onclick="clickElement(this, event.target, '${ repo.name }')">
+                        ${repo.name} | ${repo.description}<div class="round" title="Watch repository"><label><input class="toggle-watch" type="checkbox" ${repo.isWatching && `checked=checked`} onclick="toggleWatching(this, '${ repo.name }'); event.stopImmediatePropagation();" /><span></span></label></div></a>
                     `)
 
                     repoList.append(repoElement)
@@ -221,10 +221,12 @@ $(document).ready(function() {
         })
     }
 
-    clickElement = (thisElem, repoName) => {
-        getFiles(repoName);
-        Array.from(document.getElementsByClassName('active')).forEach(activeRepoElem => activeRepoElem.setAttribute('class',''));
-        thisElem.setAttribute('class','active');
+    clickElement = (thisElem, target, repoName) => {
+        if (!$(target).is('span')) {
+            getFiles(repoName);
+            Array.from(document.getElementsByClassName('active')).forEach(activeRepoElem => activeRepoElem.setAttribute('class', ''));
+            thisElem.setAttribute('class', 'active');
+        }
     }
 
     toggleWatching = (checkboxElem, repoName) => {

@@ -275,7 +275,7 @@ const createWebhook = (accessToken, username, repoName) => {
     })
   }).then(fetchRes => {
     fetchRes.json().then(jsonRes => {
-      console.log("Successfully added webhook: ", jsonRes)
+      console.log("Successfully added webhook")
     })
   })
 };

@@ -5,7 +5,7 @@
 /* color scheme */
 :root {
     --color-1: #89CEAD;
-    --color-2: #5EA985;
+    --color-2: #8cd1b1;
     --color-3: #FFFFFF;
     --color-4: #30A3E5;
     --color-5: #FFA0A0;
@@ -103,7 +103,7 @@ body {
     margin-left: 8px;
     padding: 0;
     width: 250px;
-    background-color: #d1d1d1;
+    background-color: #e3e3e3;
     position: fixed;
     height: 100%;
     overflow: auto;
@@ -116,7 +116,7 @@ body {
 .repo-sidebar a {
     display: block;
     color: black;
-    padding: 16px;
+    padding: 15px;
     text-decoration: none;
 }
 
@@ -124,8 +124,8 @@ body {
 .sidebar-header {
     background-color: var(--color-2);
     color: white;
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
 }
 
 /* file master sidebar header */
@@ -133,7 +133,7 @@ body {
     background-color: var(--color-2);
     display: block;
     color: white;
-    padding: 16px;
+    padding: 15px;
     margin: 0;
     text-decoration: none;
     border-top-left-radius: 15px;
@@ -270,6 +270,8 @@ input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
     border-color: white;
     position: absolute;
     font-size: 11pt;
+
+    box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.5);
 }
 
 /* search input style */
@@ -277,9 +279,20 @@ input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
     width: 230px;
     height: 50px;
     padding: 10px;
-    background-color: #d1d1d1;
+    background-color: #e3e3e3;
     border-bottom-style: solid;
     border-bottom-color: white;
+}
+
+.search-bar-inner {
+    height: 30px;
+    background-color: white;
+    width: 230px;
+    border-color: #555555;
+    border-radius: 5px;
+    margin-top: 5px;
+
+    box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.5);
 }
 
 /* repo file styling */
@@ -679,3 +692,45 @@ rect {
     cursor: pointer;
 }
 
+.round {
+    position: relative;
+    float: right;
+    right: 5px;
+}
+
+.round span {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    box-shadow: inset 0 0 3px #000000;
+    cursor: pointer;
+    height: 20px;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 20px;
+}
+
+.round span:after {
+    border: none;
+    content: "";
+    height: 6px;
+    left: 7px;
+    opacity: 0;
+    position: absolute;
+    top: 8px;
+    width: 12px;
+}
+
+.round input[type="checkbox"] {
+    visibility: hidden;
+}
+
+.round input[type="checkbox"]:checked + span {
+    background-color: #b4edd2;
+    border-color: #b4edd2;
+}
+
+.round input[type="checkbox"]:checked + span:after {
+    opacity: 1;
+}
