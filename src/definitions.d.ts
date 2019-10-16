@@ -17,6 +17,19 @@ interface FileInfo {
   otherContributors: Contributor[];
 }
 
+interface EmailAttachment{
+  filename: string,
+  path: string,
+  cid: string
+}
+
+interface EmailContent{
+  content: any,
+  template: any
+}
+
+
+
 interface Repo {
   name: string;
   url: string;

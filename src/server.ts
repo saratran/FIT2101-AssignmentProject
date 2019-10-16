@@ -7,6 +7,8 @@ import flatMap = require('flatmap');
 import emailService = require('./email-service');
 import db = require('./database');
 import {sendEmail} from "./email-service";
+import path = require('path')
+
 
 const app = express(); // initialise app
 app.use(cors()); // allow Cross-Origin Resource Sharing
@@ -281,15 +283,15 @@ const createWebhook = (accessToken, username, repoName) => {
 };
 
 app.get(`/api/issues/:repo`, async (req, res) => {
-    const {repo} = req.params
-    const accessToken = req.query.access_token
-    const user = await getUserAsync(accessToken)
-    const username = user.login
+  const { repo } = req.params
+  const accessToken = req.query.access_token
+  const user = await getUserAsync(accessToken)
+  const username = user.login
 
-    const issuesUrl = `https://api.github.com/repos/${username}/${repo}/issues?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}&assignee=${username}&state=open`
-    const issues = await fetchAsync(issuesUrl)
-    const issueData = issues.map(({ title, body, url, user, updated_at }) => ({ title, body, url, createdBy: user.login, lastUpdated: updated_at }))
-    res.send(issueData)
+  const issuesUrl = `https://api.github.com/repos/${username}/${repo}/issues?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}&assignee=${username}&state=open`
+  const issues = await fetchAsync(issuesUrl)
+  const issueData = issues.map(({ title, body, url, user, updated_at }) => ({ title, body, url, createdBy: user.login, lastUpdated: updated_at }))
+  res.send(issueData)
 })
 
 app.get(`/api/files/:repo`, async (req, res) => {
@@ -456,10 +458,17 @@ app.patch(`/api/repos`, async (req, res) => {
   /** Calls setEmailFrequency in database.ts
  * You can modify where in the database the frequency is stored in setEmailFrequency
  */
-app.post(`/api/email-frequency`, async(req, res) => {
-  const {frequency} = req.body
+app.post(`/api/email-frequency`, async (req, res) => {
+  const { frequency } = req.body
   const accessToken = req.query.access_token
   const username = (await getUserAsync(accessToken)).login
+  if(frequency === "daily"){
+    await emailService.setEmailScheduler(username, emailService.frequency.daily)
+  } else if (frequency === "weekly"){
+    await emailService.setEmailScheduler(username, emailService.frequency.weekly)
+  } else {
+    await emailService.removeEmailScheduler(username)
+  }
   await db.setEmailFrequency(username, frequency)
   console.log("Set email frequency: " + frequency)
   res.sendStatus(204);
@@ -491,8 +500,25 @@ async function forTesting() {
   // await emailService.sendEmail([null],'somehting', ()=>{})
 
   await emailService.initialiseEmailSchedulers()
-  await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
-  await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
+  await emailService.setEmailScheduler('sara1479', emailService.frequency.daily)
+  // await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
+
+  // const emailContent: EmailContent = {
+  //   content: {
+  //     name: 'Sara', // <------ replacing {{name}} in the template
+  //     fileChanges:[{
+  //       repoName: "repo1",
+  //       fileName: "file1",
+  //       contributor: "user1"
+  //     }]
+  //   },
+  //   template: emailService.templates.daily
+  // }
+
+  // console.log(emailContent)
+  // emailService.sendEmail(['saraut1479@gmail.com'], emailContent)
+
+  // console.log(await db.executeQuery('SELECT public.files.name, public.files.last_contributors, public.repos.name FROM public.files WHERE public.files.need_to_notify=true INNER JOIN public.repos ON public.files.repo_id == public.repos.id  ',[]))
 }
 
 forTesting()

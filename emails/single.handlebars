@@ -3,7 +3,7 @@
 <html lang="en" style="align-content: center">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=700px, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=700px, initial-scale=1.0, maximum-scale:1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link href='https://fonts.googleapis.com/css?family=Open Sans' rel='stylesheet'>
     <title>Document</title>
@@ -15,31 +15,27 @@
         <b style="color: #555555;"> <br> A customisable change alarm for GitHub repositories. </b>
     </div>
     <div class="email-subject" style="height: 100px; background-color: #9ee8c4; z-index: 1;">
-        <img src="cid:issue-banner.png" style="width: 700px; left: 0; top: 0; z-index: 1">
+        <img src="cid:single-banner.png" style="width: 700px; left: 0; top: 0; z-index: 1">
     </div>
     <div class="welcome-body" style="text-align: center; padding: 40px; border-bottom: solid #eeeeee; border-bottom-width: 2px; color: black">
         <h1>Hi, {{name}}!</h1>
-        <p style="line-height: 30px; font-size: 14pt;">An issue was opened.</p>
+        <p style="line-height: 30px; font-size: 14pt;">A file has been changed.</p>
     </div>
     <div class="digest-items" style="padding: 15px 40px 40px; text-align: center; border-bottom: solid #eeeeee; border-bottom-width: 2px;">
-        <h2 class="section-heading" style="color: #424242;">New Issue</h2>
-        <p style="text-align: left; font-size: 14px;">An issue has been opened by,<b> {{assignee}}</b>.</p>
+        <h2 class="section-heading" style="color: #424242;">File Change</h2>
+        <p style="text-align: left; font-size: 14px;">The file,<b> {{fileName}}</b>, has been modified.</p>
         <table style="border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; width: 100%; margin: 0 auto; position: relative;">
             <tr style="height: 50px; cursor: pointer;">
-                <th style="padding: 15px; height: 40px; width: 100px; border-bottom: solid #89CEAD; border-bottom-width: 1px; background: #5EA985; color: white; font-size: 15px">Issue Name</th>
-                <td style="padding: 15px; text-align:left; background-color: #f5f5f5; border-bottom: solid #bfbfbf; border-bottom-width: 1px; font-size: 15px; color: black; line-height: 1.2; font-weight: unset;">{{issueTitle}}</td>
+                <th style="padding: 15px; height: 40px; width: 100px; border-bottom: solid #89CEAD; border-bottom-width: 1px; background: #5EA985; color: white; font-size: 15px">File Name</th>
+                <td style="padding: 15px; background-color: #f5f5f5; border-bottom: solid #bfbfbf; border-bottom-width: 1px; font-size: 15px; color: black; line-height: 1.2; font-weight: unset;">{{fileName}}</td>
             </tr>
             <tr>
-                <th style="padding: 15px; height: 40px; width: 100px; border-bottom: solid #89CEAD; border-bottom-width: 1px; background: #5EA985; color: white; font-size: 15px">Description</th>
-                <td style="padding: 15px; text-align:left; background-color: #f5f5f5; border-bottom: solid #bfbfbf; border-bottom-width: 1px; font-size: 15px; color: black; line-height: 1.2; font-weight: unset;">{{labelName}}: {{labelDescription}}</td>
-            </tr>
-            <tr>
-                <th style="padding: 15px; height: 40px; width: 100px; border-bottom: solid #89CEAD; border-bottom-width: 1px; background: #5EA985; color: white; font-size: 15px">Assignee</th>
-                <td style="padding: 15px; text-align:left; background-color: #f5f5f5; border-bottom: solid #bfbfbf; border-bottom-width: 1px; font-size: 15px; color: black; line-height: 1.2; font-weight: unset;">{{assignee}}</td>
+                <th style="padding: 15px; height: 40px; width: 100px; border-bottom: solid #89CEAD; border-bottom-width: 1px; background: #5EA985; color: white; font-size: 15px">Contributor</th>
+                <td style="padding: 15px; background-color: #f5f5f5; border-bottom: solid #bfbfbf; border-bottom-width: 1px; font-size: 15px; color: black; line-height: 1.2; font-weight: unset;">{{contributor}}</td>
             </tr>
             <tr>
                 <th style="padding: 15px; height: 40px; width: 100px; background: #5EA985; color: white; font-size: 15px">Repository</th>
-                <td style="padding: 15px; text-align:left; background-color: #f5f5f5; font-size: 15px; color: black; line-height: 1.2; font-weight: unset;"><a href="{{devalarmDashboard}}" style="text-decoration: none; color: #30A3E5;">{{repoName}}</a></td>
+                <td style="padding: 15px; background-color: #f5f5f5; font-size: 15px; color: black; line-height: 1.2; font-weight: unset;"><a href="{{devalarmDashboard}}" style="text-decoration: none; color: #30A3E5;">{{repoName}}</a></td>
             </tr>
         </table>
     </div>
