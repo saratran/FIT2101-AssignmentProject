@@ -1,7 +1,5 @@
 // Function headers
 
-
-
 function expandFile() {}
 function returnToRepos() {}
 function getRepos() {}
@@ -210,24 +208,42 @@ $(document).ready(function() {
             fetchRes.json().then(json => {
                 console.log(json)
 
-                repoList.empty();
+                repoList.empty()
                 json.forEach(repo => {
-                    /*
-                    let repoElement = document.createElement("a");
-                    repoElement.setAttribute("onclick", `getFiles(${repo.name})`);
-                    repoElement.innerHTML = `${repo.name} | ${repo.description}`
-                    repoList.append(repoElement);*/
+                    const repoElement = $.parseHTML(
+                        `<a onclick="clickElement(this, event.target, '${ repo.name }')">
+                        ${repo.name} | ${repo.description}<div class="round" title="Watch repository"><label><input class="toggle-watch" type="checkbox" ${repo.isWatching && `checked=checked`} onclick="toggleWatching(this, '${ repo.name }'); event.stopImmediatePropagation();" /><span></span></label></div></a>
+                    `)
 
-                    const repoElement = $.parseHTML(`<a onclick="
-                        getFiles('${repo.name}');
-                        Array.from(document.getElementsByClassName('active')).map(i => i.setAttribute('class',''));
-                        this.setAttribute('class','active');
-                        ">${repo.name} | ${repo.description}</a>`)
                     repoList.append(repoElement)
-
                 })
             })
         })
+    }
+
+    clickElement = (thisElem, target, repoName) => {
+        if (!$(target).is('span')) {
+            getFiles(repoName);
+            Array.from(document.getElementsByClassName('active')).forEach(activeRepoElem => activeRepoElem.setAttribute('class', ''));
+            thisElem.setAttribute('class', 'active');
+        }
+    }
+
+    toggleWatching = (checkboxElem, repoName) => {
+      const accessToken = window.localStorage.getItem("accessToken")
+
+      fetch(`${apiUrl}/repos?access_token=${accessToken}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          op: "replace",
+          path: `/${repoName}/is_watching`,
+          value: checkboxElem.checked
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+      })
     }
 
     getUser = () => {
@@ -244,16 +260,14 @@ $(document).ready(function() {
     }
 
     getFiles = (reponame) => {
-        if (reponame === currentRepo)
-            return
-        if ($("#start")) {
-            $("#start").remove();
-        }
+        if (reponame === currentRepo) return
+
+        $("#start").remove();
         const load = document.createElement("div")
         load.setAttribute("id", "loadScreen")
         load.innerHTML = `<p>Loading...</br>This may take a while.</p>`
 
-        $("body")[0].append(load)
+        $("body").first().append(load)
 
         currentRepo = reponame
         const accessToken = window.localStorage.getItem("accessToken")

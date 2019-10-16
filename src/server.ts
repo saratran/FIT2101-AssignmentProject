@@ -2,7 +2,6 @@ import express = require('express'); // for web server
 import cors = require('cors'); // allows us to make requests across domains/ports (Cross-Origin Resource Sharing)
 import fetch from 'node-fetch'; // polyfill for browser JS 'fetch' functionality
 import bodyParser = require('body-parser'); // allows express to handle body of POST requests
-import pg = require('pg'); // PostgreSQL (PG) database interface
 import dotenv = require('dotenv'); // environment variables
 import flatMap = require('flatmap');
 import emailService = require('./email-service');
@@ -28,16 +27,17 @@ const hookUrl = `https://devalarm.com/api/github`;
 
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code;
+
   fetch(`https://github.com/login/oauth/access_token?client_id=${clientID}&client_secret=${clientSecret}&code=${requestToken}`, {
-    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
       // 'Content-Type': 'application/x-www-form-urlencoded',
     },
-  })
-    .then(queryRes => {
+  }).then(queryRes => {
       queryRes.json().then(async json => {
+        console.log("json: ", json)
         const username = await getUserAsync(json.access_token);
         const email = await getUserEmailAsync(json.access_token);
         await db.addUser(email, username.login);
@@ -71,21 +71,22 @@ app.post('/api/github', function (req, res) {
   console.log("body", body);
   console.log("header", headers);
 
+  /**
+   * TODO here: send emails when webhooks arrive
+   *
+   * Emails for:
+   * * issues
+   * * code changes
+   *
+   * Also: mark repos as 'need_to_notify' in the DB when messages arrive about those repos.
+   */
+
   // console.log("sending email");
   // emailService.sendEmail(['utra0001@student.monash.edu'], 'Sara Tran').catch(console.error);
 
   res.json({});
   res.status(200)
 });
-
-
-
-// let repo = {
-//   name: 'repo3',
-//   url: 'http://something.com',
-//   description: 'some description'
-// }
-// addRepo(repo, 'pkbrett40@gmail.com', 'patrickbrett5')
 
 app.post('/api/authenticate', function (req, res) {
   /**
@@ -140,14 +141,15 @@ async function getUserAsync(accessToken) {
 }
 
 async function getUserEmailAsync(accessToken) {
-  let primaryEmail = null
   let emails = await fetchAsync(`https://api.github.com/user/emails?access_token=${accessToken}`)
-  emails.forEach(email => {
-    if (email.primary) {
-      primaryEmail = email.email
-    }
-  })
-  return primaryEmail
+  if (emails.length) {
+    emails.forEach(email => {
+      if (email.primary) {
+        return email.email
+      }
+    })
+  }
+  return null
 }
 
 async function getPullEvents(username, accessToken) {
@@ -175,13 +177,6 @@ app.get('/api/user', async function (req, res) {
   res.send(userData)
 });
 
-/*
-app.get('/api/emails', async function (req, res) {
-  const accessToken = req.query.access_token;
-  let userData = await getUserEmailAsync(accessToken); // data of authorized user
-  res.send(userData)
-});*/
-
 app.get('/api/repositories', async function (req, res) {
 
   const accessToken = req.query.access_token;
@@ -192,28 +187,32 @@ app.get('/api/repositories', async function (req, res) {
   //console.log(reposUrl);
 
   const repos = await fetch(reposUrl).then(async fetchRes => {
-    return await fetchRes.json().then(json => {
+    return await fetchRes.json().then(async json => {
       // console.log(json);
       // format to only send repository names
-      const repos = json.map(repo => ({
-        name: repo.name,
-        url: repo.html_url,
-        description: repo.description
+      let repos: Repo[] = json.map(({ name, html_url, description }) => ({
+        name,
+        url: html_url,
+        description
       }));
-      repos.forEach(async repo => {
-        // console.log(repo)
-        await db.addRepo(repo, userData.login)
-      })
-      res.send(repos)
+
+      const username = await getUserAsync(accessToken);
+
+      const userId = await db.getUserId(username.login)
+      await db.addRepos(repos, userId)
+
+      const dbRepos = (await db.getReposForUser(userId))
+        .filter(dbRepo => repos.map(({ url }) => url).includes(dbRepo.url))
+        .map(({ name, url, description, is_watching }) => ({ name, url, description, isWatching: is_watching }))
+
+      res.send(dbRepos)
     })
   })
 });
 
-app.delete('/api/webhooks', async function (req, res) {
+const deleteWebhook = (accessToken, username, repoName) => {
 
-  const { access_token, username, repo } = req.query;
-
-  const getUrl = `https://api.github.com/repos/${username}/${repo}/hooks?access_token=${access_token}&client_id=${clientID}&client_secret=${clientSecret}`;
+  const getUrl = `https://api.github.com/repos/${username}/${repoName}/hooks?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
 
   // Find the ID of the webhook
 
@@ -223,8 +222,7 @@ app.delete('/api/webhooks', async function (req, res) {
 
       // Find first webhook that points to correct webhook URL
 
-      if (jsonRes.length === 0) {
-        res.sendStatus(400);
+      if (!jsonRes.length) {
         return;
       }
 
@@ -233,23 +231,22 @@ app.delete('/api/webhooks', async function (req, res) {
 
       // Remove the webhook from the repository on Github
 
-      const deleteUrl = `https://api.github.com/repos/${username}/${repo}/hooks/${hookId}?access_token=${access_token}&client_id=${clientID}&client_secret=${clientSecret}`;
+      const deleteUrl = `https://api.github.com/repos/${username}/${repoName}/hooks/${hookId}?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
 
       fetch(deleteUrl, {
         method: "DELETE"
       }).then(fetchRes => {
         if (fetchRes.status === 204) { // success
-          // TODO: If this succeeded, remove the repository from the tracked repositories list in the database
-          res.sendStatus(204)
+          console.log("Successfully deleted webhook")
         } else { // failure
-          res.sendStatus(400)
+          console.log("Failed to delete webhook")
         }
       })
     })
   })
-});
+};
 
-app.post('/api/webhooks', async function (req, res) {
+const createWebhook = (accessToken, username, repoName) => {
   /**
    * 'x-oauth-scopes': [ '' ],
    * 'x-accepted-oauth-scopes': [ '' ],
@@ -259,12 +256,9 @@ app.post('/api/webhooks', async function (req, res) {
    * May need to authorise as GitHub app rather than Oauth app to be able to create webhook
    */
 
-  // Test setting up webhook
-  // const accessToken = '1e8a7d73d0e86bd126a6d3f328a030ffd1b70785'
-  const { access_token, username, repo } = req.query;
+  const repoUrl = `https://api.github.com/repos/${username}/${repoName}/hooks?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
 
-  const my_repo = `https://api.github.com/repos/${username}/${repo}/hooks?access_token=${access_token}&client_id=${clientID}&client_secret=${clientSecret}`;
-  fetch(my_repo, {
+  fetch(repoUrl, {
     method: "POST",
     headers: {
       'Content-Type': 'application/json'
@@ -282,144 +276,11 @@ app.post('/api/webhooks', async function (req, res) {
       }
     })
   }).then(fetchRes => {
-    // console.log(fetchRes);
     fetchRes.json().then(jsonRes => {
-      //console.log(jsonRes);
-
-      // TODO: If this succeeded, add the repository to the tracked repositories list in the database
-
-      res.send(jsonRes)
+      console.log("Successfully added webhook")
     })
   })
-});
-
-app.get('/api/owner-contributed-files/:repo', async function (req, res) {
-  /**
-   * This will return the repositories of the authenticated user and the files that they have committed to
-   *
-   * TODO:
-   * - Refactor the nested loops
-   * - Check for performance, currently I think it's quite slow because of the many API calls
-   * - Check with larger repos
-   */
-
-  const { repo } = req.params;
-  const accessToken = req.query.access_token;
-  const user = await getUserAsync(accessToken)
-  const username = user.login
-
-  // Fetch all push events
-  const repoUrl = `https://api.github.com/repos/${username}/${repo}`
-  const eventsUrl = repoUrl + `/events?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
-  const repoEvents = await fetchAsync(eventsUrl);
-  let response = [];
-
-
-  // Get all events related to the repo
-  // It pains me to write this horrible nested loops :'(
-  // go through each event, see which one is PushEvent
-  for (let event of repoEvents) {
-    //   console.log(event)
-    if (event.type === "PushEvent") {
-      let commits = event.payload.commits;
-      //console.log(commits)
-
-      // Get more data for each commit, specifically about the files that were committed
-      for (let commit of commits) {
-        console.log(commit.url)
-        let commit_files = (await fetchAsync(commit.url + `?client_id=${clientID}&client_secret=${clientSecret}`)).files;
-
-        for (let file of commit_files) {
-          // If file has already been added before, don't check again
-          //console.log(file.filename)
-
-          if (!response.some(f => f.filename === file.filename)) {
-            let file_commits = await (fetchAsync(repoUrl + `/commits?path=${file.filename}&client_id=${clientID}&client_secret=${clientSecret}`));
-            let other_contributors = [];
-            // Go through each commit on file
-            for (let file_commit of file_commits) {
-              if (file_commit.author.login !== username) {
-                other_contributors.push(file_commit.commit.author.name)
-              }
-            }
-            response.push({ filename: file.filename, otherContributors: other_contributors });
-          }
-        }
-      }
-    }
-  }
-
-  res.json(response)
-});
-
-app.get('/api/user-contributed-files', async function (req, res) {
-  let response = [];
-  const accessToken = req.query.access_token;
-
-  /*
-      'x-oauth-scopes': [ '' ],
-     'x-accepted-oauth-scopes': [ '' ],
-
-     TODO: oauth scope is not enough to get private repo
-    see https://developer.github.com/apps/building-oauth-apps/understanding-scopes-for-oauth-apps/
-  */
-
-  // fetch(`https://api.github.com/users/sara1479?access_token=${accessToken}`).then(fetchRes => {
-  //   console.log(fetchRes.headers)
-  // })
-  let userData = await getUserAsync(accessToken); // data of authorized user
-  // console.log(userData)
-
-  // All closed pull requests
-  // TODO: should change to push events?
-  let pullEvents = await getPullEvents(userData.login, accessToken);
-  // console.log(pullEvents)
-
-  // Get all repos from pull requests
-  const items = pullEvents.items;
-  // console.log(items)
-
-  // Going through each repo
-  // TODO: may need to check for branches?
-  for (let item of items) {
-    let obj = {};
-    let repoContents = await getRepoContents(item.repository_url);
-    let repoName = (await fetchAsync(item.repository_url)).name;
-    // console.log(repoContents)
-    // console.log(repoName)
-    obj["repo_name"] = repoName;
-    obj["repo_url"] = item.repository_url;
-    obj["files_committed"] = [];
-
-    // Going through each file
-    for (let file of repoContents) {
-      let file_name = file.name;
-      let file_url = file.url;
-      let file_path = file.path;
-      let commits = await getFileCommits(item.repository_url, file_path);
-      // Checking if any commit is done by the user
-      for (let commit of commits) {
-        // console.log(commit)
-        if (commit.commit.author.name === userData.login) {
-          // File have contributed to
-          // TODO: save to response, test with larger repos
-          // console.log(file_name)
-          let file_data = {
-            "name": file_name,
-            "path": file_path,
-            "url": file_url
-          };
-          obj["files_committed"].push(file_data);
-          break
-        }
-      }
-    }
-    response.push(obj);
-    // console.log(obj)
-  }
-  // console.log(JSON.stringify(response, null, 4));
-  res.json(response)
-});
+};
 
 app.get(`/api/issues/:repo`, async (req, res) => {
   const { repo } = req.params
@@ -487,12 +348,6 @@ app.get(`/api/files/:repo`, async (req, res) => {
 
   // @ts-ignore
   Promise.all(commitInfoProms).then(async () => {
-    /*
-   console.log("***********************")
-   console.log(commits)
-   console.log("***********************")
-   */
-
     // Identify unique files that were changed
     const contributorData = {};
     const files = {};
@@ -523,7 +378,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
     // Now evaluate the files by user and run a reduction algorithm on the changes
 
     const ownUserInfo = {
-      username: username,
+      username,
       email: userEmail,
       name: userRealName
     }
@@ -563,16 +418,6 @@ app.get(`/api/files/:repo`, async (req, res) => {
         }
       });
 
-      /* const contributor1: Contributor = {
-         username: "",
-         email: "",
-         name: "",
-         contribution: {
-           commitCount: 0,
-           lineChangeCount: 0
-         }
-       };*/
-
       return {
         filename,
         yourContributions,
@@ -591,7 +436,26 @@ app.get(`/api/files/:repo`, async (req, res) => {
   })
 });
 
-/** Calls setEmailFrequency in database.ts
+app.patch(`/api/repos`, async (req, res) => {
+  console.log("*** PATCH repos ***")
+
+  const accessToken = req.query.access_token
+  const { op, path, value: isWatching } = req.body
+
+  // Current support is only for PATCH /repos/[reponame]/is_watching
+  if (op !== 'replace' || !path.includes('is_watching')) {
+    res.sendStatus(404)
+    return
+  }
+
+  const repoName = path.split('/')[1]
+  const user = await getUserAsync(accessToken)
+  const userId = await db.getUserId(user.login)
+  const repoId = await db.getRepoId(userId, repoName)
+
+  await db.executeQuery(`UPDATE public.repos SET is_watching=$1 WHERE id=$2`, [isWatching, repoId])
+
+  /** Calls setEmailFrequency in database.ts
  * You can modify where in the database the frequency is stored in setEmailFrequency
  */
 app.post(`/api/email-frequency`, async (req, res) => {
@@ -603,45 +467,20 @@ app.post(`/api/email-frequency`, async (req, res) => {
   res.sendStatus(204);
 })
 
+  if (isWatching) {
+    createWebhook(accessToken, user.login, repoName)
+  } else {
+    deleteWebhook(accessToken, user.login, repoName)
+  }
+
+  console.log(`Updated isWatching to ${isWatching} for ${repoId} (${repoName})`)
+
+  res.send(204)
+})
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
-app.get(`/api/files-mock/:repo`, (req, res) => {
-  /**
-   * Mock endpoint for loading some random data on the frontend
-   */
-  const { repo } = req.params;
-
-  const files = ["index.js", "server.js", "soup.js", "beans.js", "rmrfslash.sh"]
-    .map((filename: string): FileInfo => ({
-      filename,
-      // lineCount: randInt(300, 500),
-      yourContributions: {
-        commitCount: randInt(2, 5),
-        lineChangeCount: randInt(100, 200)
-      },
-      otherContributors: [{
-        username: "coolhavefun3",
-        email: "coolhavefun3@gmail.com",
-        name: "Coolhave Fun3",
-        contribution: {
-          commitCount: randInt(1, 3),
-          lineChangeCount: randInt(50, 120)
-        }
-      }, {
-        username: "coolhavefun4",
-        email: "coolhavefun4@gmail.com",
-        name: "Coolhave Fun4",
-        contribution: {
-          commitCount: randInt(1, 3),
-          lineChangeCount: randInt(30, 70)
-        }
-      }]
-    }));
-  res.send(files)
-});
 
 // Serve frontend
 app.use('/', express.static('frontend'));

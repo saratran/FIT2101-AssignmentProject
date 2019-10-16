@@ -28,3 +28,11 @@ interface EmailContent{
   template: any
 }
 
+
+
+interface Repo {
+  name: string;
+  url: string;
+  description: string;
+  isWatching?: boolean;
+}

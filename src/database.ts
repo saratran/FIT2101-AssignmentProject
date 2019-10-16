@@ -1,4 +1,5 @@
 import pg = require('pg'); // PostgreSQL (PG) database interface
+import pgFormat = require('pg-format'); // Query formatter for batch inserts
 
 export const pool = new pg.Pool(); // Create a DB query pool. The database connection only works if you have valid DB credentials in the .env file
 
@@ -25,20 +26,17 @@ export async function executeQuery(queryString, listArgs) {
 
 export async function getUserId(githubUsername) {
     const rows = await executeQuery('SELECT * FROM public.users WHERE github_username=$1', [githubUsername])
-    if (rows.length)
-        return rows[0].id
+    if (rows.length) return rows[0].id
 }
 
 export async function getRepoId(userId, repoName) {
     const rows = await executeQuery('SELECT * FROM public.repos WHERE user_id=$1 AND name=$2', [userId, repoName])
-    if (rows.length)
-        return rows[0].id
+    if (rows.length) return rows[0].id
 }
 
 export async function getFileId(userId, repoId, fileName) {
     const rows = await executeQuery('SELECT * FROM public.files WHERE user_id=$1 AND repo_id=$2 AND name=$3', [userId, repoId, fileName])
-    if (rows.length)
-        return rows[0].id
+    if (rows.length) return rows[0].id
 }
 
 /**
@@ -72,39 +70,43 @@ export async function getIssuesToNotify(githubUsername){
 
     return rows
 }
-export async function addRepo(repo, githubUsername) {
-    /**
-     * Need user(id) to insert as FK
-     * get user(id) from email and githubUsername
-     */
+export async function addRepos(repos: Repo[], userId: string) {
+  console.log("*** Add repos ***")
 
-    const userId = await getUserId(githubUsername)
-    if (userId) {
-        const repoId = await getRepoId(userId, repo.name);
-        // console.log(repoId)
-        if (!repoId) {
-            const rows = await executeQuery('INSERT INTO public.repos (name, user_id, url, description) VALUES ($1, $2, $3, $4) RETURNING id', [repo.name, userId, repo.url, repo.description])
-            console.log("New repo saved");
-            return rows[0].id
-        }
-        else {
-            console.log("Repo already exist")
-            // TODO: may need to update info such as description
-        }
-    } else {
-        console.log("Cannot find the user in the database")
-    }
+  // Identify any repos that are not currently in the database and only insert those
+
+  const existingReposUrls = (await executeQuery('SELECT url FROM public.repos WHERE user_id=$1', [userId])).map(({ url }) => url)
+
+  const newRepos = repos
+    .filter(({ url }) => !existingReposUrls.includes(url))
+    .map(({ name, url, description }) => ([name, userId, url, description]))
+
+  if (newRepos.length) {
+    const batchInsert = pgFormat('INSERT INTO public.repos (name, user_id, url, description) VALUES %L RETURNING id', newRepos)
+    console.log(`Saved ${newRepos.length} new repos.`)
+
+    // Return IDs of the newly saved repos
+    return rows.map(({ id }) => id)
+  } else {
+    console.log(`No new repos to save.`)
+    return []
+  }
 }
 
-export async function getReposToNotify(githubUsername) {
+export async function getReposForUser(userId: string) {
+  console.log("*** Get repos ***")
+  return await executeQuery('SELECT * FROM public.repos WHERE user_id=$1', [userId])
+}
+
+  export async function getReposToNotify(githubUsername){
     let userId = await getUserId(githubUsername)
     if (userId) {
         let rows = await executeQuery('SELECT * FROM public.repos WHERE user_id=$1 AND need_to_notify=true', [userId])
         return rows
     }
-}
+  }
 
-export async function addFile(fileInfo, repoName, githubUsername) {
+ export async function addFile(fileInfo, repoName, githubUsername) {
     const userId = await getUserId(githubUsername)
     const repoId = await getRepoId(userId, repoName);
     const fileId = await getFileId(userId, repoId, fileInfo.filename)
