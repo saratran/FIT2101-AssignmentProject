@@ -84,7 +84,7 @@ export async function addRepos(repos: Repo[], userId: string) {
   if (newRepos.length) {
     const batchInsert = pgFormat('INSERT INTO public.repos (name, user_id, url, description) VALUES %L RETURNING id', newRepos)
     console.log(`Saved ${newRepos.length} new repos.`)
-
+    const rows = await executeQuery(batchInsert, [])
     // Return IDs of the newly saved repos
     return rows.map(({ id }) => id)
   } else {
