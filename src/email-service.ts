@@ -179,14 +179,7 @@ export async function sendFileUpdateEmail(receivers: string[], emailContent, cal
   });
 }
 
-export async function setEmailScheduler(githubUsername, frequencyOption) {
-  /**
-   * - pass in username/userid and frequency
-   * - check repos related to user --> need to notify
-   * - after sending email, set the need_to_notfiy to false
-   * - need_to_notify true when receive webhook
-   */
-  console.log(`Setting email scheduler: ${githubUsername}, ${JSON.stringify(frequencyOption)}`)
+
 /**
  * Send email notification at a a given frequency.
  * The user will be notified of recent file changes and issues opened
@@ -294,7 +287,12 @@ export async function initialiseEmailSchedulers() {
   // console.log(emailScheduleRows)
 
   // Set the schedules
-  emailScheduleRows.forEach(async row => {
+  await asyncForEach(emailScheduleRows, async row => {
     await setEmailScheduler(row.github_username, JSON.parse(row.frequency))
   })
+}
+async function asyncForEach(array, callback) {
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index], index, array);
+  }
 }
