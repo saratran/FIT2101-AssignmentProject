@@ -24,7 +24,8 @@ const isDev = true;
 
 const clientID = isDev ? '93c39afdbb7a9cb45fbc' : '3e670fbb378ba2969da8';
 const clientSecret = isDev ? '502e47a56a3efafe5a03a37d7629e5f213af5d17' : 'c63bc1e0c44bde2ac43141be91edc04524bb5087';
-const hookUrl = `https://devalarm.com/api/github`;
+// const hookUrl = `https://devalarm.com/api/github`;
+const hookUrl = `http://ab3dd77e.ngrok.io/api/github`
 
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code;
@@ -66,10 +67,16 @@ app.get('/api/repo', function (req, res) {
   })
 });
 
-app.post('/api/github', function (req, res) {
+app.post('/api/github/:username', function (req, res) {
   const { headers, body } = req;
 
+  console.log("headers", headers)
   console.log("body", body);
+  console.log(req.params.username)
+
+  if (headers["x-github-event"] === "push"){
+    console.log("Received webhook Push Event")
+  }
 
   /**
    * TODO here: send emails when webhooks arrive
@@ -267,10 +274,12 @@ const createWebhook = (accessToken, username, repoName) => {
       "name": "web",
       "active": true,
       "events": [
-        "push"
+        "push", 
+        "issues",
+        "issue_comment"
       ],
       "config": {
-        "url": hookUrl,
+        "url": `${hookUrl}/${username}`,
         "content_type": "json",
         "insecure_ssl": "0"
       }
@@ -523,8 +532,8 @@ async function forTesting() {
 
 forTesting()
 
-app.get("/api/test-email", async(req, res) => {
-  await emailService.sendEmail(["pbre0003@student.monash.edu"], "Hello", ()=>{})
+// app.get("/api/test-email", async(req, res) => {
+//   await emailService.sendEmail(["pbre0003@student.monash.edu"], "Hello", ()=>{})
 
-  res.send({})
-})
+//   res.send({})
+// })
