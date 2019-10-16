@@ -462,6 +462,13 @@ app.post(`/api/email-frequency`, async (req, res) => {
   const { frequency } = req.body
   const accessToken = req.query.access_token
   const username = (await getUserAsync(accessToken)).login
+  if(frequency === "daily"){
+    await emailService.setEmailScheduler(username, emailService.frequency.daily)
+  } else if (frequency === "weekly"){
+    await emailService.setEmailScheduler(username, emailService.frequency.weekly)
+  } else {
+    await emailService.removeEmailScheduler(username)
+  }
   await db.setEmailFrequency(username, frequency)
   console.log("Set email frequency: " + frequency)
   res.sendStatus(204);
@@ -493,7 +500,7 @@ async function forTesting() {
   // await emailService.sendEmail([null],'somehting', ()=>{})
 
   await emailService.initialiseEmailSchedulers()
-  await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
+  await emailService.setEmailScheduler('sara1479', emailService.frequency.daily)
   // await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
 
   // const emailContent: EmailContent = {
