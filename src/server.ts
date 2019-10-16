@@ -6,6 +6,7 @@ import dotenv = require('dotenv'); // environment variables
 import flatMap = require('flatmap');
 import emailService = require('./email-service');
 import db = require('./database');
+import {sendEmail} from "./email-service";
 
 const app = express(); // initialise app
 app.use(cors()); // allow Cross-Origin Resource Sharing
@@ -67,7 +68,6 @@ app.post('/api/github', function (req, res) {
   const { headers, body } = req;
 
   console.log("body", body);
-  console.log("header", headers);
 
   /**
    * TODO here: send emails when webhooks arrive
@@ -496,3 +496,9 @@ async function forTesting() {
 }
 
 forTesting()
+
+app.get("/api/test-email", async(req, res) => {
+  await emailService.sendEmail(["pbre0003@student.monash.edu"], "Hello", ()=>{})
+
+  res.send({})
+})

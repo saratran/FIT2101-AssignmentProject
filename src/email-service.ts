@@ -66,6 +66,33 @@ export async function sendEmail(receivers: string[], emailContent, callback) {
   });
 }
 
+export async function sendFileUpdateEmail(receivers: string[], emailContent, callback) {
+  // Source: https://nodemailer.com/about/
+  /* TODO:
+  - email content
+   */
+
+  let mailOptions = {
+    from: `${sender.name} <${sender.email}>`,
+    to: `${receivers}`,
+    subject: 'DevAlarm Test',
+    template: 'single-change',
+    context: {
+      name: emailContent
+    }
+  };
+
+  transporter.sendMail(mailOptions, (err, data) => {
+    if (err) {
+      console.log('Error occurs when sending email')
+      return
+    }
+    console.log('Email sent!!!');
+    callback()
+    return
+  });
+}
+
 export async function setEmailScheduler(githubUsername, frequencyOption) {
   /**
    * - pass in username/userid and frequency
@@ -80,7 +107,6 @@ export async function setEmailScheduler(githubUsername, frequencyOption) {
 
   // Add/Update new scheduler to database
   await db.executeQuery('INSERT INTO public.email_schedules (github_username, frequency) VALUES($1,$2) ON CONFLICT (github_username) DO UPDATE SET frequency=$2', [githubUsername, frequencyOption])
-
 
   // Set up new scheduler
   await nodeSchedule.scheduleJob(githubUsername, frequencyOption, async () => {
@@ -144,14 +170,7 @@ export async function initialiseEmailSchedulers() {
   // console.log(emailScheduleRows)
 
   // Set the schedules
-  await asyncForEach(emailScheduleRows, async row => {
+  emailScheduleRows.forEach(async row => {
     await setEmailScheduler(row.github_username, JSON.parse(row.frequency))
   })
 }
-
-async function asyncForEach(array, callback) {
-  for (let index = 0; index < array.length; index++) {
-    await callback(array[index], index, array);
-  }
-}
-
