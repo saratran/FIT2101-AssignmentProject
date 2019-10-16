@@ -6,6 +6,7 @@ import dotenv = require('dotenv'); // environment variables
 import flatMap = require('flatmap');
 import emailService = require('./email-service');
 import db = require('./database');
+import {sendEmail} from "./email-service";
 import path = require('path')
 
 
@@ -69,7 +70,6 @@ app.post('/api/github', function (req, res) {
   const { headers, body } = req;
 
   console.log("body", body);
-  console.log("header", headers);
 
   /**
    * TODO here: send emails when webhooks arrive
@@ -517,8 +517,14 @@ async function forTesting() {
 
   // console.log(emailContent)
   // emailService.sendEmail(['saraut1479@gmail.com'], emailContent)
-  
+
   // console.log(await db.executeQuery('SELECT public.files.name, public.files.last_contributors, public.repos.name FROM public.files WHERE public.files.need_to_notify=true INNER JOIN public.repos ON public.files.repo_id == public.repos.id  ',[]))
 }
 
 forTesting()
+
+app.get("/api/test-email", async(req, res) => {
+  await emailService.sendEmail(["pbre0003@student.monash.edu"], "Hello", ()=>{})
+
+  res.send({})
+})
