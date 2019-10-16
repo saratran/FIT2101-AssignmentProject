@@ -175,23 +175,26 @@ export async function setEmailScheduler(githubUsername, frequencyConfig) {
       return
     }
     const userEmail = userRows[0].email_address
-    const filesToNotify = await db.getFilesToNotify(githubUsername)
+    const [filesToNotify, issuesToNotify] = await Promise.all([db.getFilesToNotify(githubUsername), db.getIssuesToNotify(githubUsername)])
     const fileIds = filesToNotify.map(({ id }) => id)
+    const issueIds = issuesToNotify.map(({ id }) => id)
     // console.log(filesToNotify)
-    if (filesToNotify.length) {
+    // console.log(issuesToNotify)
+    if (filesToNotify.length || issuesToNotify.length) {
       const emailContent: EmailContent = {
         content: {
           name: githubUsername,
           fileChanges: filesToNotify,
-          issues: "", // <------ TODO: Edit this to include content of issues
+          issues: issuesToNotify, // <------ TODO: Edit this to include content of issues
           dateAndDay: `${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`
         },
         template: frequencyConfig.template
       }
+      // console.log(emailContent)
 
-      console.log(emailContent)
       sendEmail([userEmail], emailContent, async () => {
-        await db.executeQuery('UPDATE public.files SET need_to_notify=false WHERE id=ANY($1)', [fileIds])
+        // Set need_to_notify to false after finished emailing
+        await Promise.all([db.executeQuery('UPDATE public.files SET need_to_notify=false WHERE id=ANY($1)', [fileIds]), db.executeQuery('UPDATE public.issues SET need_to_notify=false WHERE id=ANY($1)', [issueIds])])
         console.log('Changed notification status succesfully')
       })
     }

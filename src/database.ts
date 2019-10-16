@@ -11,32 +11,6 @@ export async function addUser(email, githubUsername) {
     } else {
         console.log('User already exists')
     }
-    // pool.query('SELECT * FROM public.users WHERE email_address=$1 AND github_username=$2', [email, githubUsername], (err, queryRes) => {
-
-    //   if (err) {
-    //     console.log(err);
-    //     return
-    //   } else {
-    //     console.log(queryRes.rows);
-    //     // If user does not exist, create an account for them
-    //     if (queryRes.rows.length) { // user exists already, get their ID?
-    //       const { id } = queryRes.rows[0];
-    //       return { id }
-    //     } else { // user does not exist
-    //       pool.query('INSERT INTO public.users (email_address, github_username, first_login_date) VALUES ($1, $2, NOW()) RETURNING id', [email, githubUsername], (err, queryRes2) => {
-
-    //         if (err) {
-    //           console.log(err);
-    //           return
-    //         } else {
-    //           console.log("User created");
-    //           const { id } = queryRes2.rows[0];
-    //           return { id }
-    //         }
-    //       })
-    //     }
-    //   }
-    // })
 }
 
 export async function executeQuery(queryString, listArgs) {
@@ -67,7 +41,7 @@ export async function getFileId(userId, repoId, fileName) {
         return rows[0].id
 }
 
-export async function getFilesToNotify(githubUsername){
+export async function getFilesToNotify(githubUsername) {
     const userId = await getUserId(githubUsername)
     const rows = await executeQuery(`
     SELECT files.id, files.name AS "fileName", files.last_contributors AS "contributors", repos.name AS "repoName" 
@@ -76,7 +50,18 @@ export async function getFilesToNotify(githubUsername){
     WHERE files.need_to_notify=true AND files.user_id=$1 AND repos.is_watching=true
     ORDER BY repos.name`, [userId])
 
-    
+    return rows
+}
+
+export async function getIssuesToNotify(githubUsername){
+    const userId = await getUserId(githubUsername)
+    const rows = await executeQuery(`
+    SELECT issues.id, issues.name AS "issue", issues.opened_by AS "openedBy", repos.name AS "repoName"
+    FROM public.issues
+    JOIN public.repos ON(issues.repo_id = repos.id)
+    WHERE issues.need_to_notify=true AND issues.user_id=$1 AND repos.is_watching=true
+    ORDER BY repos.name`, [userId])
+
     return rows
 }
 export async function addRepo(repo, githubUsername) {
@@ -101,17 +86,17 @@ export async function addRepo(repo, githubUsername) {
     } else {
         console.log("Cannot find the user in the database")
     }
-  }
+}
 
-  export async function getReposToNotify(githubUsername){
+export async function getReposToNotify(githubUsername) {
     let userId = await getUserId(githubUsername)
     if (userId) {
-        let rows = await executeQuery('SELECT * FROM public.repos WHERE user_id=$1 AND need_to_notify=true',[userId])
+        let rows = await executeQuery('SELECT * FROM public.repos WHERE user_id=$1 AND need_to_notify=true', [userId])
         return rows
     }
-  }
-  
- export async function addFile(fileInfo, repoName, githubUsername) {
+}
+
+export async function addFile(fileInfo, repoName, githubUsername) {
     const userId = await getUserId(githubUsername)
     const repoId = await getRepoId(userId, repoName);
     const fileId = await getFileId(userId, repoId, fileInfo.filename)
