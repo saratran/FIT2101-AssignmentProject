@@ -14,6 +14,10 @@ function getUser() {}
 function hideModal() {}
 function showModal() {}
 function setEmailFrequencies() {}
+function buildNotification() {}
+function showNotifications() {}
+function checkForNewNotifications() {}
+function muteNewNotifications() {}
 
 $(document).ready(function() {
     // All code goes in this function to ensure JQuery and the page are ready before JS code is run
@@ -364,6 +368,7 @@ $(document).ready(function() {
                     // refresh repo grid layout
                     repoFileMsnry.layout();
                     document.getElementById("loadScreen").remove()
+                    checkForNewNotifications();
                 })
             })
         })
@@ -714,6 +719,85 @@ $(document).ready(function() {
         }
     }
 
+    buildNotification = (contributorUsername, notifType, notifItemName, repoName) => {
+        // get
+        fetch(apiUrl + `/users/${contributorUsername}`).then(fetchRes => {
+            fetchRes.json().then(userData => {
+                let userAvatarURL = `${userData.avatar_url}`;
+                let notificationPane = document.getElementsByClassName("notification-pane")[0];
+                let notificationItem = document.createElement("div");
+                let userAvatar = document.createElement("img");
+                let contentTitle = document.createElement("p");
+                let contentBody = document.createElement("p");
+                let action;
+
+                if (notifType === "issue") {
+                    action = "opened an issue";
+                }
+                else {
+                    action = "modified a file";
+                }
+                contentTitle.className = "notification-title";
+                contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b> has " + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
+                contentBody.className = "notification-body";
+                contentBody.innerHTML = notifItemName;
+                notificationItem.className = "notification-item new";
+                userAvatar.src = userAvatarURL;
+                userAvatar.className = "avatar";
+
+                notificationItem.appendChild(userAvatar);
+                notificationItem.appendChild(contentTitle);
+                notificationItem.appendChild(contentBody);
+                notificationItem.innerHTML += "<div style='clear:both'>&nbsp</div>";
+                notificationPane.prepend(notificationItem);
+            })
+        })
+    }
+
+    checkForNewNotifications = () => {
+        let notifications = document.getElementsByClassName("notification-pane")[0].children;
+        let notificationBadge = document.getElementsByClassName("badge")[0];
+        let numberNotifications = 0;
+
+        for (let i = 0; i < notifications.length; i++) {
+            if (notifications[i].classList.contains("new")) {
+                numberNotifications++;
+            }
+        }
+
+        if (numberNotifications !== 0) {
+            if (numberNotifications > 9) {
+                notificationBadge.innerHTML = "9+";
+            }
+            notificationBadge.innerHTML = numberNotifications.toString();
+            notificationBadge.classList.add("show-badge");
+
+        }
+    }
+
+    showNotifications = () => {
+        let notificationPane = document.getElementsByClassName("notification-pane")[0];
+        let notificationBadge = document.getElementsByClassName("badge")[0];
+
+        if (notificationPane.className !== "notification-pane notifications-visible") {
+            notificationPane.classList.add("notifications-visible");
+            notificationBadge.className = "badge";
+        }
+        else {
+            notificationPane.classList.remove("notifications-visible");
+            muteNewNotifications();
+        }
+    }
+
+    muteNewNotifications = () => {
+        let notifications = document.getElementsByClassName("notification-pane")[0].children;
+        for (let j = 0; j < notifications.length; j++) {
+            if (notifications[j].className === "notification-item new") {
+                notifications[j].classList.remove("new");
+            }
+        }
+    }
+
     $("#getReposButton").on("click", getRepos);
 
     let span = $(".close").first()
@@ -734,5 +818,7 @@ $(document).ready(function() {
     // On page load
     getUser();
     getRepos();
+    //buildNotification("DanaC05", "file", "server.js", "cool-have-fun");
+    //buildNotification("coolhavefun3", "issue", "index.handlebars", "cool-have-fun");
     //getFiles();
 });
