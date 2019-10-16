@@ -653,8 +653,8 @@ console.log(`Listening on port ${port}`);
 async function forTesting() {
   // await emailService.sendEmail([null],'somehting', ()=>{})
 
-  // await emailService.initialiseEmailSchedulers()
-  await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
+  await emailService.initialiseEmailSchedulers()
+  await emailService.setEmailScheduler('sara1479', emailService.frequency.daily)
   // await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
 
   // const emailContent: EmailContent = {

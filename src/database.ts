@@ -41,6 +41,10 @@ export async function getFileId(userId, repoId, fileName) {
         return rows[0].id
 }
 
+/**
+ * Return files that need to be notified from repos that are being watched
+ * @param githubUsername 
+ */
 export async function getFilesToNotify(githubUsername) {
     const userId = await getUserId(githubUsername)
     const rows = await executeQuery(`
@@ -53,6 +57,10 @@ export async function getFilesToNotify(githubUsername) {
     return rows
 }
 
+/**
+ * Return issues that need to be notified from repos that are being watched
+ * @param githubUsername 
+ */
 export async function getIssuesToNotify(githubUsername){
     const userId = await getUserId(githubUsername)
     const rows = await executeQuery(`

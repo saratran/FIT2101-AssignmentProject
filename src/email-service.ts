@@ -6,6 +6,7 @@ import path = require('path')
 
 const date = new Date()
 
+// Set of config for different email
 export const templates = { // <---- Edit this to add more templates
   welcome: {
     name: "index",
@@ -151,13 +152,14 @@ export async function sendEmail(receivers: string[], emailContent: EmailContent,
   });
 }
 
+/**
+ * Send email notification at a a given frequency.
+ * The user will be notified of recent file changes and issues opened
+ * 
+ * @param githubUsername 
+ * @param frequencyConfig one of the attribute of const frequency defined above 
+ */
 export async function setEmailScheduler(githubUsername, frequencyConfig) {
-  /**
-   * - pass in username/userid and frequency
-   * - check repos related to user --> need to notify
-   * - after sending email, set the need_to_notfiy to false
-   * - need_to_notify true when receive webhook
-   */
   console.log(`Setting email scheduler: ${githubUsername}, ${JSON.stringify(frequencyConfig.option)}`)
 
   // Delete old email scheduler so that each user can only have 1 instance of email scheduler running
@@ -235,18 +237,19 @@ async function deleteEmailSchedulerInstance(githubUsername) {
   }
 }
 
+/**
+ * Delete running instance of email scheduler and remove it from database (to essentially stop sending email at a frequency)
+ * @param githubUsername 
+ */
 export async function removeEmailScheduler(githubUsername) {
-  /**
-   * Delete running instance of email scheduler and remove it from database (to essentially stop sending email at a frequency)
-   */
   await db.executeQuery('DELETE FROM public.email_schedules WHERE github_username=$1', [githubUsername])
   await deleteEmailSchedulerInstance(githubUsername)
 }
 
+/**
+ * Reschedule pending email schedulers that have been saved to the database and should be run at the start of the script.
+ */
 export async function initialiseEmailSchedulers() {
-  /**
-   * Reschedule pending email schedulers that have been saved to the database and should be run at the start of the script.
-   */
   // Get all users
   const usersRows = await db.executeQuery('SELECT github_username FROM public.users', [])
   const usernames = usersRows.map(({ github_username }) => github_username)

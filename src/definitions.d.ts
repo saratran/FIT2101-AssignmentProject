@@ -28,11 +28,3 @@ interface EmailContent{
   template: any
 }
 
-interface EmailTemplate{
-  name: any,
-  attachments: EmailAttachment
-}
-interface FrequencyConfig{
-  option: any,
-  template: any
-}
