@@ -779,7 +779,8 @@ rect {
     animation-duration: 0.5s;
     -webkit-animation-duration: 0.5s;
     width: 300px;
-    height: 200px;
+    min-height: 100px;
+    max-height: 200px;
     right: 10px;
     top: 40px;
     background: white;
@@ -842,7 +843,6 @@ rect {
 
 .notification-title {
     font-size: 14px;
-    font-weight: 900;
     margin-bottom: 5px;
     color: #1f1f1f;
 }
@@ -867,6 +867,12 @@ rect {
     border-radius:50%;
     float: left;
     margin-right: 15px;
+}
+
+.notification-emphasis.no-notifs {
+    text-align: center;
+    top: 25px;
+    position: relative;
 }
 
 @keyframes notif-appear {

@@ -773,6 +773,9 @@ $(document).ready(function() {
             notificationBadge.classList.add("show-badge");
 
         }
+        else {
+            document.getElementsByClassName("notification-pane")[0].innerHTML = "<p class='notification-emphasis no-notifs'>No Notifications</p>";
+        }
     }
 
     showNotifications = () => {
