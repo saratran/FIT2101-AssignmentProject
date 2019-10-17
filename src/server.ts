@@ -24,8 +24,8 @@ const isDev = true;
 
 const clientID = isDev ? '93c39afdbb7a9cb45fbc' : '3e670fbb378ba2969da8';
 const clientSecret = isDev ? '502e47a56a3efafe5a03a37d7629e5f213af5d17' : 'c63bc1e0c44bde2ac43141be91edc04524bb5087';
-// const hookUrl = `https://devalarm.com/api/github`;
-const hookUrl = `http://07ce2089.ngrok.io/api/github`
+const hookUrl = `https://devalarm.com/api/github`;
+// const hookUrl = `http://07ce2089.ngrok.io/api/github`
 
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code;
