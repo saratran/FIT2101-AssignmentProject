@@ -139,3 +139,13 @@ export async function setEmailFrequency(githubUsername, frequency) {
     }
 }
 
+export async function getEmailFrequency(githubUsername) {
+    const userId = await getUserId(githubUsername)
+    if (userId) {
+        let rows = await executeQuery('SELECT email_frequency FROM public.users WHERE id = ($1)', [userId])
+        return rows[0].email_frequency
+    } else {
+        console.log("Cannot find the user in the database")
+    }
+}
+

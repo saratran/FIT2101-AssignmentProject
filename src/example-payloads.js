@@ -435,6 +435,248 @@ const issues_open = {
     }
 }
 
+const issues_assigned = {
+    headers: {
+        host: '8bf0312b.ngrok.io',
+        accept: '*/*',
+        'user-agent': 'GitHub-Hookshot/e0808e1',
+        'x-github-event': 'issues',
+        'x-github-delivery': '93709e00-f072-11e9-942d-d76422c92c37',
+        'content-type': 'application/json',
+        'content-length': '9361',
+        'x-forwarded-for': '192.30.252.97'
+    },
+    body: {
+        action: 'assigned',
+        issue:
+        {
+            url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/issues/7',
+            repository_url: 'https://api.github.com/repos/sara1479/FIT2101-test',
+            labels_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/issues/7/labels{/name}',
+            comments_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/issues/7/comments',
+            events_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/issues/7/events',
+            html_url: 'https://github.com/sara1479/FIT2101-test/issues/7',
+            id: 508152378,
+            node_id: 'MDU6SXNzdWU1MDgxNTIzNzg=',
+            number: 7,
+            title: 'adfs',
+            user:
+            {
+                login: 'saratran',
+                id: 55070381,
+                node_id: 'MDQ6VXNlcjU1MDcwMzgx',
+                avatar_url: 'https://avatars3.githubusercontent.com/u/55070381?v=4',
+                gravatar_id: '',
+                url: 'https://api.github.com/users/saratran',
+                html_url: 'https://github.com/saratran',
+                followers_url: 'https://api.github.com/users/saratran/followers',
+                following_url:
+                    'https://api.github.com/users/saratran/following{/other_user}',
+                gists_url: 'https://api.github.com/users/saratran/gists{/gist_id}',
+                starred_url:
+                    'https://api.github.com/users/saratran/starred{/owner}{/repo}',
+                subscriptions_url: 'https://api.github.com/users/saratran/subscriptions',
+                organizations_url: 'https://api.github.com/users/saratran/orgs',
+                repos_url: 'https://api.github.com/users/saratran/repos',
+                events_url: 'https://api.github.com/users/saratran/events{/privacy}',
+                received_events_url: 'https://api.github.com/users/saratran/received_events',
+                type: 'User',
+                site_admin: false
+            },
+            labels: [],
+            state: 'open',
+            locked: false,
+            assignee: null,
+            assignees: [[Object]],
+            milestone: null,
+            comments: 1,
+            created_at: '2019-10-16T23:33:29Z',
+            updated_at: '2019-10-17T00:10:28Z',
+            closed_at: null,
+            author_association: 'COLLABORATOR',
+            body: 'asdf'
+        },
+        assignee:
+        {
+            login: 'sara1479',
+            id: 53592694,
+            node_id: 'MDQ6VXNlcjUzNTkyNjk0',
+            avatar_url: 'https://avatars1.githubusercontent.com/u/53592694?v=4',
+            gravatar_id: '',
+            url: 'https://api.github.com/users/sara1479',
+            html_url: 'https://github.com/sara1479',
+            followers_url: 'https://api.github.com/users/sara1479/followers',
+            following_url:
+                'https://api.github.com/users/sara1479/following{/other_user}',
+            gists_url: 'https://api.github.com/users/sara1479/gists{/gist_id}',
+            starred_url:
+                'https://api.github.com/users/sara1479/starred{/owner}{/repo}',
+            subscriptions_url: 'https://api.github.com/users/sara1479/subscriptions',
+            organizations_url: 'https://api.github.com/users/sara1479/orgs',
+            repos_url: 'https://api.github.com/users/sara1479/repos',
+            events_url: 'https://api.github.com/users/sara1479/events{/privacy}',
+            received_events_url: 'https://api.github.com/users/sara1479/received_events',
+            type: 'User',
+            site_admin: false
+        },
+        repository:
+        {
+            id: 207093480,
+            node_id: 'MDEwOlJlcG9zaXRvcnkyMDcwOTM0ODA=',
+            name: 'FIT2101-test',
+            full_name: 'sara1479/FIT2101-test',
+            private: false,
+            owner:
+            {
+                login: 'sara1479',
+                id: 53592694,
+                node_id: 'MDQ6VXNlcjUzNTkyNjk0',
+                avatar_url: 'https://avatars1.githubusercontent.com/u/53592694?v=4',
+                gravatar_id: '',
+                url: 'https://api.github.com/users/sara1479',
+                html_url: 'https://github.com/sara1479',
+                followers_url: 'https://api.github.com/users/sara1479/followers',
+                following_url:
+                    'https://api.github.com/users/sara1479/following{/other_user}',
+                gists_url: 'https://api.github.com/users/sara1479/gists{/gist_id}',
+                starred_url:
+                    'https://api.github.com/users/sara1479/starred{/owner}{/repo}',
+                subscriptions_url: 'https://api.github.com/users/sara1479/subscriptions',
+                organizations_url: 'https://api.github.com/users/sara1479/orgs',
+                repos_url: 'https://api.github.com/users/sara1479/repos',
+                events_url: 'https://api.github.com/users/sara1479/events{/privacy}',
+                received_events_url: 'https://api.github.com/users/sara1479/received_events',
+                type: 'User',
+                site_admin: false
+            },
+            html_url: 'https://github.com/sara1479/FIT2101-test',
+            description: null,
+            fork: false,
+            url: 'https://api.github.com/repos/sara1479/FIT2101-test',
+            forks_url: 'https://api.github.com/repos/sara1479/FIT2101-test/forks',
+            keys_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/keys{/key_id}',
+            collaborators_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/collaborators{/collaborator}',
+            teams_url: 'https://api.github.com/repos/sara1479/FIT2101-test/teams',
+            hooks_url: 'https://api.github.com/repos/sara1479/FIT2101-test/hooks',
+            issue_events_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/issues/events{/number}',
+            events_url: 'https://api.github.com/repos/sara1479/FIT2101-test/events',
+            assignees_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/assignees{/user}',
+            branches_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/branches{/branch}',
+            tags_url: 'https://api.github.com/repos/sara1479/FIT2101-test/tags',
+            blobs_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/git/blobs{/sha}',
+            git_tags_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/git/tags{/sha}',
+            git_refs_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/git/refs{/sha}',
+            trees_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/git/trees{/sha}',
+            statuses_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/statuses/{sha}',
+            languages_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/languages',
+            stargazers_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/stargazers',
+            contributors_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/contributors',
+            subscribers_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/subscribers',
+            subscription_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/subscription',
+            commits_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/commits{/sha}',
+            git_commits_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/git/commits{/sha}',
+            comments_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/comments{/number}',
+            issue_comment_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/issues/comments{/number}',
+            contents_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/contents/{+path}',
+            compare_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/compare/{base}...{head}',
+            merges_url: 'https://api.github.com/repos/sara1479/FIT2101-test/merges',
+            archive_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/{archive_format}{/ref}',
+            downloads_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/downloads',
+            issues_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/issues{/number}',
+            pulls_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/pulls{/number}',
+            milestones_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/milestones{/number}',
+            notifications_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/notifications{?since,all,participating}',
+            labels_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/labels{/name}',
+            releases_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/releases{/id}',
+            deployments_url:
+                'https://api.github.com/repos/sara1479/FIT2101-test/deployments',
+            created_at: '2019-09-08T10:02:42Z',
+            updated_at: '2019-10-16T23:38:40Z',
+            pushed_at: '2019-10-16T23:38:38Z',
+            git_url: 'git://github.com/sara1479/FIT2101-test.git',
+            ssh_url: 'git@github.com:sara1479/FIT2101-test.git',
+            clone_url: 'https://github.com/sara1479/FIT2101-test.git',
+            svn_url: 'https://github.com/sara1479/FIT2101-test',
+            homepage: null,
+            size: 6,
+            stargazers_count: 0,
+            watchers_count: 0,
+            language: null,
+            has_issues: true,
+            has_projects: true,
+            has_downloads: true,
+            has_wiki: true,
+            has_pages: false,
+            forks_count: 1,
+            mirror_url: null,
+            archived: false,
+            disabled: false,
+            open_issues_count: 6,
+            license: null,
+            forks: 1,
+            open_issues: 6,
+            watchers: 0,
+            default_branch: 'master'
+        },
+        sender:
+        {
+            login: 'saratran',
+            id: 55070381,
+            node_id: 'MDQ6VXNlcjU1MDcwMzgx',
+            avatar_url: 'https://avatars3.githubusercontent.com/u/55070381?v=4',
+            gravatar_id: '',
+            url: 'https://api.github.com/users/saratran',
+            html_url: 'https://github.com/saratran',
+            followers_url: 'https://api.github.com/users/saratran/followers',
+            following_url:
+                'https://api.github.com/users/saratran/following{/other_user}',
+            gists_url: 'https://api.github.com/users/saratran/gists{/gist_id}',
+            starred_url:
+                'https://api.github.com/users/saratran/starred{/owner}{/repo}',
+            subscriptions_url: 'https://api.github.com/users/saratran/subscriptions',
+            organizations_url: 'https://api.github.com/users/saratran/orgs',
+            repos_url: 'https://api.github.com/users/saratran/repos',
+            events_url: 'https://api.github.com/users/saratran/events{/privacy}',
+            received_events_url: 'https://api.github.com/users/saratran/received_events',
+            type: 'User',
+            site_admin: false
+        }
+    }
+}
+
 const push_event = {
     headers: {
         host: 'ab3dd77e.ngrok.io',

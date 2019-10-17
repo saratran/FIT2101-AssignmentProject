@@ -25,7 +25,7 @@ const isDev = true;
 const clientID = isDev ? '93c39afdbb7a9cb45fbc' : '3e670fbb378ba2969da8';
 const clientSecret = isDev ? '502e47a56a3efafe5a03a37d7629e5f213af5d17' : 'c63bc1e0c44bde2ac43141be91edc04524bb5087';
 // const hookUrl = `https://devalarm.com/api/github`;
-const hookUrl = `http://8bf0312b.ngrok.io/api/github`
+const hookUrl = `http://758c1753.ngrok.io/api/github`
 
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code;
@@ -80,39 +80,71 @@ app.post('/api/github/:username', async function (req, res) {
   const { headers, body } = req;
   const { username } = req.params
   const userRows = await db.executeQuery('SELECT * FROM public.users WHERE github_username=$1', [username])
-    if (!userRows.length) {
-      console.log('Email scheduler: Cannot find user')
-      return
-    }
+  if (!userRows.length) {
+    console.log('Email scheduler: Cannot find user')
+    return
+  }
+  console.log('webhook payload received')
   const userEmail = userRows[0].email_address
   console.log("headers", headers)
   console.log("body", body);
-  console.log(username)
+  // console.log(username)
   const event_name = headers["x-github-event"]
+  const emailFrequency = await db.getEmailFrequency(username)
+
   // TODO: check for user email frequency
-  if (event_name === "push") {
-    console.log("Received webhook push event")
-
-  } else if (event_name === "issues") {
-    // events: opened, edited, deleted, transferred, pinned, unpinned, closed, reopened, assigned, unassigned, labeled, unlabeled, locked, unlocked, milestoned, or demilestoned.
-    console.log("Received webhook issues event")
-
-  } else if (event_name === "issue_comment") {
-    const repoName = body.repository.name
-    const issueName = body.issue.title
-    const modifiedBy = body.comment.user.login
-    const emailContent: EmailContent = {
-      content: {
-        name: username,
-        assignee: modifiedBy
-      },
-      template: emailService.templates.issue
+  if (emailFrequency === "individual") {
+    // Send email immediate
+    // TODO: do we need to update the frontend to show new files/issues while the user is logged in?
+    if (event_name === "push") {
+      // TODO: Check if files are user contributed and save them to db (similar to .....)
+      console.log("Received webhook push event")
     }
+  } else if (emailFrequency !== "never") {
+    // Send email noti immediately when user is an assignee to the issue
+    if (event_name === "issues") {
+      const { action } = body
+      if (action === "assigned") {
+        if (body.assignee.login === username) {
+          // TODO: save to database
+          console.log(`${username} is assigned new issue`)
+        }
+      } else if (action === "unassigned") {
+        if (body.assignee.login === username) {
+          // TODO: remove from database
+          console.log(`${username} is unassigned from an issue`)
+        }
+      } else {
+        const logins = body.issue.assignees.map(({ login }) => login)
+        // Only send email if user is an assignee
+        if (logins.includes(username)) {
+          console.log(`There has been changes to an issue ${username} is assigned to`)
+        }
+      }
+      // events: opened, edited, deleted, transferred, pinned, unpinned, closed, reopened, assigned, unassigned, labeled, unlabeled, locked, unlocked, milestoned, or demilestoned.
+      console.log("Received webhook issues event")
 
-    await emailService.sendEmail([userEmail], emailContent)
-    // events: created, edited, or deleted.
-    console.log("Received webhook issue_comment event")
-
+    } else if (event_name === "issue_comment") {
+      console.log("Received webhook issue_comment event")
+      const logins = body.issue.assignees.map(({ login }) => login)
+      // Only send email if user is an assignee
+      if (logins.includes(username)) {
+        console.log(`There are changes to the comment to an issues ${username} is assigned to`)
+        const repoName = body.repository.name
+        const issueName = body.issue.title
+        const modifiedBy = body.sender.login
+        // TODO: set up correct email content
+        const emailContent: EmailContent = {
+          content: {
+            name: username,
+            assignee: modifiedBy
+          },
+          template: emailService.templates.issue
+        }
+        console.log(emailContent)
+        // await emailService.sendEmail([userEmail], emailContent)
+      }
+    }
   }
 
   /**
@@ -509,6 +541,7 @@ app.patch(`/api/repos`, async (req, res) => {
     const { frequency } = req.body
     const accessToken = req.query.access_token
     const username = (await getUserAsync(accessToken)).login
+
     if (frequency === "daily") {
       await emailService.setEmailScheduler(username, emailService.frequency.daily)
     } else if (frequency === "weekly") {
