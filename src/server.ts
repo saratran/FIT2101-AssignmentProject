@@ -99,6 +99,7 @@ app.post('/api/github/:username', async function (req, res) {
     if (event_name === "push") {
       // TODO: Check if files are user contributed and save them to db (similar to .....)
       console.log("Received webhook push event")
+      const { commits } = body
     }
   } else if (emailFrequency !== "never") {
     // Send email noti immediately when user is an assignee to the issue
@@ -402,16 +403,30 @@ app.get(`/api/files/:repo`, async (req, res) => {
   const eventsUrl = `https://api.github.com/repos/${username}/${repo}/events?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
 
   const repoEvents = await fetchAsync(eventsUrl);
+
   const pushEvents = repoEvents.filter(({ type }) => type === "PushEvent");
 
   // Fetch all commits for each push event and flatten
-
   const commits = flatMap(pushEvents, ({ payload }) => payload.commits);
 
   // Get file changes for each commit
+  const ownUserInfo = {
+    username,
+    email: userEmail,
+    name: userRealName
+  }
+  const filesArrangedByUser = await commitsFilter(commits, accessToken, ownUserInfo)
+  filesArrangedByUser.forEach(async file => {
+    if (file.yourContributions) {
+      // Note: only add file user has contributed to?
+      await db.addFile(file, repo, username)
+    }
+  })
+  res.send(filesArrangedByUser);
+});
 
+function commitsFilter(commits, accessToken, ownUserInfo) {
   const commitInfoProms = []
-
   commits.forEach(async commit => {
     const commitInfoUrl = commit.url + `?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
     const commitInfoProm = fetchAsync(commitInfoUrl);
@@ -426,7 +441,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
   });
 
   // @ts-ignore
-  Promise.all(commitInfoProms).then(async () => {
+  return Promise.all(commitInfoProms).then(async () => {
     // Identify unique files that were changed
     const contributorData = {};
     const files = {};
@@ -456,16 +471,9 @@ app.get(`/api/files/:repo`, async (req, res) => {
 
     // Now evaluate the files by user and run a reduction algorithm on the changes
 
-    const ownUserInfo = {
-      username,
-      email: userEmail,
-      name: userRealName
-    }
-
     const filesArrangedByUser: FileInfo[] = Object.keys(files).map(filename => {
       const file = files[filename]
       const contributionByUser: { [username: string]: Contribution } = {};
-
 
       file.changes.forEach(change => {
         const authorLogin = change.author.login;
@@ -503,17 +511,10 @@ app.get(`/api/files/:repo`, async (req, res) => {
         otherContributors
       }
     });
-
-    filesArrangedByUser.forEach(async file => {
-      if (file.yourContributions) {
-        // Note: only add file user has contributed to?
-        await db.addFile(file, repo, username)
-      }
-    })
-
-    res.send(filesArrangedByUser);
+    // res.send(filesArrangedByUser);
+    return filesArrangedByUser
   })
-});
+}
 
 app.patch(`/api/repos`, async (req, res) => {
   console.log("*** PATCH repos ***")
@@ -564,6 +565,7 @@ app.patch(`/api/repos`, async (req, res) => {
 
   res.send(204)
 })
+
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
