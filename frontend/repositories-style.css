@@ -734,3 +734,164 @@ rect {
 .round input[type="checkbox"]:checked + span:after {
     opacity: 1;
 }
+
+.notifications {
+    height: 40px;
+    width: 40px;
+    right: 195px;
+    top: 20px;
+    position: absolute;
+}
+
+.bell {
+    opacity: 1;
+    height: 25px;
+    cursor: pointer;
+}
+
+.bell:hover {
+    opacity: 0.7;
+}
+
+.badge {
+    height: 7px;
+    width: 7px;
+    background-color: #d63031;
+    border-radius: 10px;
+    color: white;
+    text-align: center;
+    position: relative;
+    right: -13px;
+    top: -32px;
+    padding: 3px;
+    border: 2px solid white;
+    visibility: hidden;
+    font-size: 7px;
+}
+
+.show-badge {
+    visibility: visible;
+}
+
+.notification-pane {
+    animation-name: notif-disappear;
+    -webkit-animation-name: notif-disappear;
+    animation-duration: 0.5s;
+    -webkit-animation-duration: 0.5s;
+    width: 300px;
+    min-height: 100px;
+    max-height: 200px;
+    right: 10px;
+    top: 40px;
+    background: white;
+    padding: 0;
+    opacity: 0;
+    position: absolute;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+
+}
+
+.notifications-visible {
+    display: block;
+    animation-name: notif-appear;
+    -webkit-animation-name: notif-appear;
+    animation-duration: 0.5s;
+    -webkit-animation-duration: 0.5s;
+    opacity: 1;
+    z-index: 10001;
+}
+/* width */
+.notification-pane::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+.notification-pane::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px grey;
+    border-radius: 10px;
+}
+
+/* Handle */
+.notification-pane::-webkit-scrollbar-thumb {
+    background: #424242;
+    border-radius: 10px;
+    height: 20px;
+}
+
+.notification-pane::-webkit-scrollbar-thumb:hover {
+    background: #787878;
+}
+
+.notification-item {
+    height: 80px;
+    width: 270px;
+    padding: 10px 30px 10px 20px;
+    background: #f0f0f0;
+    cursor: pointer;
+    border-bottom: solid #bababa 1px;
+}
+
+.notification-item.new {
+    border-bottom: solid var(--color-5) 3px;
+    background: white;
+}
+
+.notification-title {
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #1f1f1f;
+}
+
+.notification-emphasis {
+    color: black;
+    font-size: 15px;
+}
+
+.notification-body {
+    color: #424242;
+    font-size: 12px;
+    margin-left: 75px;
+    margin-top: 5px;
+}
+
+.avatar {
+    width: 60px;
+    top: 10px;
+    position: relative;
+    object-fit:cover;
+    border-radius:50%;
+    float: left;
+    margin-right: 15px;
+}
+
+.notification-emphasis.no-notifs {
+    text-align: center;
+    top: 25px;
+    position: relative;
+}
+
+@keyframes notif-appear {
+    0%{opacity: 0; top: -40px}
+    100%{opacity: 1; top: 40px}
+}
+
+@-webkit-keyframes notif-appear {
+    0%{opacity: 0; top: -40px}
+    100%{opacity: 1; top: 40px}
+}
+
+@keyframes notif-disappear {
+    0%{opacity: 1; top: 40px}
+    100%{opacity: 0; top: -40px}
+}
+
+@-webkit-keyframes notif-disappear {
+    0%{opacity: 1; top: 40px}
+    100%{opacity: 0; top: -40px}
+}
+

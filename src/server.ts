@@ -66,6 +66,15 @@ app.get('/api/repo', function (req, res) {
   })
 });
 
+app.get('/api/users/:username', function (req, res) {
+  var user = req.params.username;
+  fetch(`https://api.github.com/users/` + user).then(fetchRes => {
+    fetchRes.json().then(fetchJson => {
+      res.json(fetchJson)
+    })
+  })
+});
+
 app.post('/api/github', function (req, res) {
   const { headers, body } = req;
 
