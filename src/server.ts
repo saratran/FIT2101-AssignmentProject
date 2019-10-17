@@ -6,7 +6,7 @@ import dotenv = require('dotenv'); // environment variables
 import flatMap = require('flatmap');
 import emailService = require('./email-service');
 import db = require('./database');
-import {sendEmail} from "./email-service";
+import { sendEmail } from "./email-service";
 import path = require('path')
 
 
@@ -25,7 +25,7 @@ const isDev = true;
 const clientID = isDev ? '93c39afdbb7a9cb45fbc' : '3e670fbb378ba2969da8';
 const clientSecret = isDev ? '502e47a56a3efafe5a03a37d7629e5f213af5d17' : 'c63bc1e0c44bde2ac43141be91edc04524bb5087';
 // const hookUrl = `https://devalarm.com/api/github`;
-const hookUrl = `http://ab3dd77e.ngrok.io/api/github`
+const hookUrl = `http://8bf0312b.ngrok.io/api/github`
 
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code;
@@ -38,14 +38,14 @@ app.get('/callback', (req, res) => {
       // 'Content-Type': 'application/x-www-form-urlencoded',
     },
   }).then(queryRes => {
-      queryRes.json().then(async json => {
-        console.log("json: ", json)
-        const username = await getUserAsync(json.access_token);
-        const email = await getUserEmailAsync(json.access_token);
-        await db.addUser(email, username.login);
-        res.redirect(`/login.html?access_token=${json.access_token}`);
-      })
+    queryRes.json().then(async json => {
+      console.log("json: ", json)
+      const username = await getUserAsync(json.access_token);
+      const email = await getUserEmailAsync(json.access_token);
+      await db.addUser(email, username.login);
+      res.redirect(`/login.html?access_token=${json.access_token}`);
     })
+  })
 })
 
 
@@ -67,15 +67,43 @@ app.get('/api/repo', function (req, res) {
   })
 });
 
-app.post('/api/github/:username', function (req, res) {
+app.post('/api/github/:username', async function (req, res) {
   const { headers, body } = req;
-
+  const { username } = req.params
+  const userRows = await db.executeQuery('SELECT * FROM public.users WHERE github_username=$1', [username])
+    if (!userRows.length) {
+      console.log('Email scheduler: Cannot find user')
+      return
+    }
+  const userEmail = userRows[0].email_address
   console.log("headers", headers)
   console.log("body", body);
-  console.log(req.params.username)
+  console.log(username)
+  const event_name = headers["x-github-event"]
+  // TODO: check for user email frequency
+  if (event_name === "push") {
+    console.log("Received webhook push event")
 
-  if (headers["x-github-event"] === "push"){
-    console.log("Received webhook Push Event")
+  } else if (event_name === "issues") {
+    // events: opened, edited, deleted, transferred, pinned, unpinned, closed, reopened, assigned, unassigned, labeled, unlabeled, locked, unlocked, milestoned, or demilestoned.
+    console.log("Received webhook issues event")
+
+  } else if (event_name === "issue_comment") {
+    const repoName = body.repository.name
+    const issueName = body.issue.title
+    const modifiedBy = body.comment.user.login
+    const emailContent: EmailContent = {
+      content: {
+        name: username,
+        assignee: modifiedBy
+      },
+      template: emailService.templates.issue
+    }
+
+    await emailService.sendEmail([userEmail], emailContent)
+    // events: created, edited, or deleted.
+    console.log("Received webhook issue_comment event")
+
   }
 
   /**
@@ -274,7 +302,7 @@ const createWebhook = (accessToken, username, repoName) => {
       "name": "web",
       "active": true,
       "events": [
-        "push", 
+        "push",
         "issues",
         "issue_comment"
       ],
@@ -300,6 +328,7 @@ app.get(`/api/issues/:repo`, async (req, res) => {
   const issuesUrl = `https://api.github.com/repos/${username}/${repo}/issues?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}&assignee=${username}&state=open`
   const issues = await fetchAsync(issuesUrl)
   const issueData = issues.map(({ title, body, url, user, updated_at }) => ({ title, body, url, createdBy: user.login, lastUpdated: updated_at }))
+  // TODO: save issue to database
   res.send(issueData)
 })
 
@@ -467,21 +496,21 @@ app.patch(`/api/repos`, async (req, res) => {
   /** Calls setEmailFrequency in database.ts
  * You can modify where in the database the frequency is stored in setEmailFrequency
  */
-app.post(`/api/email-frequency`, async (req, res) => {
-  const { frequency } = req.body
-  const accessToken = req.query.access_token
-  const username = (await getUserAsync(accessToken)).login
-  if(frequency === "daily"){
-    await emailService.setEmailScheduler(username, emailService.frequency.daily)
-  } else if (frequency === "weekly"){
-    await emailService.setEmailScheduler(username, emailService.frequency.weekly)
-  } else {
-    await emailService.removeEmailScheduler(username)
-  }
-  await db.setEmailFrequency(username, frequency)
-  console.log("Set email frequency: " + frequency)
-  res.sendStatus(204);
-})
+  app.post(`/api/email-frequency`, async (req, res) => {
+    const { frequency } = req.body
+    const accessToken = req.query.access_token
+    const username = (await getUserAsync(accessToken)).login
+    if (frequency === "daily") {
+      await emailService.setEmailScheduler(username, emailService.frequency.daily)
+    } else if (frequency === "weekly") {
+      await emailService.setEmailScheduler(username, emailService.frequency.weekly)
+    } else {
+      await emailService.removeEmailScheduler(username)
+    }
+    await db.setEmailFrequency(username, frequency)
+    console.log("Set email frequency: " + frequency)
+    res.sendStatus(204);
+  })
 
   if (isWatching) {
     createWebhook(accessToken, user.login, repoName)

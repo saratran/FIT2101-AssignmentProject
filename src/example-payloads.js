@@ -237,7 +237,7 @@ const issue_comment = {
     }
 }
 
-const issues = {
+const issues_open = {
     headers: {
         host: 'ab3dd77e.ngrok.io',
         accept: '*/*',
