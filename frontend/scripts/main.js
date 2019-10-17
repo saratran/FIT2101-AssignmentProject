@@ -731,11 +731,27 @@ $(document).ready(function() {
                 let contentBody = document.createElement("p");
                 let action;
 
-                if (notifType === "issue") {
-                    action = "opened an issue";
+                if (notifType === "file") {
+                    action = "modified a file";
                 }
                 else {
-                    action = "modified a file";
+                    if (notifType === "issue-open") {
+                        action = "has opened";
+                    }
+                    else if (notifType === "issue-closed") {
+                        action = "has closed";
+                    }
+                    else if (notifType === "issue-comment") {
+                        action = "has commented on";
+                    }
+                    else if (notifType === "issue-edited") {
+                        action = "has edited";
+                    }
+                    else if (notifType === "issue-added") {
+                        action = "has added";
+                    }
+
+                    action += " an issue";
                 }
                 contentTitle.className = "notification-title";
                 contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b> has " + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
