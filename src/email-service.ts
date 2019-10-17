@@ -152,12 +152,40 @@ export async function sendEmail(receivers: string[], emailContent: EmailContent,
   });
 }
 
+export async function sendFileUpdateEmail(receivers: string[], emailContent, callback) {
+  // Source: https://nodemailer.com/about/
+  /* TODO:
+  - email content
+   */
+
+  let mailOptions = {
+    from: `${sender.name} <${sender.email}>`,
+    to: `${receivers}`,
+    subject: 'DevAlarm Test',
+    template: 'single-change',
+    context: {
+      name: emailContent
+    }
+  };
+
+  transporter.sendMail(mailOptions, (err, data) => {
+    if (err) {
+      console.log('Error occurs when sending email')
+      return
+    }
+    console.log('Email sent!!!');
+    callback()
+    return
+  });
+}
+
+
 /**
  * Send email notification at a a given frequency.
  * The user will be notified of recent file changes and issues opened
- * 
- * @param githubUsername 
- * @param frequencyConfig one of the attribute of const frequency defined above 
+ *
+ * @param githubUsername
+ * @param frequencyConfig one of the attribute of const frequency defined above
  */
 export async function setEmailScheduler(githubUsername, frequencyConfig) {
   console.log(`Setting email scheduler: ${githubUsername}, ${JSON.stringify(frequencyConfig.option)}`)
@@ -167,7 +195,6 @@ export async function setEmailScheduler(githubUsername, frequencyConfig) {
 
   // Add/Update new scheduler to database
   await db.executeQuery('INSERT INTO public.email_schedules (github_username, frequency) VALUES($1,$2) ON CONFLICT (github_username) DO UPDATE SET frequency=$2', [githubUsername, frequencyConfig])
-
   // Set up new scheduler
   await nodeSchedule.scheduleJob(githubUsername, frequencyConfig.option, async () => {
     console.log(`Email job executing: ${githubUsername}`)
@@ -239,7 +266,7 @@ async function deleteEmailSchedulerInstance(githubUsername) {
 
 /**
  * Delete running instance of email scheduler and remove it from database (to essentially stop sending email at a frequency)
- * @param githubUsername 
+ * @param githubUsername
  */
 export async function removeEmailScheduler(githubUsername) {
   await db.executeQuery('DELETE FROM public.email_schedules WHERE github_username=$1', [githubUsername])
@@ -264,10 +291,8 @@ export async function initialiseEmailSchedulers() {
     await setEmailScheduler(row.github_username, JSON.parse(row.frequency))
   })
 }
-
 async function asyncForEach(array, callback) {
   for (let index = 0; index < array.length; index++) {
     await callback(array[index], index, array);
   }
 }
-
