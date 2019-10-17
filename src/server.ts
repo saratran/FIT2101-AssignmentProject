@@ -25,7 +25,7 @@ const isDev = true;
 const clientID = isDev ? '93c39afdbb7a9cb45fbc' : '3e670fbb378ba2969da8';
 const clientSecret = isDev ? '502e47a56a3efafe5a03a37d7629e5f213af5d17' : 'c63bc1e0c44bde2ac43141be91edc04524bb5087';
 // const hookUrl = `https://devalarm.com/api/github`;
-const hookUrl = `http://758c1753.ngrok.io/api/github`
+const hookUrl = `http://07ce2089.ngrok.io/api/github`
 
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code;
@@ -42,7 +42,7 @@ app.get('/callback', (req, res) => {
       console.log("json: ", json)
       const username = await getUserAsync(json.access_token);
       const email = await getUserEmailAsync(json.access_token);
-      await db.addUser(email, username.login);
+      await db.addUser(email, username.login, json.access_token);
       res.redirect(`/login.html?access_token=${json.access_token}`);
     })
   })
@@ -86,8 +86,8 @@ app.post('/api/github/:username', async function (req, res) {
   }
   console.log('webhook payload received')
   const userEmail = userRows[0].email_address
-  console.log("headers", headers)
-  console.log("body", body);
+  // console.log("headers", headers)
+  // console.log("body", body);
   // console.log(username)
   const event_name = headers["x-github-event"]
   const emailFrequency = await db.getEmailFrequency(username)
@@ -97,72 +97,103 @@ app.post('/api/github/:username', async function (req, res) {
     // Send email immediate
     // TODO: do we need to update the frontend to show new files/issues while the user is logged in?
     if (event_name === "push") {
+      const repoName = body.repository.name
+      const userId = (await db.getUserId(username))
+      const repoId = (await db.getRepoId(userId, repoName))
       // TODO: Check if files are user contributed and save them to db (similar to .....)
       console.log("Received webhook push event")
-      const { commits } = body
+      let { commits } = body
+      const repoFullname = body.repository.full_name
+      commits.forEach(commit => {
+        commit.url =`https://api.github.com/repos/${repoFullname}/commits/${commit.id}`
+      })
+      
+      const accessToken = (await db.executeQuery(`SELECT access_token FROM public.users WHERE github_username=$1`,[username]))[0].access_token
+      const filesArrangedByUser = await commitsFilter(commits, accessToken, username)
+      console.log(filesArrangedByUser)
+      const userContributedFiles = []
+
+      filesArrangedByUser.forEach(async file => {
+        if (file.yourContributions) {
+          // Save new files you contributed to
+          await db.addFile(file, repoName, username)
+        }
+      })
+
+      const contributedFilesRows = await db.executeQuery(`SELECT name FROM public.files WHERE user_id=$1 AND repo_id=$2`, [userId, repoId])
+      const contributeFileNames = contributedFilesRows.map(({name})=> name)
+      filesArrangedByUser.forEach( (file) => {
+        if(contributeFileNames.includes(file.filename)){
+          userContributedFiles.push(filesArrangedByUser)
+        }
+      })
+      console.log(userContributedFiles)
+      if(userContributedFiles.length){
+        console.log('Updates on file contributed')
+      }
     }
   } else if (emailFrequency !== "never") {
-    // Send email noti immediately when user is an assignee to the issue
-    if (event_name === "issues") {
-      const { action } = body
-      if (action === "assigned") {
-        if (body.assignee.login === username) {
-          // TODO: save to database
-          console.log(`${username} is assigned new issue`)
-        }
-      } else if (action === "unassigned") {
-        if (body.assignee.login === username) {
-          // TODO: remove from database
-          console.log(`${username} is unassigned from an issue`)
-        }
-      } else {
-        const logins = body.issue.assignees.map(({ login }) => login)
-        // Only send email if user is an assignee
-        if (logins.includes(username)) {
-          console.log(`There has been changes to an issue ${username} is assigned to`)
-        }
+  // Send email noti immediately when user is an assignee to the issue
+  if (event_name === "issues") {
+    const { action } = body
+    if (action === "assigned") {
+      if (body.assignee.login === username) {
+        // TODO: save to database
+        console.log(`${username} is assigned new issue`)
       }
-      // events: opened, edited, deleted, transferred, pinned, unpinned, closed, reopened, assigned, unassigned, labeled, unlabeled, locked, unlocked, milestoned, or demilestoned.
-      console.log("Received webhook issues event")
-
-    } else if (event_name === "issue_comment") {
-      console.log("Received webhook issue_comment event")
+    } else if (action === "unassigned") {
+      if (body.assignee.login === username) {
+        // TODO: remove from database
+        console.log(`${username} is unassigned from an issue`)
+      }
+    } else {
       const logins = body.issue.assignees.map(({ login }) => login)
       // Only send email if user is an assignee
       if (logins.includes(username)) {
-        console.log(`There are changes to the comment to an issues ${username} is assigned to`)
-        const repoName = body.repository.name
-        const issueName = body.issue.title
-        const modifiedBy = body.sender.login
-        // TODO: set up correct email content
-        const emailContent: EmailContent = {
-          content: {
-            name: username,
-            assignee: modifiedBy
-          },
-          template: emailService.templates.issue
-        }
-        console.log(emailContent)
-        // await emailService.sendEmail([userEmail], emailContent)
+        console.log(`There has been changes to an issue ${username} is assigned to`)
       }
     }
+    // events: opened, edited, deleted, transferred, pinned, unpinned, closed, reopened, assigned, unassigned, labeled, unlabeled, locked, unlocked, milestoned, or demilestoned.
+    console.log("Received webhook issues event")
+
+  } else if (event_name === "issue_comment") {
+    console.log("Received webhook issue_comment event")
+    const logins = body.issue.assignees.map(({ login }) => login)
+    // Only send email if user is an assignee
+    if (logins.includes(username)) {
+      console.log(`There are changes to the comment to an issues ${username} is assigned to`)
+      const repoName = body.repository.name
+      const issueName = body.issue.title
+      const modifiedBy = body.sender.login
+      // TODO: set up correct email content
+      const emailContent: EmailContent = {
+        content: {
+          name: username,
+          assignee: modifiedBy
+        },
+        template: emailService.templates.issue
+      }
+      console.log(emailContent)
+      // await emailService.sendEmail([userEmail], emailContent)
+    }
   }
+}
 
-  /**
-   * TODO here: send emails when webhooks arrive
-   *
-   * Emails for:
-   * * issues
-   * * code changes
-   *
-   * Also: mark repos as 'need_to_notify' in the DB when messages arrive about those repos.
-   */
+/**
+ * TODO here: send emails when webhooks arrive
+ *
+ * Emails for:
+ * * issues
+ * * code changes
+ *
+ * Also: mark repos as 'need_to_notify' in the DB when messages arrive about those repos.
+ */
 
-  // console.log("sending email");
-  // emailService.sendEmail(['utra0001@student.monash.edu'], 'Sara Tran').catch(console.error);
+// console.log("sending email");
+// emailService.sendEmail(['utra0001@student.monash.edu'], 'Sara Tran').catch(console.error);
 
-  res.json({});
-  res.status(200)
+res.json({});
+res.status(200)
 });
 
 app.post('/api/authenticate', function (req, res) {
@@ -408,14 +439,15 @@ app.get(`/api/files/:repo`, async (req, res) => {
 
   // Fetch all commits for each push event and flatten
   const commits = flatMap(pushEvents, ({ payload }) => payload.commits);
+  console.log(commits)
 
   // Get file changes for each commit
-  const ownUserInfo = {
-    username,
-    email: userEmail,
-    name: userRealName
-  }
-  const filesArrangedByUser = await commitsFilter(commits, accessToken, ownUserInfo)
+  // const ownUserInfo = {
+  //   username,
+  //   email: userEmail,
+  //   name: userRealName
+  // }
+  const filesArrangedByUser = await commitsFilter(commits, accessToken, username)
   filesArrangedByUser.forEach(async file => {
     if (file.yourContributions) {
       // Note: only add file user has contributed to?
@@ -425,7 +457,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
   res.send(filesArrangedByUser);
 });
 
-function commitsFilter(commits, accessToken, ownUserInfo) {
+function commitsFilter(commits, accessToken, ownUsername) {
   const commitInfoProms = []
   commits.forEach(async commit => {
     const commitInfoUrl = commit.url + `?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}`;
@@ -491,10 +523,10 @@ function commitsFilter(commits, accessToken, ownUserInfo) {
       });
 
       // Note: when the owner accepts a pull request, it counts that they have contributed to the files
-      const yourContributions = contributionByUser[ownUserInfo.username];
+      const yourContributions = contributionByUser[ownUsername];
       const otherContributors = [];
       Object.keys(contributionByUser).forEach(username => {
-        if (username !== ownUserInfo.username) {
+        if (username !== ownUsername) {
           const contributor: Contributor = {
             username,
             email: contributorData[username].email,
@@ -535,25 +567,7 @@ app.patch(`/api/repos`, async (req, res) => {
 
   await db.executeQuery(`UPDATE public.repos SET is_watching=$1 WHERE id=$2`, [isWatching, repoId])
 
-  /** Calls setEmailFrequency in database.ts
- * You can modify where in the database the frequency is stored in setEmailFrequency
- */
-  app.post(`/api/email-frequency`, async (req, res) => {
-    const { frequency } = req.body
-    const accessToken = req.query.access_token
-    const username = (await getUserAsync(accessToken)).login
 
-    if (frequency === "daily") {
-      await emailService.setEmailScheduler(username, emailService.frequency.daily)
-    } else if (frequency === "weekly") {
-      await emailService.setEmailScheduler(username, emailService.frequency.weekly)
-    } else {
-      await emailService.removeEmailScheduler(username)
-    }
-    await db.setEmailFrequency(username, frequency)
-    console.log("Set email frequency: " + frequency)
-    res.sendStatus(204);
-  })
 
   if (isWatching) {
     createWebhook(accessToken, user.login, repoName)
@@ -566,6 +580,25 @@ app.patch(`/api/repos`, async (req, res) => {
   res.send(204)
 })
 
+/** Calls setEmailFrequency in database.ts
+* You can modify where in the database the frequency is stored in setEmailFrequency
+*/
+app.post(`/api/email-frequency`, async (req, res) => {
+  const { frequency } = req.body
+  const accessToken = req.query.access_token
+  const username = (await getUserAsync(accessToken)).login
+
+  if (frequency === "daily") {
+    await emailService.setEmailScheduler(username, emailService.frequency.daily)
+  } else if (frequency === "weekly") {
+    await emailService.setEmailScheduler(username, emailService.frequency.weekly)
+  } else {
+    await emailService.removeEmailScheduler(username)
+  }
+  await db.setEmailFrequency(username, frequency)
+  console.log("Set email frequency: " + frequency)
+  res.sendStatus(204);
+})
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -582,7 +615,8 @@ async function forTesting() {
   // await emailService.sendEmail([null],'somehting', ()=>{})
 
   await emailService.initialiseEmailSchedulers()
-  await emailService.setEmailScheduler('sara1479', emailService.frequency.daily)
+  // await emailService.setEmailScheduler('sara1479', emailService.frequency.daily)
+  // await emailService.removeEmailScheduler('sara1479')
   // await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
 
   // const emailContent: EmailContent = {

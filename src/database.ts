@@ -3,14 +3,16 @@ import pgFormat = require('pg-format'); // Query formatter for batch inserts
 
 export const pool = new pg.Pool(); // Create a DB query pool. The database connection only works if you have valid DB credentials in the .env file
 
-export async function addUser(email, githubUsername) {
+export async function addUser(email, githubUsername, accessToken) {
     const userId = await getUserId(githubUsername)
     if (!userId) {
-        const rows = await executeQuery('INSERT INTO public.users (email_address, github_username, first_login_date) VALUES ($1, $2, NOW()) RETURNING id', [email, githubUsername])
+        const rows = await executeQuery('INSERT INTO public.users (email_address, github_username, first_login_date, access_token) VALUES ($1, $2, NOW(), $3) RETURNING id', [email, githubUsername, accessToken])
         console.log('User created')
         return rows[0].id
     } else {
         console.log('User already exists')
+        let rows = await executeQuery('UPDATE public.users SET access_token = ($1) WHERE id = ($2)', [accessToken, userId])
+
     }
 }
 
