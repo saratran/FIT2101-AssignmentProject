@@ -88,7 +88,7 @@ app.post('/api/github/:username', async function (req, res) {
   const userEmail = userRows[0].email_address
   // console.log("headers", headers)
   // console.log("body", body);
-  // console.log(username)
+
   const event_name = headers["x-github-event"]
   const emailFrequency = await db.getEmailFrequency(username)
 
@@ -110,7 +110,7 @@ app.post('/api/github/:username', async function (req, res) {
 
     const accessToken = (await db.executeQuery(`SELECT access_token FROM public.users WHERE github_username=$1`, [username]))[0].access_token
     const filesArrangedByUser = await commitsFilter(commits, accessToken, username)
-    console.log(filesArrangedByUser)
+    // console.log(filesArrangedByUser)
     const userContributedFiles = []
 
     if (emailFrequency === "individual") {
@@ -126,14 +126,33 @@ app.post('/api/github/:username', async function (req, res) {
       // Check if newly commited file are contributed by the user before
       filesArrangedByUser.forEach((file) => {
         if (contributeFileNames.includes(file.filename)) {
-          userContributedFiles.push(filesArrangedByUser)
+          userContributedFiles.push(file)
         }
       })
-      console.log(userContributedFiles)
+      // console.log(userContributedFiles)
       if (userContributedFiles.length) {
         // TODO: send email
         console.log('Updates on file contributed')
+        const emailContent:EmailContent = {
+          content:{
+            name: username,
+            files:[],
+          },
+          template:emailService.templates.single
+        }
+
+        userContributedFiles.forEach(file => {
+          const contributors = file.otherContributors.map(({username}) => username)
+          emailContent.content.files.push({
+            fileName: file.filename,
+            contributor: contributors,
+            repoName: repoName
+          })
+        })
+        console.dir(emailContent.content)
+        await emailService.sendEmail([userEmail],emailContent)
       }
+      
     } else if (emailFrequency === 'daily' || emailFrequency === "weekly"){
       // Save new files you contributed to
       const fileIds = []
@@ -144,7 +163,8 @@ app.post('/api/github/:username', async function (req, res) {
       })
       await db.executeQuery('UPDATE public.files SET need_to_notify=true WHERE id=ANY($1)', [fileIds])
     }
-    // }
+
+
   } else if (emailFrequency !== "never") {
     // Send email noti immediately when user is an assignee to the issue
     // events: opened, edited, deleted, transferred, pinned, unpinned, closed, reopened, assigned, unassigned, labeled, unlabeled, locked, unlocked, milestoned, or demilestoned.
@@ -153,13 +173,54 @@ app.post('/api/github/:username', async function (req, res) {
       const { action } = body
       if (action === "assigned") {
         if (body.assignee.login === username) {
+          const {issue} = body
+          const repoName = body.repository.name
+          const issueData = {
+            title: issue.title,
+            createdBy: issue.user.login,
+            url: issue.url,
+          }
           // TODO: save to database and send email
           console.log(`${username} is assigned new issue`)
+          const emailContent:EmailContent = {
+            content:{
+              name: username,
+              issueEvent: action,
+              assignee: issueData.createdBy,
+              issueTitle: issue.title,
+              labelName:"",
+              labelDecription:"",
+              repoName:repoName
+            },
+            template: emailService.templates.issue,
+          }
+          await emailService.sendEmail([userEmail],emailContent)
+          await db.addIssue(issueData,username,repoName)
         }
       } else if (action === "unassigned") {
         if (body.assignee.login === username) {
-          // TODO: remove from database and send email
+          const {issue} = body
+          const repoName = body.repository.name
+          const issueData = {
+            title: issue.title,
+            createdBy: issue.user.login,
+            url: issue.url,
+          }
+          const emailContent:EmailContent = {
+            content:{
+              name: username,
+              issueEvent: action,
+              assignee: issueData.createdBy,
+              issueTitle: issue.title,
+              labelName:"",
+              labelDecription:"",
+              repoName:repoName
+            },
+            template: emailService.templates.issue,
+          }
+          await emailService.sendEmail([userEmail],emailContent)
           console.log(`${username} is unassigned from an issue`)
+          await db.removeIssue(username,issue.url)
         }
       } else {
         const logins = body.issue.assignees.map(({ login }) => login)
@@ -182,12 +243,15 @@ app.post('/api/github/:username', async function (req, res) {
         const emailContent: EmailContent = {
           content: {
             name: username,
-            assignee: modifiedBy
+            assignee: modifiedBy,
+            issueEvent: "changed",
+            issueTitle: issueName,
+            labelName:"",
+            labelDecription:"",
+            repoName:repoName
           },
           template: emailService.templates.issue
         }  
-        console.log(emailContent)
-        // await emailService.sendEmail([userEmail], emailContent)
       }
     }
   }
@@ -414,7 +478,7 @@ app.get(`/api/issues/:repo`, async (req, res) => {
   const issuesUrl = `https://api.github.com/repos/${username}/${repo}/issues?access_token=${accessToken}&client_id=${clientID}&client_secret=${clientSecret}&assignee=${username}&state=open`
   const issues = await fetchAsync(issuesUrl)
   const issueData = issues.map(({ title, body, url, user, updated_at }) => ({ title, body, url, createdBy: user.login, lastUpdated: updated_at }))
-  // TODO: save issue to database
+  // TODO: save issue to database --> optimise this
   issueData.forEach(async issue =>{
     await db.addIssue(issue, username, repo)
   })
@@ -631,7 +695,7 @@ async function forTesting() {
   // await emailService.sendEmail([null],'somehting', ()=>{})
 
   await emailService.initialiseEmailSchedulers()
-  // await emailService.setEmailScheduler('sara1479', emailService.frequency.daily)
+  // await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
   // await emailService.removeEmailScheduler('sara1479')
   // await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
 

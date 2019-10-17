@@ -165,6 +165,12 @@ export async function addIssue(issueData, githubUsername, repoName) {
     }
 }
 
+export async function removeIssue(githubUsername, url){
+    const userId = await getUserId(githubUsername)
+    executeQuery('DELETE FROM public.issues WHERE user_id=$1 AND url=$2', [userId, url])
+    console.log('removed issue from database')
+}
+
 export async function getIssueId(userId, url) {
     const rows = await executeQuery('SELECT * FROM public.issues WHERE user_id=$1 AND url=$2', [userId, url])
     if (rows.length) return rows[0].id
