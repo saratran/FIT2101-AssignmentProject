@@ -347,7 +347,7 @@ app.get(`/api/files/:repo`, async (req, res) => {
     const commitInfoProm = fetchAsync(commitInfoUrl);
 
     commitInfoProm.then(commitInfo => {
-      commit.author.login = commitInfo.author.login
+      commit.author.login = commitInfo.author ? commitInfo.author.login : "Unknown"
       // commit.committer = commitInfo.committer;
       commit.stats = commitInfo.stats;
       commit.files = commitInfo.files;
@@ -533,7 +533,7 @@ async function forTesting() {
 forTesting()
 
 app.get("/api/test-email", async(req, res) => {
-  await emailService.sendEmail(["pbre0003@student.monash.edu"], "Hello", ()=>{})
+  // await emailService.sendEmail(["pbre0003@student.monash.edu"], "Hello", ()=>{})
 
   res.send({})
 })

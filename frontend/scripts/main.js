@@ -401,11 +401,13 @@ $(document).ready(function() {
 
                 // add header to table
                 contributorInfo.appendChild(tableHeader);
-                let dataItem = {
+                if (file.yourContributions) {
+                  let dataItem = {
                     name: `${userData.name === null ? userData.login : userData.name}`,
                     cont: Number(`${file.yourContributions.lineChangeCount}`)
-                };
-                graphData.push(dataItem);
+                  };
+                  graphData.push(dataItem);
+                }
 
                 // add contributor info
                 file.otherContributors.forEach(contributor => {
@@ -724,35 +726,23 @@ $(document).ready(function() {
         fetch(apiUrl + `/users/${contributorUsername}`).then(fetchRes => {
             fetchRes.json().then(userData => {
                 let userAvatarURL = `${userData.avatar_url}`;
-                let notificationPane = document.getElementsByClassName("notification-pane")[0];
+                let notificationPane = $("#notification-pane")
                 let notificationItem = document.createElement("div");
                 let userAvatar = document.createElement("img");
                 let contentTitle = document.createElement("p");
                 let contentBody = document.createElement("p");
-                let action;
 
-                if (notifType === "file") {
-                    action = "modified a file";
+                const messages = {
+                  "file": "modified a file",
+                  "issue-open": "has opened an issue",
+                  "issue-closed": "has closed an issue",
+                  "issue-comment": "has commented on an issue",
+                  "issue-edited": "has edited an issue",
+                  "issue-added": "has added an issue",
                 }
-                else {
-                    if (notifType === "issue-open") {
-                        action = "has opened";
-                    }
-                    else if (notifType === "issue-closed") {
-                        action = "has closed";
-                    }
-                    else if (notifType === "issue-comment") {
-                        action = "has commented on";
-                    }
-                    else if (notifType === "issue-edited") {
-                        action = "has edited";
-                    }
-                    else if (notifType === "issue-added") {
-                        action = "has added";
-                    }
 
-                    action += " an issue";
-                }
+                const action = messages[notifType]
+
                 contentTitle.className = "notification-title";
                 contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b> has " + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
                 contentBody.className = "notification-body";
@@ -771,27 +761,20 @@ $(document).ready(function() {
     }
 
     checkForNewNotifications = () => {
-        let notifications = document.getElementsByClassName("notification-pane")[0].children;
-        let notificationBadge = document.getElementsByClassName("badge")[0];
-        let numberNotifications = 0;
+      const notifPane = $("#notification-pane")
+      const notifications = notifPane.children;
+      const notificationBadge = $(".badge").first();
+      const notifCount = notifications.filter(({ classList }) => classList.contains("new")).length
 
-        for (let i = 0; i < notifications.length; i++) {
-            if (notifications[i].classList.contains("new")) {
-                numberNotifications++;
-            }
+      if (notifCount) {
+        if (notifCount > 9) {
+          notificationBadge.innerHTML = "9+";
         }
-
-        if (numberNotifications !== 0) {
-            if (numberNotifications > 9) {
-                notificationBadge.innerHTML = "9+";
-            }
-            notificationBadge.innerHTML = numberNotifications.toString();
-            notificationBadge.classList.add("show-badge");
-
-        }
-        else {
-            document.getElementsByClassName("notification-pane")[0].innerHTML = "<p class='notification-emphasis no-notifs'>No Notifications</p>";
-        }
+        notificationBadge.html(String(notifCount))
+        notificationBadge.classList.add("show-badge");
+      } else {
+        notifPane.html("<p class='notification-emphasis no-notifs'>No Notifications</p>");
+      }
     }
 
     showNotifications = () => {
@@ -809,20 +792,16 @@ $(document).ready(function() {
     }
 
     muteNewNotifications = () => {
-        let notifications = document.getElementsByClassName("notification-pane")[0].children;
-        for (let j = 0; j < notifications.length; j++) {
-            if (notifications[j].className === "notification-item new") {
-                notifications[j].classList.remove("new");
-            }
-        }
+      const notifications = $("#notification-pane").children
+      notifications.filter(({ className }) => className === "notification-item new").forEach(({ classList }) => classList.remove("new"))
     }
 
     $("#getReposButton").on("click", getRepos);
 
-    let span = $(".close").first()
+    const span = $(".close").first()
     span.on("click", hideModal)
 
-    let saveButton = $("#saveEmailFrequencies")
+    const saveButton = $("#saveEmailFrequencies")
     saveButton.on("click", hideModal)
     saveButton.on("click", setEmailFrequencies)
 
