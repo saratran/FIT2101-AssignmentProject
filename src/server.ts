@@ -251,7 +251,8 @@ app.post('/api/github/:username', async function (req, res) {
             repoName:repoName
           },
           template: emailService.templates.issue
-        }  
+        }
+        await emailService.sendEmail([userEmail],emailContent)  
       }
     }
   }
