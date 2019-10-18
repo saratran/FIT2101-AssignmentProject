@@ -172,6 +172,7 @@ app.post('/api/github/:username', async function (req, res) {
       console.log("Received webhook issues event")
       const { action } = body
       if (action === "assigned") {
+        // TODO: refactor this with code "unassigned"
         if (body.assignee.login === username) {
           const {issue} = body
           const repoName = body.repository.name
@@ -224,9 +225,29 @@ app.post('/api/github/:username', async function (req, res) {
         }
       } else {
         const logins = body.issue.assignees.map(({ login }) => login)
-        // Only send email if user is an assignee
         if (logins.includes(username)) {
           console.log(`There has been changes to an issue ${username} is assigned to`)
+          const {issue} = body
+          const repoName = body.repository.name
+          const issueData = {
+            title: issue.title,
+            createdBy: issue.user.login,
+            url: issue.url,
+          }
+          // TODO: Check if webhook payload has all the required fields.
+          const emailContent:EmailContent = {
+            content:{
+              name: username,
+              issueEvent: action,
+              assignee: issueData.createdBy,
+              issueTitle: issue.title,
+              labelName:"",
+              labelDecription:"",
+              repoName:repoName
+            },
+            template: emailService.templates.issue,
+          }
+          await emailService.sendEmail([userEmail],emailContent)
         }
       }
 
