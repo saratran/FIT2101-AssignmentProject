@@ -36,11 +36,42 @@ body {
     top: 0;
     background-color: white;
     display: flex;
-    flex-direction: column;
     justify-content: center;
+    justify-items: center;
+    align-content: center;
+    align-items: center;
+    flex-direction: column;
     position: fixed;
     z-index: 10;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+#main-logo {
+    height: 30px;
+    width: 165px;
+}
+
+#controls {
+    position: absolute;
+    right: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.notifications {
+    height: 25px;
+    width: 25px;
+    margin-right: 20px;
+}
+
+.bell {
+    opacity: 1;
+    height: 25px;
+    cursor: pointer;
+}
+
+.bell:hover {
+    opacity: 0.7;
 }
 
 #start {
@@ -506,11 +537,6 @@ button:active:not(#saveEmailFrequencies) {
     position:relative;
     top:1px;
 }
-#emailFrequencies {
-    position: absolute;
-    top: 5px;
-    right: 10px;
-}
 
 /* table styling */
 #contributorTable {
@@ -736,24 +762,6 @@ rect {
 
 .round input[type="checkbox"]:checked + span:after {
     opacity: 1;
-}
-
-.notifications {
-    height: 40px;
-    width: 40px;
-    right: 195px;
-    top: 20px;
-    position: absolute;
-}
-
-.bell {
-    opacity: 1;
-    height: 25px;
-    cursor: pointer;
-}
-
-.bell:hover {
-    opacity: 0.7;
 }
 
 .badge {

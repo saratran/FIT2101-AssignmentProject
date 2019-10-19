@@ -29,13 +29,15 @@
         </div>
     </div>
     <div class="page-header">
-        <img src="img/logo.png" style="height: 30px; width: 165px; margin-left: calc(50% - 82px)">
-        <div class="notifications">
-            <img onclick="showNotifications()" class="bell" src="img/bell-icon.png" alt="notifications">
-            <div class="badge"></div>
-            <div id="notification-pane">
-            </div></div>
-        <a id="emailFrequencies"><button><img id="email-icon" src="img/envelope.svg" alt="email" /> Email Settings</button></a>
+        <img src="img/logo.png" id="main-logo">
+        <div id="controls">
+            <div class="notifications">
+                <img onclick="showNotifications()" class="bell" src="img/bell-icon.png" alt="notifications">
+                <div class="badge"></div>
+                <div id="notification-pane">
+                </div></div>
+            <a id="emailFrequencies"><button><img id="email-icon" src="img/envelope.svg" alt="email" /> Email Settings</button></a>
+        </div>
     </div>
     <main class="repository-content" id="repoContent">
         <div id="start">Click on a repository in the sidebar to start.</div>
