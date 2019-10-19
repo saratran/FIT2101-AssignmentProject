@@ -253,12 +253,6 @@ div.repo-information {
     vertical-align: middle;
 }
 
-/* search bar behavior */
-input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
-    outline: none;
-    background-color: #f0f0f0;
-}
-
 /* search component in sidebar */
 #repo-search {
     width: 190px;
