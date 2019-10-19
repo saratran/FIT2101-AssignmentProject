@@ -762,38 +762,35 @@ $(document).ready(function() {
 
     checkForNewNotifications = () => {
       const notifPane = $("#notification-pane")
-      const notifications = notifPane.children;
-      const notificationBadge = $(".badge").first();
+      const notifications = Array.from(notifPane.children())
+      const notificationBadge = $("#badge")
       const notifCount = notifications.filter(({ classList }) => classList.contains("new")).length
 
       if (notifCount) {
-        if (notifCount > 9) {
-          notificationBadge.innerHTML = "9+";
-        }
-        notificationBadge.html(String(notifCount))
-        notificationBadge.classList.add("show-badge");
+        notificationBadge.html(notifCount > 9 ? "9+" : String(notifCount))
+        notificationBadge.addClass("show-badge")
       } else {
         notifPane.html("<p class='notification-emphasis no-notifs'>No Notifications</p>");
       }
     }
 
     showNotifications = () => {
-        let notificationPane = document.getElementsByClassName("notification-pane")[0];
-        let notificationBadge = document.getElementsByClassName("badge")[0];
+        const notificationPane = $("#notification-pane")
+        const notificationBadge = $("#badge")
 
-        if (notificationPane.className !== "notification-pane notifications-visible") {
-            notificationPane.classList.add("notifications-visible");
-            notificationBadge.className = "badge";
+        if (!notificationPane.hasClass("notifications-visible")) {
+            notificationPane.addClass("notifications-visible")
         }
         else {
-            notificationPane.classList.remove("notifications-visible");
-            muteNewNotifications();
+            notificationPane.removeClass("notifications-visible");
+            muteNewNotifications()
         }
     }
 
     muteNewNotifications = () => {
-      const notifications = $("#notification-pane").children
-      notifications.filter(({ className }) => className === "notification-item new").forEach(({ classList }) => classList.remove("new"))
+      Array.from($("#notification-pane").children())
+        .filter(notif => notif.hasClass("notification-item") && notif.hasClass("new"))
+        .forEach(notif => notif.removeClass("new"))
     }
 
     $("#getReposButton").on("click", getRepos);
@@ -812,11 +809,10 @@ $(document).ready(function() {
         if (event.target === document.getElementById("emailModal")) hideModal()
     }
 
-
     // On page load
     getUser();
     getRepos();
-    //buildNotification("DanaC05", "file", "server.js", "cool-have-fun");
-    //buildNotification("coolhavefun3", "issue", "index.handlebars", "cool-have-fun");
+    buildNotification("DanaC05", "file", "server.js", "cool-have-fun");
+    buildNotification("coolhavefun3", "issue", "index.handlebars", "cool-have-fun");
     //getFiles();
 });
