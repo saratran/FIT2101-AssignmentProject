@@ -361,9 +361,9 @@ $(document).ready(function() {
                     const titles = Array.from($('.issueTitle')).map(title => $(title))
                     titles.forEach(title => {
                       title.nextUntil('tr.issueTitle').toggle();
-                      title.onclick = function () {
-                        this.nextUntil('tr.issueTitle').toggle();
-                      }
+                      title.on('click', function () {
+                        title.nextUntil('tr.issueTitle').toggle();
+                      })
                     })
 
                     // refresh repo grid layout
