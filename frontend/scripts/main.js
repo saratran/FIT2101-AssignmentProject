@@ -691,13 +691,33 @@ $(document).ready(function() {
     }
 
     hideModal = () => {
-        let modal = $("#emailModal")
+        const modal = $("#emailModal")
         modal.removeClass("show-modal")
     }
 
     showModal = () => {
-        let modal = $("#emailModal")
+        const modal = $("#emailModal")
         modal.addClass("show-modal")
+
+
+    }
+
+    updateEmailFrequencyRadio = () => {
+      // Update selected email frequency
+      const accessToken = window.localStorage.getItem("accessToken")
+      fetch(`${apiUrl}/email-frequency?access_token=${accessToken}`).then(fetchRes => {
+        fetchRes.json().then(json => {
+          Array.from($(".email-frequency-radio")).map(elem => $(elem))
+              .forEach(radio => {
+                if (radio.val() === json.frequency) {
+                  radio.attr("checked", "checked")
+                } else {
+                  radio.removeAttr("checked")
+                }
+              })
+          console.log(json)
+        })
+      })
     }
 
     setEmailFrequencies = () => {
@@ -718,7 +738,7 @@ $(document).ready(function() {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 }
-            }).then(fetchRes => {})
+            }).then(() => {})
         }
     }
 
@@ -816,5 +836,5 @@ $(document).ready(function() {
     getRepos();
     buildNotification("DanaC05", "file", "server.js", "cool-have-fun");
     buildNotification("coolhavefun3", "issue", "index.handlebars", "cool-have-fun");
-    //getFiles();
+    updateEmailFrequencyRadio()
 });

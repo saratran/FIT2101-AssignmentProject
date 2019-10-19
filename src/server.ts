@@ -20,7 +20,7 @@ dotenv.config(); // variables set in the .env file in this folder are now access
 // const pool = new pg.Pool(); // Create a DB query pool. The database connection only works if you have valid DB credentials in the .env file
 const pool = db.pool;
 
-const isDev = true;
+const isDev = process.env.ENV !== "SERVER"
 
 const clientID = isDev ? '93c39afdbb7a9cb45fbc' : '3e670fbb378ba2969da8';
 const clientSecret = isDev ? '502e47a56a3efafe5a03a37d7629e5f213af5d17' : 'c63bc1e0c44bde2ac43141be91edc04524bb5087';
@@ -91,6 +91,8 @@ app.post('/api/github/:username', async function (req, res) {
 
   const event_name = headers["x-github-event"]
   const emailFrequency = await db.getEmailFrequency(username)
+
+  console.log("event name: ", event_name)
 
   // TODO: check for user email frequency
   // if (emailFrequency === "individual") {
@@ -691,7 +693,7 @@ app.post(`/api/email-frequency`, async (req, res) => {
   const username = (await getUserAsync(accessToken)).login
 
   if (frequency === "daily") {
-    await emailService.setEmailScheduler(username, emailService.frequency.daily)
+    await emailService.setEmailScheduler(username, emailService.frequency.minute)
   } else if (frequency === "weekly") {
     await emailService.setEmailScheduler(username, emailService.frequency.weekly)
   } else {
@@ -699,7 +701,18 @@ app.post(`/api/email-frequency`, async (req, res) => {
   }
   await db.setEmailFrequency(username, frequency)
   console.log("Set email frequency: " + frequency)
-  res.sendStatus(204);
+  res.sendStatus(204)
+})
+
+/**
+ * Get the user's email frequency
+ */
+app.get(`/api/email-frequency`, async (req, res) => {
+  const accessToken = req.query.access_token
+  const username = (await getUserAsync(accessToken)).login
+  const frequency = await db.getEmailFrequency(username)
+  console.log(frequency)
+  res.json({ frequency })
 })
 
 function randInt(min, max) {
@@ -709,40 +722,6 @@ function randInt(min, max) {
 // Serve frontend
 app.use('/', express.static('frontend'));
 
-const port = process.env.ENV === "SERVER" ? 80 : 3000;
+const port = isDev ? 3000 : 80;
 app.listen(port);
 console.log(`Listening on port ${port}`);
-
-async function forTesting() {
-  // await emailService.sendEmail([null],'somehting', ()=>{})
-
-  await emailService.initialiseEmailSchedulers()
-  // await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
-  // await emailService.removeEmailScheduler('sara1479')
-  // await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
-
-  // const emailContent: EmailContent = {
-  //   content: {
-  //     name: 'Sara', // <------ replacing {{name}} in the template
-  //     fileChanges:[{
-  //       repoName: "repo1",
-  //       fileName: "file1",
-  //       contributor: "user1"
-  //     }]
-  //   },
-  //   template: emailService.templates.daily
-  // }
-
-  // console.log(emailContent)
-  // emailService.sendEmail(['saraut1479@gmail.com'], emailContent)
-
-  // console.log(await db.executeQuery('SELECT public.files.name, public.files.last_contributors, public.repos.name FROM public.files WHERE public.files.need_to_notify=true INNER JOIN public.repos ON public.files.repo_id == public.repos.id  ',[]))
-}
-
-forTesting()
-
-//app.get("/api/test-email", async(req, res) => {
-  //   await emailService.sendEmail(["pbre0003@student.monash.edu"], "Hello", ()=>{})
-
-//   res.send({})
-// })

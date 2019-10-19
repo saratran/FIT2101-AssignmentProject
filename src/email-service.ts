@@ -188,6 +188,7 @@ export async function sendFileUpdateEmail(receivers: string[], emailContent, cal
  * @param frequencyConfig one of the attribute of const frequency defined above
  */
 export async function setEmailScheduler(githubUsername, frequencyConfig) {
+  console.log(frequencyConfig)
   console.log(`Setting email scheduler: ${githubUsername}, ${JSON.stringify(frequencyConfig.option)}`)
 
   // Delete old email scheduler so that each user can only have 1 instance of email scheduler running
@@ -207,8 +208,8 @@ export async function setEmailScheduler(githubUsername, frequencyConfig) {
     const [filesToNotify, issuesToNotify] = await Promise.all([db.getFilesToNotify(githubUsername), db.getIssuesToNotify(githubUsername)])
     const fileIds = filesToNotify.map(({ id }) => id)
     const issueIds = issuesToNotify.map(({ id }) => id)
-    // console.log(filesToNotify)
-    // console.log(issuesToNotify)
+    console.log(filesToNotify)
+    console.log(issuesToNotify)
     if (filesToNotify.length || issuesToNotify.length) {
       const emailContent: EmailContent = {
         content: {
@@ -227,27 +228,6 @@ export async function setEmailScheduler(githubUsername, frequencyConfig) {
         console.log('Changed notification status succesfully')
       })
     }
-    // // const reposToNotify = await db.getReposToNotify(githubUsername)
-
-    // // console.log(reposToNotify)
-    // if (reposToNotify.length) {
-    //   const repoIds = reposToNotify.map(({ id }) => id)
-    //   /**
-    //    * Create email content: same format for both weekly and daily
-    //    * - File changes: repo, file, [last contributors] <----- currently missing, needs to add to db this when webhook event is triggered
-    //    * - Issues: issue name, repo, opened by/last commenters
-    //    */
-    //   const emailContent = reposToNotify.map(({ name }) => name).join(`, `)
-
-    //   // Send email notification to their github email
-    //   // TODO: user may want notifcations to be sent to emails different from their github account
-    //   sendEmail([userEmail], emailContent, async () => {
-    //     // Change need_to_notify to false after done sending email
-    //     await db.executeQuery('UPDATE public.repos SET need_to_notify=false WHERE id=ANY($1)', [repoIds])
-    //     console.log('Changed notification status succesfully')
-    //     return
-    //   })
-    // }
   })
 }
 
