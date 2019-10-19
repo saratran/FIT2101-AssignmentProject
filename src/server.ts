@@ -24,8 +24,8 @@ const isDev = true;
 
 const clientID = isDev ? '93c39afdbb7a9cb45fbc' : '3e670fbb378ba2969da8';
 const clientSecret = isDev ? '502e47a56a3efafe5a03a37d7629e5f213af5d17' : 'c63bc1e0c44bde2ac43141be91edc04524bb5087';
-const hookUrl = `https://devalarm.com/api/github`;
-// const hookUrl = `http://07ce2089.ngrok.io/api/github`
+// const hookUrl = `https://devalarm.com/api/github`;
+const hookUrl = `http://ed0f3c5a.ngrok.io/api/github`
 
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code;
@@ -90,6 +90,15 @@ app.post('/api/github/:username', async function (req, res) {
   // console.log("body", body);
 
   const event_name = headers["x-github-event"]
+  // Save notification to db
+  // This includes all events (not just ones user contributed to)
+  if (event_name === "push" || event_name === "issues" || event_name === "issue_comment") {
+    const repoName = body.repository.name
+    const userId = (await db.getUserId(username))
+    const repoId = (await db.getRepoId(userId, repoName))
+    const contributor = body.sender.login
+    await db.executeQuery('INSERT INTO public.notifications (repo_id, user_id, type, contributor) VALUES ($1, $2, $3, $4)', [repoId, userId, event_name, contributor])
+  }
   const emailFrequency = await db.getEmailFrequency(username)
 
   // TODO: check for user email frequency
@@ -114,13 +123,6 @@ app.post('/api/github/:username', async function (req, res) {
     const userContributedFiles = []
 
     if (emailFrequency === "individual") {
-      // Save new files you contributed to
-      filesArrangedByUser.forEach(async file => {
-        if (file.yourContributions) {
-          await db.addFile(file, repoName, username)
-        }
-      })
-
       const contributedFilesRows = await db.executeQuery(`SELECT name FROM public.files WHERE user_id=$1 AND repo_id=$2`, [userId, repoId])
       const contributeFileNames = contributedFilesRows.map(({ name }) => name)
       // Check if newly commited file are contributed by the user before
@@ -133,16 +135,16 @@ app.post('/api/github/:username', async function (req, res) {
       if (userContributedFiles.length) {
         // TODO: send email
         console.log('Updates on file contributed')
-        const emailContent:EmailContent = {
-          content:{
+        const emailContent: EmailContent = {
+          content: {
             name: username,
-            files:[],
+            files: [],
           },
-          template:emailService.templates.single
+          template: emailService.templates.single
         }
 
         userContributedFiles.forEach(file => {
-          const contributors = file.otherContributors.map(({username}) => username)
+          const contributors = file.otherContributors.map(({ username }) => username)
           emailContent.content.files.push({
             fileName: file.filename,
             contributor: contributors,
@@ -150,10 +152,10 @@ app.post('/api/github/:username', async function (req, res) {
           })
         })
         console.dir(emailContent.content)
-        await emailService.sendEmail([userEmail],emailContent)
+        await emailService.sendEmail([userEmail], emailContent)
       }
-      
-    } else if (emailFrequency === 'daily' || emailFrequency === "weekly"){
+
+    } else if (emailFrequency === 'daily' || emailFrequency === "weekly") {
       // Save new files you contributed to
       const fileIds = []
       filesArrangedByUser.forEach(async file => {
@@ -174,7 +176,7 @@ app.post('/api/github/:username', async function (req, res) {
       if (action === "assigned") {
         // TODO: refactor this with code "unassigned"
         if (body.assignee.login === username) {
-          const {issue} = body
+          const { issue } = body
           const repoName = body.repository.name
           const issueData = {
             title: issue.title,
@@ -183,51 +185,51 @@ app.post('/api/github/:username', async function (req, res) {
           }
           // TODO: save to database and send email
           console.log(`${username} is assigned new issue`)
-          const emailContent:EmailContent = {
-            content:{
+          const emailContent: EmailContent = {
+            content: {
               name: username,
               issueEvent: action,
               assignee: issueData.createdBy,
               issueTitle: issue.title,
-              labelName:"",
-              labelDecription:"",
-              repoName:repoName
+              labelName: "",
+              labelDecription: "",
+              repoName: repoName
             },
             template: emailService.templates.issue,
           }
-          await emailService.sendEmail([userEmail],emailContent)
-          await db.addIssue(issueData,username,repoName)
+          await emailService.sendEmail([userEmail], emailContent)
+          await db.addIssue(issueData, username, repoName)
         }
       } else if (action === "unassigned") {
         if (body.assignee.login === username) {
-          const {issue} = body
+          const { issue } = body
           const repoName = body.repository.name
           const issueData = {
             title: issue.title,
             createdBy: issue.user.login,
             url: issue.url,
           }
-          const emailContent:EmailContent = {
-            content:{
+          const emailContent: EmailContent = {
+            content: {
               name: username,
               issueEvent: action,
               assignee: issueData.createdBy,
               issueTitle: issue.title,
-              labelName:"",
-              labelDecription:"",
-              repoName:repoName
+              labelName: "",
+              labelDecription: "",
+              repoName: repoName
             },
             template: emailService.templates.issue,
           }
-          await emailService.sendEmail([userEmail],emailContent)
+          await emailService.sendEmail([userEmail], emailContent)
           console.log(`${username} is unassigned from an issue`)
-          await db.removeIssue(username,issue.url)
+          await db.removeIssue(username, issue.url)
         }
       } else {
         const logins = body.issue.assignees.map(({ login }) => login)
         if (logins.includes(username)) {
           console.log(`There has been changes to an issue ${username} is assigned to`)
-          const {issue} = body
+          const { issue } = body
           const repoName = body.repository.name
           const issueData = {
             title: issue.title,
@@ -235,19 +237,19 @@ app.post('/api/github/:username', async function (req, res) {
             url: issue.url,
           }
           // TODO: Check if webhook payload has all the required fields.
-          const emailContent:EmailContent = {
-            content:{
+          const emailContent: EmailContent = {
+            content: {
               name: username,
               issueEvent: action,
               assignee: issueData.createdBy,
               issueTitle: issue.title,
-              labelName:"",
-              labelDecription:"",
-              repoName:repoName
+              labelName: "",
+              labelDecription: "",
+              repoName: repoName
             },
             template: emailService.templates.issue,
           }
-          await emailService.sendEmail([userEmail],emailContent)
+          await emailService.sendEmail([userEmail], emailContent)
         }
       }
 
@@ -267,13 +269,13 @@ app.post('/api/github/:username', async function (req, res) {
             assignee: modifiedBy,
             issueEvent: "changed",
             issueTitle: issueName,
-            labelName:"",
-            labelDecription:"",
-            repoName:repoName
+            labelName: "",
+            labelDecription: "",
+            repoName: repoName
           },
           template: emailService.templates.issue
         }
-        await emailService.sendEmail([userEmail],emailContent)  
+        await emailService.sendEmail([userEmail], emailContent)
       }
     }
   }
@@ -295,14 +297,32 @@ app.post('/api/github/:username', async function (req, res) {
   res.status(200)
 });
 
-app.get('/api/notifications/:username', function (req, res){
+app.get('/api/notifications-real/:username', async (req, res) => {
+  const { username } = req.params // Need github username to get the correct notifications
+  const userId = await db.getUserId(username)
+
+  // Return new notifications
+  const rows = await db.executeQuery(`
+    SELECT notifications.id AS "id", notifications.type AS "type", notifications.contributor AS "contributor", repos.name AS "repoName"
+    FROM public.notifications
+    JOIN public.repos ON(notifications.repo_id = repos.id)
+    WHERE notifications.is_new=true AND notifications.user_id=$1 AND repos.is_watching=true
+    ORDER BY notifications.time DESC`, [userId])
+
+  // Set status is_new to false. TODO: enable this before demo
+  const notiIds = rows.map(({ id }) =>  id )
+  // await db.executeQuery(`UPDATE public.notifications SET is_new=false WHERE id=ANY($1)`,[notiIds])
+  res.json(rows)
+})
+
+app.get('/api/notifications/:username', function (req, res) {
   const { username } = req.params // Need github username to get the correct notifications
 
   const mock_data = [{
     repo: "Repo1",
     changedBy: "some user",
     type: "files"
-  },{
+  }, {
     repo: "Repo2",
     changedBy: "another user",
     type: "issues"
@@ -517,7 +537,7 @@ app.get(`/api/issues/:repo`, async (req, res) => {
   const issues = await fetchAsync(issuesUrl)
   const issueData = issues.map(({ title, body, url, user, updated_at }) => ({ title, body, url, createdBy: user.login, lastUpdated: updated_at }))
   // TODO: save issue to database --> optimise this
-  issueData.forEach(async issue =>{
+  issueData.forEach(async issue => {
     await db.addIssue(issue, username, repo)
   })
   res.send(issueData)
