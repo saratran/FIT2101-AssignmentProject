@@ -91,11 +91,11 @@ export const templates = { // <---- Edit this to add more templates
 
 export const frequency = {
   daily: {
-    option: { hour: 10 },
+    option: { hour: 10, minute: 0},
     template: templates.daily
   }, // trigger event at 10:00 am everyday
   weekly: {
-    option: { hour: 10, dayOfWeek: 0 },
+    option: { hour: 10, minute: 0, dayOfWeek: 0 },
     template: templates.weekly
   }, // trigger event at 10:00am every Sunday
   minute: {
