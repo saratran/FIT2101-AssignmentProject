@@ -230,7 +230,7 @@ $(document).ready(function() {
     clickElement = (thisElem, target, repoName) => {
         if (!$(target).is('span')) {
             getFiles(repoName);
-            Array.from(document.getElementsByClassName('active')).forEach(activeRepoElem => activeRepoElem.removeClass('active'));
+            Array.from($('.active')).map(elem => $(elem)).forEach(activeRepoElem => activeRepoElem.removeClass('active'));
             $(thisElem).addClass('active');
         }
     }
