@@ -281,7 +281,7 @@ $(document).ready(function() {
         while (repoFileGrid.firstChild) {
             repoFileGrid.removeChild(repoFileGrid.firstChild);
         }
-        const repoContent = document.getElementById("repoContent")
+        const repoContent = $("#repoContent")
         $("#issueInformation").remove()
         let repoFileMsnry = new Masonry(repoFileGrid, {
             // options
@@ -310,10 +310,10 @@ $(document).ready(function() {
                     }
 
                     // add grid element to repo grid
-                    repoFileGrid.appendChild(newGridItem);
+                    $(repoFileGrid).append(newGridItem);
                     repoFileMsnry.appended(newGridItem);
                     // make repo grid visible
-                    repoFileGrid.className = "grid slide-in-bck";
+                    $(repoFileGrid).className = "grid slide-in-bck";
                 })
             })
         }).then(() => {
@@ -322,54 +322,53 @@ $(document).ready(function() {
                 fetchRes.json().then(json => {
 
                     console.log(json)
-                    let issueInfo = document.createElement("div");
-                    issueInfo.setAttribute("id", "issueInformation")
-                    repoContent.appendChild(issueInfo)
+                    let issueInfo = $("<div></div>");
+                    issueInfo.attr("id", "issueInformation")
+                    repoContent.append(issueInfo)
 
-                    let repoIssueTable = document.createElement("table")
-                    repoIssueTable.setAttribute("id", "issueTable")
-                    repoIssueTable.innerHTML = `
+                    let repoIssueTable = $("<table></table>")
+                    repoIssueTable.attr("id", "issueTable")
+                    repoIssueTable.addClass("basic-box-shadow")
+                    repoIssueTable.html(`
                     <tr>
                         <th><b>Your Issues</b></th>
-                    </tr>`
+                    </tr>`)
 
                     if (!Object.keys(json).length) {
-                        let newIssue = document.createElement("tr");
-                        newIssue.innerHTML = '<td style="background-color:white">No relevant issues to display.</td>';
-                        repoIssueTable.appendChild(newIssue)
+                        let newIssue = $("<tr></tr>");
+                        newIssue.html('<td style="background-color:white">No relevant issues to display.</td>');
+                        repoIssueTable.append(newIssue)
                     } else {
                         json.forEach(item => {
-                            let newIssue = document.createElement("tr")
-                            newIssue.setAttribute("class", "issueTitle issueHeader");
-                            newIssue.innerHTML = `<td><b>${item.title}</b></td>`
-                            repoIssueTable.appendChild(newIssue)
-                            let issueBody = document.createElement("tr")
-                            issueBody.innerHTML = `<td>${item.body}</td>`
-                            repoIssueTable.appendChild(issueBody)
-                            let issueCreator = document.createElement("tr")
-                            issueCreator.innerHTML = `<td><i>Issue opened by ${item.createdBy}</i></td>`
-                            repoIssueTable.appendChild(issueCreator)
+                            const newIssue = $("<tr></tr>")
+                            newIssue.attr("class", "issueTitle issueHeader");
+                            newIssue.html(`<td><b>${item.title}</b></td>`)
+                            repoIssueTable.append(newIssue)
+
+                            const issueBody = $("<tr></tr>")
+                            issueBody.html(`<td>${item.body}</td>`)
+                            repoIssueTable.append(issueBody)
+
+                            const issueCreator = $("<tr></tr>")
+                            issueCreator.html(`<td><i>Issue opened by ${item.createdBy}</i></td>`)
+                            repoIssueTable.append(issueCreator)
                         })
                     }
 
+                    repoIssueTable.addClass("slide-in-bck")
+                    issueInfo.append(repoIssueTable)
 
-                    let bottom = document.createElement("tr");
-                    bottom.setAttribute("class", "issueTitle");
-                    bottom.innerHTML = '<td id = "issueBottom"></td>'
-                    repoIssueTable.appendChild(bottom)
-                    repoIssueTable.className = "slide-in-bck"
-                    issueInfo.appendChild(repoIssueTable)
+                    const titles = Array.from($('.issueTitle')).map(title => $(title))
+                    titles.forEach(title => {
+                      title.nextUntil('tr.issueTitle').toggle();
+                      title.onclick = function () {
+                        this.nextUntil('tr.issueTitle').toggle();
+                      }
+                    })
 
-                    const titles = document.getElementsByClassName('issueTitle')
-                    for (let title of titles) {
-                        $(title).nextUntil('tr.issueTitle').toggle();
-                        title.onclick = function () {
-                            $(this).nextUntil('tr.issueTitle').toggle();
-                        }
-                    }
                     // refresh repo grid layout
                     repoFileMsnry.layout();
-                    document.getElementById("loadScreen").remove()
+                    $("#loadScreen").remove()
                     checkForNewNotifications();
                 })
             })

@@ -9,6 +9,7 @@
     --color-3: #FFFFFF;
     --color-4: #30A3E5;
     --color-5: #FFA0A0;
+    --color-highlight-secondary: #ff724f;
 }
 
 /* page background colour */
@@ -39,7 +40,6 @@ body {
     flex-direction: column;
     position: fixed;
     z-index: 10;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 #main-logo {
@@ -232,26 +232,23 @@ div.repo-information {
     width: 100%;
     border-collapse: separate !important;
     border-spacing: 0;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-
+    background: #fff;
 }
 
 #issueTable th {
-    background: #FFA0A0;
+    border-top: 4px solid var(--color-highlight-secondary);
     height: 30px;
     padding: 8px;
     text-align: center;
-    color: white;
-    font-size: 24px;
-    /*box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);*/
+    color: #444;
+    font-size: 18px;
 }
 
 #issueTable tr {
-    background-color: #fff0f0;
+    background-color: #fff;
     text-align: center;
     color: black;
     font-size: 14px;
-    /*box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);*/
 }
 
 #issueTable td {
@@ -270,12 +267,6 @@ div.repo-information {
 
 .issueHeader:hover {
     background-color: #e6e6e6 !important;
-}
-
-#issueBottom {
-    background-color: #fff0f0;
-    padding: 0 !important;
-    height: 15px !important;
 }
 
 #loadScreen {
@@ -780,7 +771,6 @@ rect {
 }
 
 #notification-pane {
-    z-index: 40;
     animation-name: notif-disappear;
     -webkit-animation-name: notif-disappear;
     animation-duration: 0.5s;
@@ -796,7 +786,8 @@ rect {
     overflow-y: scroll;
     overflow-x: hidden;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    opacity: 0;
+    z-index: 40;
+    visibility: hidden;
 
 }
 
@@ -805,7 +796,7 @@ rect {
     -webkit-animation-name: notif-appear;
     animation-duration: 0.5s;
     -webkit-animation-duration: 0.5s;
-    opacity: 1;
+    visibility: visible;
 }
 /* width */
 #notification-pane::-webkit-scrollbar {
