@@ -61,8 +61,8 @@ $(document).ready(function() {
         let newSidebar = document.createElement("div");
         let newSidebarHeader = document.createElement("a");
         newSidebarHeader.className = "master-sidebar-header";
-        newSidebarHeader.innerHTML = "<div class=\"returnButton\" style=\"text-align: left\"><h3 style=\"color: white; cursor: pointer; margin-top: 0; margin-right: 0; position: absolute\" onclick=\"returnToRepos(this)\"><</h3></div><div style=\"margin-left: 60px; margin-top: 0; text-align: left\">" + gridItemContent + "</div>";
-        newSidebar.className = "master-file detailToMaster-target";
+        newSidebarHeader.innerHTML = "<div class=\"returnButton\" style=\"text-align: left\"><h3 onclick=\"returnToRepos(this)\"><img src='img/chevron-left.svg' alt='Go back' /></h3></div><div style=\"margin-left: 60px; margin-top: 0; text-align: left\">" + gridItemContent + "</div>";
+        newSidebar.className = "master-file basic-box-shadow detailToMaster-target";
         newSidebar.appendChild(newSidebarHeader);
         gridItem.removeAttribute("onclick");
 
@@ -107,12 +107,12 @@ $(document).ready(function() {
         barGraph.setAttribute("style", "height: 400px; width: 400px");
 
         // set grid element attributes
-        detailGridItem1.className = "grid-item file-detail";
+        detailGridItem1.className = "grid-item file-detail basic-box-shadow";
         detailGridItem1.id = "Individual Contributions";
-        detailGridItem2.className = "grid-item file-detail pieChart";
+        detailGridItem2.className = "grid-item file-detail basic-box-shadow pieChart";
         detailGridItem2.id = "User Contribution Ratio";
         detailGridItem2.setAttribute("style", "height: 470px; width: 350px");
-        detailGridItem3.className = "grid-item file-detail contributor-table";
+        detailGridItem3.className = "grid-item file-detail basic-box-shadow contributor-table";
         detailGridItem3.id = "Other " + fileName + " Contributors";
         detailGridItem1.innerHTML = "<h1>Individual Contributions</h1>";
         detailGridItem2.innerHTML = "<h1>User Contribution Ratio</h1>";
@@ -215,8 +215,10 @@ $(document).ready(function() {
                 repoList.empty()
                 json.forEach(repo => {
                     const repoElement = $.parseHTML(
-                        `<a onclick="clickElement(this, event.target, '${ repo.name }')">
-                        ${repo.name} | ${repo.description}<div class="round" title="Watch repository"><label><input class="toggle-watch" type="checkbox" ${repo.isWatching && `checked=checked`} onclick="toggleWatching(this, '${ repo.name }'); event.stopImmediatePropagation();" /><span></span></label></div></a>
+                        `<a class="repo-container" onclick="clickElement(this, event.target, '${ repo.name }')">
+                            <div class="repo-name">${repo.name}</div>
+                            <div class="repo-description">${repo.description}</div>
+                          <div class="repo-toggle round" title="Watch repository"><label><input class="toggle-watch" type="checkbox" ${repo.isWatching && `checked=checked`} onclick="toggleWatching(this, '${ repo.name }'); event.stopImmediatePropagation();" /><span></span></label></div></a>
                     `)
 
                     repoList.append(repoElement)
@@ -228,8 +230,8 @@ $(document).ready(function() {
     clickElement = (thisElem, target, repoName) => {
         if (!$(target).is('span')) {
             getFiles(repoName);
-            Array.from(document.getElementsByClassName('active')).forEach(activeRepoElem => activeRepoElem.setAttribute('class', ''));
-            thisElem.setAttribute('class', 'active');
+            Array.from(document.getElementsByClassName('active')).forEach(activeRepoElem => activeRepoElem.removeClass('active'));
+            $(thisElem).addClass('active');
         }
     }
 
@@ -255,8 +257,8 @@ $(document).ready(function() {
         fetch(apiUrl + `/user?access_token=${accessToken}`).then(data => {
             data.json().then(json => {
                 userData = json
-                let header = document.getElementsByClassName("sidebar-header")[0]
-                header.innerHTML = `<b>${json.login}</b>`
+                const header = $(".sidebar-header").first()
+                header.html(`<b>${json.login}</b>`)
                 header.setAttribute('href', json.html_url);
                 header.setAttribute('target', "_blank");
             })
@@ -269,7 +271,7 @@ $(document).ready(function() {
         $("#start").remove();
         const load = document.createElement("div")
         load.setAttribute("id", "loadScreen")
-        load.innerHTML = `<p>Loading...</br>This may take a while.</p>`
+        load.innerHTML = `<p><div class="loading-spinner-container"><div class="loading-spinner loading-spinner-white"><div></div><div></div><div></div><div></div></div></div>Loading...</br>This may take a while.</p>`
 
         $("body").first().append(load)
 
