@@ -259,8 +259,8 @@ $(document).ready(function() {
                 userData = json
                 const header = $(".sidebar-header").first()
                 header.html(`<b>${json.login}</b>`)
-                header.setAttribute('href', json.html_url);
-                header.setAttribute('target', "_blank");
+                header.attr('href', json.html_url);
+                header.attr('target', "_blank");
             })
         })
     }
@@ -791,6 +791,7 @@ $(document).ready(function() {
 
     muteNewNotifications = () => {
       Array.from($("#notification-pane").children())
+        .map(notif => $(notif))
         .filter(notif => notif.hasClass("notification-item") && notif.hasClass("new"))
         .forEach(notif => notif.removeClass("new"))
     }
