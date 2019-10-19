@@ -295,6 +295,22 @@ app.post('/api/github/:username', async function (req, res) {
   res.status(200)
 });
 
+app.get('/api/notifications/:username', function (req, res){
+  const { username } = req.params // Need github username to get the correct notifications
+
+  const mock_data = [{
+    repo: "Repo1",
+    changedBy: "some user",
+    type: "files"
+  },{
+    repo: "Repo2",
+    changedBy: "another user",
+    type: "issues"
+  }]
+
+  res.json(mock_data)
+})
+
 app.post('/api/authenticate', function (req, res) {
   /**
    * Register a user in the database:
