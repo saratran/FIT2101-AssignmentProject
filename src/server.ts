@@ -152,7 +152,7 @@ app.post('/api/github/:username', async function (req, res) {
         console.dir(emailContent.content)
         await emailService.sendEmail([userEmail],emailContent)
       }
-      
+
     } else if (emailFrequency === 'daily' || emailFrequency === "weekly"){
       // Save new files you contributed to
       const fileIds = []
@@ -273,7 +273,7 @@ app.post('/api/github/:username', async function (req, res) {
           },
           template: emailService.templates.issue
         }
-        await emailService.sendEmail([userEmail],emailContent)  
+        await emailService.sendEmail([userEmail],emailContent)
       }
     }
   }
@@ -566,7 +566,7 @@ function commitsFilter(commits, accessToken, ownUsername) {
     const commitInfoProm = fetchAsync(commitInfoUrl);
 
     commitInfoProm.then(commitInfo => {
-      commit.author.login = commitInfo.author.login
+      commit.author.login = commitInfo.author ? commitInfo.author.login : "Unknown"
       // commit.committer = commitInfo.committer;
       commit.stats = commitInfo.stats;
       commit.files = commitInfo.files;
@@ -741,8 +741,8 @@ async function forTesting() {
 
 forTesting()
 
-// app.get("/api/test-email", async(req, res) => {
-//   await emailService.sendEmail(["pbre0003@student.monash.edu"], "Hello", ()=>{})
+//app.get("/api/test-email", async(req, res) => {
+  //   await emailService.sendEmail(["pbre0003@student.monash.edu"], "Hello", ()=>{})
 
 //   res.send({})
 // })

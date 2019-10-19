@@ -1,42 +1,73 @@
 /* Font scheme */
-@import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Play&display=swap');
 @import url('https://fonts.googleapis.com/css?family=Comfortaa');
 
 /* color scheme */
 :root {
-    --color-1: #89CEAD;
-    --color-2: #8cd1b1;
+    --color-1: #89cead;
+    --color-2: #89cead;
     --color-3: #FFFFFF;
     --color-4: #30A3E5;
     --color-5: #FFA0A0;
+    --color-highlight-secondary: #ff724f;
 }
 
 /* page background colour */
 .page {
-    background-color: #9ee8c4;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='152' height='152' viewBox='0 0 152 152'%3E%3Cg fill-rule='evenodd'%3E%3Cg id='temple' fill='%2389cead' fill-opacity='1'%3E%3Cpath d='M152 150v2H0v-2h28v-8H8v-20H0v-2h8V80h42v20h20v42H30v8h90v-8H80v-42h20V80h42v40h8V30h-8v40h-42V50H80V8h40V0h2v8h20v20h8V0h2v150zm-2 0v-28h-8v20h-20v8h28zM82 30v18h18V30H82zm20 18h20v20h18V30h-20V10H82v18h20v20zm0 2v18h18V50h-18zm20-22h18V10h-18v18zm-54 92v-18H50v18h18zm-20-18H28V82H10v38h20v20h38v-18H48v-20zm0-2V82H30v18h18zm-20 22H10v18h18v-18zm54 0v18h38v-20h20V82h-18v20h-20v20H82zm18-20H82v18h18v-18zm2-2h18V82h-18v18zm20 40v-18h18v18h-18zM30 0h-2v8H8v20H0v2h8v40h42V50h20V8H30V0zm20 48h18V30H50v18zm18-20H48v20H28v20H10V30h20V10h38v18zM30 50h18v18H30V50zm-2-40H10v18h18V10z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='12' viewBox='0 0 40 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 6.172L6.172 0h5.656L0 11.828V6.172zm40 5.656L28.172 0h5.656L40 6.172v5.656zM6.172 12l12-12h3.656l12 12h-5.656L20 3.828 11.828 12H6.172zm12 0L20 10.172 21.828 12h-3.656z' fill='%2389CEAD' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
     height: 100%;
     width: 100%;
 }
 
 /* page font */
 body {
-    font-family: "Open Sans", sans-serif;
+    font-family: "Play", sans-serif;
     margin-left: 0px;
 }
 
 /* pager header */
 .page-header {
-    height: 10vh;
+    height: 100px;
     width: 100%;
     top: 0;
     background-color: white;
     display: flex;
-    flex-direction: column;
     justify-content: center;
+    justify-items: center;
+    align-content: center;
+    align-items: center;
+    flex-direction: column;
     position: fixed;
     z-index: 10;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+}
+
+#main-logo {
+    height: 30px;
+    width: 165px;
+}
+
+#controls {
+    position: absolute;
+    right: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.notifications {
+    height: 25px;
+    width: 25px;
+    margin-right: 20px;
+}
+
+.bell {
+    opacity: 1;
+    height: 25px;
+    cursor: pointer;
+}
+
+.bell:hover {
+    opacity: 0.7;
 }
 
 #start {
@@ -45,12 +76,12 @@ body {
     width: 100%;
     height: 100%;
     position: fixed;
-    top:0;
+    line-height: 50px;
+    padding: calc(50vh - 25px) 0;
+    top: 0;
     font-size: 20px;
-    line-height: 30vh;
     text-align: center;
     color: white;
-    padding: 0;
     margin: 0;
 }
 
@@ -59,7 +90,7 @@ body {
     left: 0;
     width: 550px;
     height: 100%;
-    top: 10vh;
+    top: 100px;
     position: relative;
 }
 
@@ -73,8 +104,6 @@ body {
     padding: 0;
     position: fixed;
     overflow: auto;
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
     animation-name: master-file-scale;
     animation-duration: 1s;
     -webkit-animation-name: master-file-scale;
@@ -93,57 +122,56 @@ body {
 
 /* file element (file sidebar) color on hover */
 .master-file a:hover:not(.master-sidebar-header) {
-    background-color: #555;
+    background: #444;
     color: white;
     cursor: pointer;
 }
 
 /* Repository list sidebar */
 .repo-sidebar {
-    margin-left: 8px;
+    margin-left: 0;
     padding: 0;
     width: 250px;
-    background-color: #e3e3e3;
+    background-color: #fff;
     position: fixed;
-    height: 100%;
-    overflow: auto;
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
+    max-height: calc(100vh - 100px);
+    overflow: scroll;
+    margin-bottom: 20px;
     z-index: 30;
+}
+
+.basic-box-shadow {
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.1);
 }
 
 /* Repositories */
 .repo-sidebar a {
     display: block;
-    color: black;
+    color: #444;
     padding: 15px;
     text-decoration: none;
 }
 
 /* sidebar header color */
 .sidebar-header {
-    background-color: var(--color-2);
-    color: white;
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
+    background-color: white;
 }
 
 /* file master sidebar header */
 .master-sidebar-header {
-    background-color: var(--color-2);
+    background-color: #fff;
     display: block;
-    color: white;
+    color: var(--color-2);
     padding: 15px;
     margin: 0;
     text-decoration: none;
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
     text-align: center;
 }
 
 /* colour of repo when clicked */
 .repo-sidebar a.active {
-    background-color: #787878;
+    background-color: #555;
+    box-shadow: inset 0 0 10px 0 rgba(0, 0, 0, 0.2);
     color: white;
 }
 
@@ -164,6 +192,28 @@ div.repo-information {
     position: absolute;
 }
 
+.returnButton h3 {
+    cursor: pointer;
+    margin-top: 0;
+    margin-right: 0;
+    position: absolute;
+}
+
+.master-sidebar-header h3 img {
+    transition: transform 0.2s linear;
+}
+
+.master-sidebar-header:hover h3 img {
+    transform: translate(0, 4px);
+    transition: transform 0.2s linear;
+}
+
+.returnButton h3 img {
+    color: #000;
+    width: 20px;
+    height: 20px;
+}
+
 .expanded-repo-information {
     width: 80% !important;
 }
@@ -182,36 +232,28 @@ div.repo-information {
     width: 100%;
     border-collapse: separate !important;
     border-spacing: 0;
-    border-radius: 15px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-
+    background: #fff;
 }
 
 #issueTable th {
-    background: #FFA0A0;
+    border-top: 4px solid var(--color-highlight-secondary);
     height: 30px;
     padding: 8px;
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
     text-align: center;
-    color: white;
-    font-size: 24px;
-    /*box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);*/
+    color: #444;
+    font-size: 18px;
 }
 
 #issueTable tr {
-    background-color: #fff0f0;
-    /*border-radius: 15px;*/
+    background-color: #fff;
     text-align: center;
     color: black;
     font-size: 14px;
-    /*box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);*/
 }
 
 #issueTable td {
     height: 30px;
     padding: 8px;
-    /*border-radius: 15px;*/
     text-align: center;
     color: black;
     font-size: 14px;
@@ -227,14 +269,6 @@ div.repo-information {
     background-color: #e6e6e6 !important;
 }
 
-#issueBottom {
-    border-bottom-left-radius: 15px;
-    border-bottom-right-radius: 15px;
-    background-color: #fff0f0;
-    padding: 0 !important;
-    height: 15px !important;
-}
-
 #loadScreen {
     position:fixed;
     width:100%;
@@ -243,20 +277,14 @@ div.repo-information {
     top: 0;
     background: rgba(0,0,0, 0.7);
     text-align: center;
-    display: table;
     color:white;
     font-size: 20px;
-}
-
-#loadScreen p {
-    display: table-cell;
-    vertical-align: middle;
-}
-
-/* search bar behavior */
-input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
-    outline: none;
-    background-color: #f0f0f0;
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    justify-items: center;
+    flex-direction: column;
 }
 
 /* search component in sidebar */
@@ -264,8 +292,6 @@ input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
     width: 190px;
     height: 20px;
     padding: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
     border-style: none;
     border-color: white;
     position: absolute;
@@ -274,31 +300,9 @@ input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
     box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.5);
 }
 
-/* search input style */
-.search-bar {
-    width: 230px;
-    height: 50px;
-    padding: 10px;
-    background-color: #e3e3e3;
-    border-bottom-style: solid;
-    border-bottom-color: white;
-}
-
-.search-bar-inner {
-    height: 30px;
-    background-color: white;
-    width: 230px;
-    border-color: #555555;
-    border-radius: 5px;
-    margin-top: 5px;
-
-    box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.5);
-}
-
 /* repo file styling */
 .grid-item.repo-file {
     background-color: white;
-    border-radius: 15px;
     min-height: 200px;
     width: 200px;
     margin-bottom: 20px;
@@ -306,7 +310,13 @@ input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
     padding-right: 20px;
     padding-bottom: 20px;
     cursor: pointer;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    font-size: 12px;
+    border-top: 4px solid var(--color-1);
+}
+
+.grid-item.file-detail {
+    border-top: 4px solid var(--color-1);
 }
 
 /* grid item hover color */
@@ -317,7 +327,6 @@ input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
 /* file detail component attributes */
 .grid-item.file-detail {
     background-color: white;
-    border-radius: 15px;
     min-height: 200px;
     min-width: 200px;
     margin-bottom: 20px;
@@ -360,7 +369,6 @@ input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
     -webkit-animation: detailToMaster 2500ms linear both;
     animation: detailToMaster 2500ms linear both;
     background-color: white;
-    border-radius: 15px;
 }
 
 /* Generated with Bounce.js. */
@@ -460,7 +468,8 @@ input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
 .repo-sidebar.visible {
     -webkit-animation: view-sidebar 2500ms linear both;
     animation: view-sidebar 2500ms linear both;
-    left: 2px;
+    left: 0;
+    overflow: auto;
 }
 
 /* Generated with Bounce.js. */
@@ -492,21 +501,21 @@ input#repo-search:focus, textarea#repo-search:focus, select#repo-search:focus{
 
 /* attributes for all buttons */
 button {
-    background-color:#FFA0A0;
-    -moz-border-radius:28px;
-    -webkit-border-radius:28px;
-    border-radius:28px;
-    border:1px solid #FFA0A0;
+    background-color:#fff;
+    color: #000;
     display:inline-block;
     cursor:pointer;
-    color:#ffffff;
-    font-family: Open Sans, sans-serif;
-    font-size:17px;
+    font-family: "Play", sans-serif;
+    font-size: 17px;
     padding:16px 31px;
     text-decoration:none;
+    box-shadow: 0 5px 5px 0 rgba(0, 0, 0, 0.1);
+    border: none;
+    transition: box-shadow 0.2s;
 }
 button:hover {
-    background-color:#ffb3a0;
+    box-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.2s;
 }
 button:focus {
     outline: none;
@@ -515,17 +524,11 @@ button:active:not(#saveEmailFrequencies) {
     position:relative;
     top:1px;
 }
-#emailFrequencies {
-    position: absolute;
-    top: 5px;
-    right: 10px;
-}
 
 /* table styling */
 #contributorTable {
     border-collapse: collapse;
     background: white;
-    border-radius: 10px;
     overflow: hidden;
     width: 100%;
     margin: 0 auto;
@@ -662,8 +665,6 @@ rect {
     background-color: #fefefe;
     margin: auto;
     padding: 20px;
-    border-radius: 15px;
-    border: 1px solid #888;
     width: 350px;
     height: 500px;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.4),0 6px 20px 0 rgba(0,0,0,0.4);
@@ -692,23 +693,38 @@ rect {
     cursor: pointer;
 }
 
-.round {
+.repo-container {
+    display: flex;
     position: relative;
+}
+
+.repo-name {
+    font-size: 18px;
+    width: 80%;
+}
+
+.repo-description {
+    font-size: 12px;
+    width: 80%;
+}
+
+.round {
+    position: absolute;
+    right: 20px;
+    top: calc(50% - 10px);
     float: right;
-    right: 5px;
 }
 
 .round span {
     background-color: #fff;
     border: 1px solid #ccc;
-    border-radius: 50%;
-    box-shadow: inset 0 0 3px #000000;
     cursor: pointer;
+    width: 20px;
     height: 20px;
     left: 0;
     position: absolute;
     top: 0;
-    width: 20px;
+    border-radius: 50%;
 }
 
 .round span:after {
@@ -735,29 +751,10 @@ rect {
     opacity: 1;
 }
 
-.notifications {
-    height: 40px;
-    width: 40px;
-    right: 195px;
-    top: 20px;
-    position: absolute;
-}
-
-.bell {
-    opacity: 1;
-    height: 25px;
-    cursor: pointer;
-}
-
-.bell:hover {
-    opacity: 0.7;
-}
-
 .badge {
     height: 7px;
     width: 7px;
     background-color: #d63031;
-    border-radius: 10px;
     color: white;
     text-align: center;
     position: relative;
@@ -773,7 +770,7 @@ rect {
     visibility: visible;
 }
 
-.notification-pane {
+#notification-pane {
     animation-name: notif-disappear;
     -webkit-animation-name: notif-disappear;
     animation-duration: 0.5s;
@@ -785,45 +782,34 @@ rect {
     top: 40px;
     background: white;
     padding: 0;
-    opacity: 0;
     position: absolute;
     overflow-y: scroll;
     overflow-x: hidden;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 40;
+    visibility: hidden;
 
 }
 
-.notifications-visible {
-    display: block;
+#notification-pane.notifications-visible {
     animation-name: notif-appear;
     -webkit-animation-name: notif-appear;
     animation-duration: 0.5s;
     -webkit-animation-duration: 0.5s;
-    opacity: 1;
-    z-index: 10001;
+    visibility: visible;
 }
 /* width */
-.notification-pane::-webkit-scrollbar {
+::-webkit-scrollbar {
     width: 10px;
 }
 
-/* Track */
-.notification-pane::-webkit-scrollbar-track {
-    box-shadow: inset 0 0 5px grey;
-    border-radius: 10px;
-}
-
 /* Handle */
-.notification-pane::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
     background: #424242;
-    border-radius: 10px;
     height: 20px;
 }
 
-.notification-pane::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
     background: #787878;
 }
 
@@ -864,7 +850,6 @@ rect {
     top: 10px;
     position: relative;
     object-fit:cover;
-    border-radius:50%;
     float: left;
     margin-right: 15px;
 }
@@ -895,3 +880,32 @@ rect {
     100%{opacity: 0; top: -40px}
 }
 
+/**
+Repos refresh button
+ */
+
+#getReposButtonOuter {
+    display: flex;
+    align-content: center;
+    justify-items: center;
+}
+
+#getReposButton {
+    padding: 10px;
+    margin: 10px auto;
+}
+
+#getReposButton img {
+    width: 20px;
+    height: auto;
+    color: #fff;
+    margin: 0 auto;
+}
+
+#email-icon {
+    width: 20px;
+    height: 20px;
+    position: relative;
+    top: 3px;
+    margin-right: 5px;
+}

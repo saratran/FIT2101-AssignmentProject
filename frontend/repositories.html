@@ -28,27 +28,23 @@
             <a><button id="saveEmailFrequencies">Save Preference</button></a>
         </div>
     </div>
-    <div class="page-header">
-        <img src="img/logo.png" style="height: 30px; width: 165px; margin-left: calc(50% - 82px)">
-        <div class="notifications">
-            <img onclick="showNotifications()" class="bell" src="img/bell-icon.png" alt="notifications">
-            <div class="badge"></div>
-            <div class="notification-pane">
-            </div></div>
-        <a id="emailFrequencies"><button>Email Settings</button></a>
+    <div class="page-header basic-box-shadow">
+        <img src="img/logo.png" id="main-logo">
+        <div id="controls">
+            <div class="notifications">
+                <img onclick="showNotifications()" class="bell" src="img/bell-icon.png" alt="notifications">
+                <div class="badge"></div>
+                <div id="notification-pane">
+                </div></div>
+            <a id="emailFrequencies"><button><img id="email-icon" src="img/envelope.svg" alt="email" /> Email Settings</button></a>
+        </div>
     </div>
     <main class="repository-content" id="repoContent">
         <div id="start">Click on a repository in the sidebar to start.</div>
         <div class="master">
-            <div class="repo-sidebar">
+            <div class="repo-sidebar basic-box-shadow">
                 <a class="sidebar-header" style="text-align: center"></a>
-                <div class="search-bar">
-                    <div class="search-bar-inner">
-                        <img src="img/search-512.png" style="height: 20px; width: 20px; margin: 5px;">
-                        <input id="repo-search" type="text"  placeholder="Search" oninput="searchRepos()">
-                    </div>
-                </div>
-                <div><button id="getReposButton" style="padding-top: 3px; padding-bottom: 3px; margin-top: 20px; margin-left: 26px; margin-bottom: 20px;">Refresh repo list</button></div>
+                <div id="getReposButtonOuter"><button id="getReposButton"><img alt="Refresh repos list" src="img/refresh.svg" /></button></div>
                 <div id="repo-list"></div>
             </div>
         </div>
