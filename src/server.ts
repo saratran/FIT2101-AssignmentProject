@@ -245,7 +245,7 @@ app.post('/api/github/:username', async function (req, res) {
           await emailService.sendEmail([userEmail], emailContent)
         }
       }
-    } else if (event_name === "issue_comment") {
+    } else if (event_name === "issue_comment" && emailFrequency != "never") {
       console.log("Received webhook issue_comment event")
       const logins = body.issue.assignees.map(({ login }) => login)
       // Only send email if user is an assignee
