@@ -7,7 +7,7 @@ function getFiles(reponame) {}
 function getFileIcon() {}
 function getContributorInfo() {}
 function highlightFile() {}
-function goToUserPage() {}
+function goToPage() {}
 function getBarGraph() {}
 function getPieChart() {}
 function getUser() {}
@@ -432,7 +432,7 @@ $(document).ready(function() {
 
                     // set row attributes
                     newContributor.id = userName.innerHTML
-                    newContributor.setAttribute("onclick", "goToUserPage(this)")
+                    newContributor.setAttribute("onclick", "goToPage(this)")
                     newContributor.appendChild(contributorName);
                     newContributor.appendChild(userName);
                     newContributor.appendChild(contactInfo);
@@ -488,11 +488,15 @@ $(document).ready(function() {
         }, 1000);
     }
 
-    goToUserPage = (username) => {
-        let pageName = username.id;
-
-        // open user github page in new window
-        var win = window.open("https://github.com/" + pageName, '_blank');
+    goToPage = (username, url="") => {
+        if (url !== "") {
+            let pageName = username.id;
+            // open user github page in new window
+            var win = window.open("https://github.com/" + pageName, '_blank');
+        }
+        else {
+            var win = window.open(url, '_blank')
+        }
         win.focus();
     }
 
@@ -742,15 +746,16 @@ $(document).ready(function() {
         }
     }
 
-    buildNotification = (contributorUsername, notifType, repoName) => {
-        // get
+    buildNotification = (contributorUsername, notifType, repoName, extraInfo) => {
         fetch(apiUrl + `/users/${contributorUsername}`).then(fetchRes => {
             fetchRes.json().then(userData => {
+                let actionMessage;
                 let userAvatarURL = `${userData.avatar_url}`;
                 let notificationPane = $("#notification-pane")
                 let notificationItem = document.createElement("div");
                 let userAvatar = document.createElement("img");
                 let contentTitle = document.createElement("p");
+                let contentMessage = document.createElement("p");
 
                 const messages = {
                   "push": "has made a commit",
@@ -758,19 +763,51 @@ $(document).ready(function() {
                       "comment": "has commented on an issue",
                       "edited": "has edited an issue",
                       "added": "has added an issue",
+                      "opened": "has opened an issue",
+                      "deleted": "has deleted an issue",
+                      "transferred": "has transferred an issue",
+                      "pinned": "has pinned an issue",
+                      "unpinned": "has unpinned an issue",
+                      "closed": "has closed an issue",
+                      "reopened": "has reopened an issue",
+                      "assigned": "has assigned an issue to you",
+                      "unassigned": "has unassigned an issue from you",
+                      "labeled": "has labeled an issue",
+                      "unlabeled": "has unlabeled an issue",
+                      "locked": "has locked an issue",
+                      "unlocked": "has unlocked an issue",
+                      "milestoned": "has milstoned an issue",
+                      "demilestoned": "has demilstoned an issue"
+                  },
+                  "issues_comment" : {
+                      "created": "has commented on an issue",
+                      "edited": "has edited a comment on an issue",
+                      "deleted": "has deleted a comment on an issue"
                   }
                 };
 
-                const action = messages[notifType]
+                if (notifType == "push") {
+                    actionMessage = messages[notifType];
+                }
+                else {
+                    actionMessage = messages[notifType][extraInfo[1]];
+                }
 
+                const action = actionMessage;
+                const message = extraInfo[0];
+                const onclickURL = extraInfo[2];
                 contentTitle.className = "notification-title";
                 contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b> has " + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
                 notificationItem.className = "notification-item new";
+                notificationItem.setAttribute("onclick", "goToPage(blah, " + onclickURL + ")")
                 userAvatar.src = userAvatarURL;
                 userAvatar.className = "avatar";
+                contentMessage.className = "notification-body";
+                contentMessage.innerHTML = message;
 
                 notificationItem.appendChild(userAvatar);
                 notificationItem.appendChild(contentTitle);
+                notificationItem.appendChild(contentMessage);
                 notificationItem.innerHTML += "<div style='clear:both'>&nbsp</div>";
                 notificationPane.prepend(notificationItem);
             })
@@ -800,21 +837,22 @@ $(document).ready(function() {
 
     checkForNewNotifications = () => {
         const accessToken = window.localStorage.getItem("accessToken");
+        var otherInfo;
         fetch(apiUrl + `/user?access_token=${accessToken}`).then(userData => {
             userData.json().then(userInfo => {
                 let username = `${userInfo.login}`;
                 console.log(username);
 
-                fetch(apiUrl + `/notifications-real/${username}`).then(newRepoData => {
+                fetch(apiUrl + `/notifications/${username}`).then(newRepoData => {
                     newRepoData.json().then(json => {
-                        console.log("heres the info: ");
+                        console.log("here's the info: ");
                         console.log(json);
                         json.forEach(notification => {
                             let user = `${notification.contributor}`;
                             let repo = `${notification.repoName}`;
                             let type = `${notification.type}`;
-
-                            buildNotification(user, type, repo);
+                            let otherInfo = [`${notification.content}`, `${notification.action}`, `${notification.notifURL}`];
+                            buildNotification(user, type, repo, otherInfo);
                         })
                     })
                 })
