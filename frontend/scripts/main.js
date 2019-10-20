@@ -18,6 +18,7 @@ function buildNotification() {}
 function showNotifications() {}
 function checkForNewNotifications() {}
 function muteNewNotifications() {}
+function addRefreshButton() {}
 
 $(document).ready(function() {
     // All code goes in this function to ensure JQuery and the page are ready before JS code is run
@@ -489,7 +490,7 @@ $(document).ready(function() {
     }
 
     goToPage = (username, url="") => {
-        if (url !== "") {
+        if (url === "") {
             let pageName = username.id;
             // open user github page in new window
             var win = window.open("https://github.com/" + pageName, '_blank');
@@ -797,7 +798,7 @@ $(document).ready(function() {
                 const message = extraInfo[0];
                 const onclickURL = extraInfo[2];
                 contentTitle.className = "notification-title";
-                contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b> has " + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
+                contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b>" + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
                 notificationItem.className = "notification-item new";
                 notificationItem.setAttribute("onclick", "goToPage(blah, " + onclickURL + ")")
                 userAvatar.src = userAvatarURL;
@@ -805,11 +806,16 @@ $(document).ready(function() {
                 contentMessage.className = "notification-body";
                 contentMessage.innerHTML = message;
 
+                if (notificationPane.children[0].id === "refreshNotifs") {
+                    notificationPane.removeChild(notificationPane.children[0]);
+                }
+
                 notificationItem.appendChild(userAvatar);
                 notificationItem.appendChild(contentTitle);
                 notificationItem.appendChild(contentMessage);
                 notificationItem.innerHTML += "<div style='clear:both'>&nbsp</div>";
                 notificationPane.prepend(notificationItem);
+                addRefreshButton();
             })
         })
     }
@@ -858,7 +864,6 @@ $(document).ready(function() {
                 })
             })
         })
-
         const notifPane = $("#notification-pane")
         const notifications = Array.from(notifPane.children())
         const notificationBadge = $(".badge")
@@ -870,7 +875,17 @@ $(document).ready(function() {
             document.getElementsByClassName("no-notifs")[0].remove();
         } else {
             notifPane.html("<p class='notification-emphasis no-notifs'>No Notifications</p>");
+            addRefreshButton();
         }
+    }
+
+    addRefreshButton = () => {
+        const notifPane = document.getElementById("notification-pane");
+        let refreshButton = document.createElement("button");
+        refreshButton.id = "refreshNotifs";
+        refreshButton.innerHTML = "<img id='refreshNotifsIcon' src='../img/refresh.svg'>";
+        refreshButton.setAttribute("onclick","checkForNewNotifications()");
+        notifPane.prepend(refreshButton);
     }
 
     $("#getReposButton").on("click", getRepos);

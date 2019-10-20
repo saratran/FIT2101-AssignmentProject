@@ -902,6 +902,27 @@ Repos refresh button
     margin: 0 auto;
 }
 
+#refreshNotifs {
+    padding: 10px;
+    width: 40px;
+    height: 40px;
+    margin-left: 130px;
+    margin-top: 20px;
+}
+
+#refreshNotifsIcon {
+    width: 20px;
+    height: auto;
+    color: #fff;
+}
+
+.no-notifs {
+    height: 60px;
+    width: 270px;
+    padding: 10px 30px 10px 20px;
+    background: white;
+}
+
 #email-icon {
     width: 20px;
     height: 20px;

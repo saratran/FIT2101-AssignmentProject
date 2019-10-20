@@ -25,7 +25,7 @@ const isDev = process.env.ENV !== "SERVER"
 const clientID = isDev ? '93c39afdbb7a9cb45fbc' : '3e670fbb378ba2969da8';
 const clientSecret = isDev ? '502e47a56a3efafe5a03a37d7629e5f213af5d17' : 'c63bc1e0c44bde2ac43141be91edc04524bb5087';
 // const hookUrl = `https://devalarm.com/api/github`;
-const hookUrl = `http://8bda0c86.ngrok.io/api/github`
+const hookUrl = `http://9b9e6d77.ngrok.ioapi/github`
 
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code;
@@ -112,11 +112,11 @@ app.post('/api/github/:username', async function (req, res) {
         issueContent = body.issue.comments.body;
       }
       const content = issueContent;
-      await db.executeQuery('INSERT INTO public.notifications (repo_id, user_id, type, contributor, content, action, url) VALUES ($1, $2, $3, $4, $5, $6, $7)', [repoId, userId, event_name, contributor, content, issueUrl, issueAction])
+      await db.executeQuery('INSERT INTO public.notifications (repo_id, user_id, type, contributor, content, action, url) VALUES ($1, $2, $3, $4, $5, $6, $7)', [repoId, userId, event_name, contributor, content, issueAction, issueUrl])
     }
     else {
       const content = body.head_commit.message;
-      await db.executeQuery('INSERT INTO public.notifications (repo_id, user_id, type, contributor, content, action, url) VALUES ($1, $2, $3, $4, $5, $6, $7)', [repoId, userId, event_name, contributor, content, compareUrl, null])
+      await db.executeQuery('INSERT INTO public.notifications (repo_id, user_id, type, contributor, content, action, url) VALUES ($1, $2, $3, $4, $5, $6, $7)', [repoId, userId, event_name, contributor, content, null, compareUrl])
     }
 
     if (event_name === "push") {
