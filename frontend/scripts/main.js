@@ -810,7 +810,7 @@ $(document).ready(function() {
                   }
                 };
 
-                if (notifType == "push") {
+                if (notifType === "push") {
                     actionMessage = messages[notifType];
                 }
                 else {
@@ -832,8 +832,6 @@ $(document).ready(function() {
                 notificationItem.setAttribute("onclick", "goToPage(blah, " + onclickURL + ")")
                 userAvatar.src = userAvatarURL;
                 userAvatar.className = "avatar";
-                contentMessage.className = "notification-body";
-                contentMessage.innerHTML = message;
 
                 if (document.getElementById("refreshNotifs") !== null) {
                     document.getElementById("refreshNotifs").remove();
@@ -841,7 +839,11 @@ $(document).ready(function() {
 
                 notificationItem.appendChild(userAvatar);
                 notificationItem.appendChild(contentTitle);
-                notificationItem.appendChild(contentMessage);
+                if (message !== null) {
+                    contentMessage.className = "notification-body";
+                    contentMessage.innerHTML = message;
+                    notificationItem.appendChild(contentMessage);
+                }
                 notificationItem.innerHTML += "<div style='clear:both'>&nbsp</div>";
                 notificationPane.prepend(notificationItem);
                 addRefreshButton();
@@ -901,8 +903,9 @@ $(document).ready(function() {
         if (notifCount) {
             notificationBadge.html(notifCount > 9 ? "9+" : String(notifCount))
             notificationBadge.addClass("show-badge")
-            if (document.getElementById("no-notifs") !== null) {
-                document.getElementById("no-notifs").remove();
+            let noNotifs = document.getElementById("no-notifs")
+            if (noNotifs !== null) {
+                notifPane.lastChild.remove();
             }
         } else {
             notifPane.html("<p class='notification-emphasis' id='no-notifs'>No Notifications</p>");

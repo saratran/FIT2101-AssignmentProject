@@ -854,7 +854,7 @@ rect {
     margin-right: 15px;
 }
 
-.notification-emphasis.no-notifs {
+.notification-emphasis#no-notifs {
     text-align: center;
     top: 25px;
     position: relative;
