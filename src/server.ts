@@ -280,8 +280,8 @@ app.get('/api/notifications/:username', async (req, res) => {
 
   // Return new notifications
   const rows = await db.executeQuery(`
-    SELECT notifications.id AS "id", notifications.type AS "type", notifications.contributor AS "contributor", repos.name AS "repoName", notifications.content AS "content", notification.action AS "action", notification.url AS "notifURL"
-    FROM public.notifications
+    SELECT notifications.id AS "id", notifications.type AS "type", notifications.contributor AS "contributor", repos.name AS "repoName", notifications.content AS "content", notifications.action AS "action", notifications.url AS "notifURL"
+    FROM public.notifications 
     JOIN public.repos ON(notifications.repo_id = repos.id)
     WHERE notifications.is_new=true AND notifications.user_id=$1 AND repos.is_watching=true
     ORDER BY notifications.time DESC`, [userId])
@@ -725,7 +725,7 @@ async function forTesting() {
   // await emailService.sendEmail([null],'somehting', ()=>{})
 
   await emailService.initialiseEmailSchedulers()
-  await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
+  // await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
   // await emailService.removeEmailScheduler('sara1479')
   // await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
 
