@@ -288,7 +288,7 @@ app.get('/api/notifications/:username', async (req, res) => {
 
   // Set status is_new to false. TODO: enable this before demo
   const notiIds = rows.map(({ id }) => id)
-  // await db.executeQuery(`UPDATE public.notifications SET is_new=false WHERE id=ANY($1)`,[notiIds])
+  await db.executeQuery(`UPDATE public.notifications SET is_new=false WHERE id=ANY($1)`,[notiIds])
   res.json(rows)
 })
 
