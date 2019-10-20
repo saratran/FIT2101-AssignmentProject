@@ -25,7 +25,7 @@ const isDev = true;
 const clientID = isDev ? '93c39afdbb7a9cb45fbc' : '3e670fbb378ba2969da8';
 const clientSecret = isDev ? '502e47a56a3efafe5a03a37d7629e5f213af5d17' : 'c63bc1e0c44bde2ac43141be91edc04524bb5087';
 // const hookUrl = `https://devalarm.com/api/github`;
-const hookUrl = `http://ed0f3c5a.ngrok.io/api/github`
+const hookUrl = `http://8bda0c86.ngrok.io/api/github`
 
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code;
@@ -90,118 +90,89 @@ app.post('/api/github/:username', async function (req, res) {
   // console.log("body", body);
 
   const event_name = headers["x-github-event"]
-  // Save notification to db
-  // This includes all events (not just ones user contributed to)
+  const emailFrequency = await db.getEmailFrequency(username)
+
+
   if (event_name === "push" || event_name === "issues" || event_name === "issue_comment") {
+    // Save notification to db
+    // This includes all events (not just ones user contributed to)
     const repoName = body.repository.name
     const userId = (await db.getUserId(username))
     const repoId = (await db.getRepoId(userId, repoName))
     const contributor = body.sender.login
     await db.executeQuery('INSERT INTO public.notifications (repo_id, user_id, type, contributor) VALUES ($1, $2, $3, $4)', [repoId, userId, event_name, contributor])
-  }
-  const emailFrequency = await db.getEmailFrequency(username)
 
-  // TODO: check for user email frequency
-  // if (emailFrequency === "individual") {
-  // Send email immediate
-  // TODO: do we need to update the frontend to show new files/issues while the user is logged in?
-  if (event_name === "push") {
-    const repoName = body.repository.name
-    const userId = (await db.getUserId(username))
-    const repoId = (await db.getRepoId(userId, repoName))
-    // TODO: Check if files are user contributed and save them to db (similar to .....)
-    console.log("Received webhook push event")
-    let { commits } = body
-    const repoFullname = body.repository.full_name
-    commits.forEach(commit => {
-      commit.url = `https://api.github.com/repos/${repoFullname}/commits/${commit.id}`
-    })
-
-    const accessToken = (await db.executeQuery(`SELECT access_token FROM public.users WHERE github_username=$1`, [username]))[0].access_token
-    const filesArrangedByUser = await commitsFilter(commits, accessToken, username)
-    // console.log(filesArrangedByUser)
-    const userContributedFiles = []
-
-    if (emailFrequency === "individual") {
-      const contributedFilesRows = await db.executeQuery(`SELECT name FROM public.files WHERE user_id=$1 AND repo_id=$2`, [userId, repoId])
-      const contributeFileNames = contributedFilesRows.map(({ name }) => name)
-      // Check if newly commited file are contributed by the user before
-      filesArrangedByUser.forEach((file) => {
-        if (contributeFileNames.includes(file.filename)) {
-          userContributedFiles.push(file)
-        }
+    if (event_name === "push") {
+      console.log("Received webhook push event")
+      let { commits } = body
+      const repoFullname = body.repository.full_name
+      commits.forEach(commit => {
+        commit.url = `https://api.github.com/repos/${repoFullname}/commits/${commit.id}`
       })
-      // console.log(userContributedFiles)
-      if (userContributedFiles.length) {
-        // TODO: send email
-        console.log('Updates on file contributed')
-        const emailContent: EmailContent = {
-          content: {
-            name: username,
-            files: [],
-          },
-          template: emailService.templates.single
-        }
 
-        userContributedFiles.forEach(file => {
-          const contributors = file.otherContributors.map(({ username }) => username)
-          emailContent.content.files.push({
-            fileName: file.filename,
-            contributor: contributors,
-            repoName: repoName
-          })
-        })
-        console.dir(emailContent.content)
-        await emailService.sendEmail([userEmail], emailContent)
-      }
-
-    } else if (emailFrequency === 'daily' || emailFrequency === "weekly") {
-      // Save new files you contributed to
+      const accessToken = (await db.executeQuery(`SELECT access_token FROM public.users WHERE github_username=$1`, [username]))[0].access_token
+      const filesArrangedByUser = await commitsFilter(commits, accessToken, username)
+      // Save new files you contributed to database
       const fileIds = []
       filesArrangedByUser.forEach(async file => {
         if (file.yourContributions) {
           fileIds.push(await db.addFile(file, repoName, username))
         }
       })
-      await db.executeQuery('UPDATE public.files SET need_to_notify=true WHERE id=ANY($1)', [fileIds])
+
+      // Get files have contributed to before
+      const contributedFilesRows = await db.executeQuery(`SELECT name FROM public.files WHERE user_id=$1 AND repo_id=$2`, [userId, repoId])
+      const contributeFileNames = contributedFilesRows.map(({ name }) => name)
+
+      // Check if newly commited files are contributed by the user before 
+      const userContributedFiles = []
+      filesArrangedByUser.forEach((file) => {
+        if (contributeFileNames.includes(file.filename)) {
+          userContributedFiles.push(file)
+        }
+      })
+
+      const userContributedFileNames = userContributedFiles.map(({ filename }) => filename)
+
+      if (emailFrequency === "individual") {
+        // If there is any, send email
+        if (userContributedFiles.length) {
+          console.log('Updates on file contributed')
+          const emailContent: EmailContent = {
+            content: {
+              name: username,
+              files: [],
+            },
+            template: emailService.templates.single
+          }
+
+          userContributedFiles.forEach(file => {
+            const contributors = file.otherContributors.map(({ username }) => username)
+            emailContent.content.files.push({
+              fileName: file.filename,
+              contributor: contributors,
+              repoName: repoName
+            })
+          })
+          await emailService.sendEmail([userEmail], emailContent)
+        }
+        await db.executeQuery('UPDATE public.files SET need_to_notify=false WHERE name=ANY($1) AND repo_id=$2', [userContributedFileNames, repoId])
+      }
+      else if (emailFrequency === "daily" || emailFrequency === "weekly") {
+        userContributedFiles.forEach(async file => {
+          const contributors = file.otherContributors.map(({ username }) => username)
+          await db.executeQuery('UPDATE public.files SET need_to_notify=true, last_contributors=$3 WHERE name=$1 AND repo_id=$2', [file.filename, repoId, contributors])
+        })
+      }
     }
-
-
-  } else if (emailFrequency !== "never") {
-    // Send email noti immediately when user is an assignee to the issue
-    // events: opened, edited, deleted, transferred, pinned, unpinned, closed, reopened, assigned, unassigned, labeled, unlabeled, locked, unlocked, milestoned, or demilestoned.
-    if (event_name === "issues") {
+    else if (event_name === "issues" && emailFrequency != "never") {
       console.log("Received webhook issues event")
       const { action } = body
-      if (action === "assigned") {
-        // TODO: refactor this with code "unassigned"
+
+      if (action === "assigned" || action === "unassigned") {
+        // Check if assigned and unassigned issues concern the user
         if (body.assignee.login === username) {
-          const { issue } = body
-          const repoName = body.repository.name
-          const issueData = {
-            title: issue.title,
-            createdBy: issue.user.login,
-            url: issue.url,
-          }
-          // TODO: save to database and send email
-          console.log(`${username} is assigned new issue`)
-          const emailContent: EmailContent = {
-            content: {
-              name: username,
-              issueEvent: action,
-              assignee: issueData.createdBy,
-              issueTitle: issue.title,
-              labelName: "",
-              labelDecription: "",
-              repoName: repoName
-            },
-            template: emailService.templates.issue,
-          }
-          await emailService.sendEmail([userEmail], emailContent)
-          await db.addIssue(issueData, username, repoName)
-        }
-      } else if (action === "unassigned") {
-        if (body.assignee.login === username) {
+          console.log(`${username} is ${action} an issue`)
           const { issue } = body
           const repoName = body.repository.name
           const issueData = {
@@ -222,10 +193,15 @@ app.post('/api/github/:username', async function (req, res) {
             template: emailService.templates.issue,
           }
           await emailService.sendEmail([userEmail], emailContent)
-          console.log(`${username} is unassigned from an issue`)
-          await db.removeIssue(username, issue.url)
+          if (action === "assigned") {
+            const issueId = (await db.addIssue(issueData, username, repoName))
+            await db.executeQuery(`UPDATE public.issues SET need_to_notify=true WHERE id=$1`,[issueId])
+          } else {
+            await db.removeIssue(username, issue.url)
+          }
         }
       } else {
+        // Check if issue has the user as an assignee
         const logins = body.issue.assignees.map(({ login }) => login)
         if (logins.includes(username)) {
           console.log(`There has been changes to an issue ${username} is assigned to`)
@@ -236,7 +212,6 @@ app.post('/api/github/:username', async function (req, res) {
             createdBy: issue.user.login,
             url: issue.url,
           }
-          // TODO: Check if webhook payload has all the required fields.
           const emailContent: EmailContent = {
             content: {
               name: username,
@@ -252,7 +227,6 @@ app.post('/api/github/:username', async function (req, res) {
           await emailService.sendEmail([userEmail], emailContent)
         }
       }
-
     } else if (event_name === "issue_comment") {
       console.log("Received webhook issue_comment event")
       const logins = body.issue.assignees.map(({ login }) => login)
@@ -262,7 +236,6 @@ app.post('/api/github/:username', async function (req, res) {
         const repoName = body.repository.name
         const issueName = body.issue.title
         const modifiedBy = body.sender.login
-        // TODO: set up correct email content
         const emailContent: EmailContent = {
           content: {
             name: username,
@@ -279,20 +252,6 @@ app.post('/api/github/:username', async function (req, res) {
       }
     }
   }
-
-  /**
-   * TODO here: send emails when webhooks arrive
-   *
-   * Emails for:
-   * * issues
-   * * code changes
-   *
-   * Also: mark repos as 'need_to_notify' in the DB when messages arrive about those repos.
-   */
-
-  // console.log("sending email");
-  // emailService.sendEmail(['utra0001@student.monash.edu'], 'Sara Tran').catch(console.error);
-
   res.json({});
   res.status(200)
 });
@@ -310,7 +269,7 @@ app.get('/api/notifications-real/:username', async (req, res) => {
     ORDER BY notifications.time DESC`, [userId])
 
   // Set status is_new to false. TODO: enable this before demo
-  const notiIds = rows.map(({ id }) =>  id )
+  const notiIds = rows.map(({ id }) => id)
   // await db.executeQuery(`UPDATE public.notifications SET is_new=false WHERE id=ANY($1)`,[notiIds])
   res.json(rows)
 })
@@ -753,7 +712,7 @@ async function forTesting() {
   // await emailService.sendEmail([null],'somehting', ()=>{})
 
   await emailService.initialiseEmailSchedulers()
-  // await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
+  await emailService.setEmailScheduler('sara1479', emailService.frequency.minute)
   // await emailService.removeEmailScheduler('sara1479')
   // await emailService.setEmailScheduler('saratran', emailService.frequency.minute)
 
