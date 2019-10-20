@@ -943,6 +943,5 @@ $(document).ready(function() {
     getRepos();
     checkForNewNotifications()
     window.setInterval(checkForNewNotifications, 300000);
-    buildNotification("DanaC05", "coolhavefun5", "push", "test", ["this is a test", null, "https://www.github.com/DanaC05"]);
     updateEmailFrequencyRadio()
 });
