@@ -770,7 +770,7 @@ $(document).ready(function() {
         }
     }
 
-    buildNotification = (contributorUsername, notifType, repoName, extraInfo) => {
+    buildNotification = (user, contributorUsername, notifType, repoName, extraInfo) => {
         fetch(apiUrl + `/users/${contributorUsername}`).then(fetchRes => {
             fetchRes.json().then(userData => {
                 let actionMessage;
@@ -819,7 +819,13 @@ $(document).ready(function() {
 
                 const action = actionMessage;
                 const message = extraInfo[0];
-                const onclickURL = extraInfo[2];
+                let notiURL = extraInfo[2];
+
+                if (notiURL === null) {
+                    notiURL = "https://github.com/" + user + "/" + repoName
+                }
+                const onclickURL = notiURL;
+
                 contentTitle.className = "notification-title";
                 contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b>" + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
                 notificationItem.className = "notification-item new";
@@ -829,7 +835,7 @@ $(document).ready(function() {
                 contentMessage.className = "notification-body";
                 contentMessage.innerHTML = message;
 
-                if (notificationPane.children[0].id === "refreshNotifs") {
+                if (document.getElementById("refreshNotifs").parentElement === notificationPane) {
                     notificationPane.removeChild(notificationPane.children[0]);
                 }
 
@@ -881,7 +887,7 @@ $(document).ready(function() {
                             let repo = `${notification.repoName}`;
                             let type = `${notification.type}`;
                             let otherInfo = [`${notification.content}`, `${notification.action}`, `${notification.notifURL}`];
-                            buildNotification(user, type, repo, otherInfo);
+                            buildNotification(username, user, type, repo, otherInfo);
                         })
                     })
                 })
