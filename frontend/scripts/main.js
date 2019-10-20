@@ -742,7 +742,7 @@ $(document).ready(function() {
         }
     }
 
-    buildNotification = (contributorUsername, notifType, notifItemName, repoName) => {
+    buildNotification = (contributorUsername, notifType, repoName) => {
         // get
         fetch(apiUrl + `/users/${contributorUsername}`).then(fetchRes => {
             fetchRes.json().then(userData => {
@@ -751,59 +751,42 @@ $(document).ready(function() {
                 let notificationItem = document.createElement("div");
                 let userAvatar = document.createElement("img");
                 let contentTitle = document.createElement("p");
-                let contentBody = document.createElement("p");
 
                 const messages = {
-                  "file": "modified a file",
-                  "issue-open": "has opened an issue",
-                  "issue-closed": "has closed an issue",
-                  "issue-comment": "has commented on an issue",
-                  "issue-edited": "has edited an issue",
-                  "issue-added": "has added an issue",
-                }
+                  "push": "has made a commit",
+                  "issues": {
+                      "comment": "has commented on an issue",
+                      "edited": "has edited an issue",
+                      "added": "has added an issue",
+                  }
+                };
 
                 const action = messages[notifType]
 
                 contentTitle.className = "notification-title";
                 contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b> has " + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
-                contentBody.className = "notification-body";
-                contentBody.innerHTML = notifItemName;
                 notificationItem.className = "notification-item new";
                 userAvatar.src = userAvatarURL;
                 userAvatar.className = "avatar";
 
                 notificationItem.appendChild(userAvatar);
                 notificationItem.appendChild(contentTitle);
-                notificationItem.appendChild(contentBody);
                 notificationItem.innerHTML += "<div style='clear:both'>&nbsp</div>";
                 notificationPane.prepend(notificationItem);
             })
         })
     }
 
-    checkForNewNotifications = () => {
-      const notifPane = $("#notification-pane")
-      const notifications = Array.from(notifPane.children())
-      const notificationBadge = $("#badge")
-      const notifCount = notifications.filter(({ classList }) => classList.contains("new")).length
-
-      if (notifCount) {
-        notificationBadge.html(notifCount > 9 ? "9+" : String(notifCount))
-        notificationBadge.addClass("show-badge")
-      } else {
-        notifPane.html("<p class='notification-emphasis no-notifs'>No Notifications</p>");
-      }
-    }
-
     showNotifications = () => {
         const notificationPane = $("#notification-pane")
-        const notificationBadge = $("#badge")
+        const notificationBadge = $(".badge")
 
         if (!notificationPane.hasClass("notifications-visible")) {
             notificationPane.addClass("notifications-visible")
         }
         else {
             notificationPane.removeClass("notifications-visible");
+            notificationBadge.removeClass("show-badge")
             muteNewNotifications()
         }
     }
@@ -813,6 +796,43 @@ $(document).ready(function() {
         .map(notif => $(notif))
         .filter(notif => notif.hasClass("notification-item") && notif.hasClass("new"))
         .forEach(notif => notif.removeClass("new"))
+    }
+
+    checkForNewNotifications = () => {
+        const accessToken = window.localStorage.getItem("accessToken");
+        fetch(apiUrl + `/user?access_token=${accessToken}`).then(userData => {
+            userData.json().then(userInfo => {
+                let username = `${userInfo.login}`;
+                console.log(username);
+
+                fetch(apiUrl + `/notifications-real/${username}`).then(newRepoData => {
+                    newRepoData.json().then(json => {
+                        console.log("heres the info: ");
+                        console.log(json);
+                        json.forEach(notification => {
+                            let user = `${notification.contributor}`;
+                            let repo = `${notification.repoName}`;
+                            let type = `${notification.type}`;
+
+                            buildNotification(user, type, repo);
+                        })
+                    })
+                })
+            })
+        })
+
+        const notifPane = $("#notification-pane")
+        const notifications = Array.from(notifPane.children())
+        const notificationBadge = $(".badge")
+        const notifCount = notifications.filter(({ classList }) => classList.contains("new")).length
+
+        if (notifCount) {
+            notificationBadge.html(notifCount > 9 ? "9+" : String(notifCount))
+            notificationBadge.addClass("show-badge")
+            document.getElementsByClassName("no-notifs")[0].remove();
+        } else {
+            notifPane.html("<p class='notification-emphasis no-notifs'>No Notifications</p>");
+        }
     }
 
     $("#getReposButton").on("click", getRepos);
@@ -834,7 +854,9 @@ $(document).ready(function() {
     // On page load
     getUser();
     getRepos();
-    buildNotification("DanaC05", "file", "server.js", "cool-have-fun");
-    buildNotification("coolhavefun3", "issue", "index.handlebars", "cool-have-fun");
+    checkForNewNotifications()
+    window.setInterval(checkForNewNotifications, 60000);
+    buildNotification("DanaC05", "file", "cool-have-fun");
+    buildNotification("coolhavefun3", "issue", "cool-have-fun");
     updateEmailFrequencyRadio()
 });
