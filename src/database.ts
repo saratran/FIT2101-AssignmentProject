@@ -155,13 +155,16 @@ export async function addIssue(issueData, githubUsername, repoName) {
     const userId = await getUserId(githubUsername)
     const repoId = await getRepoId(userId, repoName);
     const issueId = await getIssueId(userId, issueData.url)
-    console.log(issueData)
+    console.log(issueId)
+    // console.log(issueData)
     if (!issueId) {
         const rows = await executeQuery('INSERT INTO public.issues (user_id, repo_id, name, opened_by, url) VALUES ($1, $2, $3, $4, $5) RETURNING id', [userId, repoId, issueData.title, issueData.createdBy, issueData.url])
         console.log('issue added to database')
+        console.log(rows)
         return rows[0].id
     } else {
         await executeQuery('UPDATE public.issues SET opened_by = ($1) WHERE id = ($2)', [issueData.createdBy, issueId])
+        return issueId
     }
 }
 

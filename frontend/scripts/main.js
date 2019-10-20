@@ -7,7 +7,7 @@ function getFiles(reponame) {}
 function getFileIcon() {}
 function getContributorInfo() {}
 function highlightFile() {}
-function goToUserPage() {}
+function goToPage() {}
 function getBarGraph() {}
 function getPieChart() {}
 function getUser() {}
@@ -18,6 +18,7 @@ function buildNotification() {}
 function showNotifications() {}
 function checkForNewNotifications() {}
 function muteNewNotifications() {}
+function addRefreshButton() {}
 
 $(document).ready(function() {
     // All code goes in this function to ensure JQuery and the page are ready before JS code is run
@@ -432,7 +433,7 @@ $(document).ready(function() {
 
                     // set row attributes
                     newContributor.id = userName.innerHTML
-                    newContributor.setAttribute("onclick", "goToUserPage(this)")
+                    newContributor.setAttribute("onclick", "goToPage(this)")
                     newContributor.appendChild(contributorName);
                     newContributor.appendChild(userName);
                     newContributor.appendChild(contactInfo);
@@ -488,11 +489,15 @@ $(document).ready(function() {
         }, 1000);
     }
 
-    goToUserPage = (username) => {
-        let pageName = username.id;
-
-        // open user github page in new window
-        var win = window.open("https://github.com/" + pageName, '_blank');
+    goToPage = (username, url="") => {
+        if (url === "") {
+            let pageName = username.id;
+            // open user github page in new window
+            var win = window.open("https://github.com/" + pageName, '_blank');
+        }
+        else {
+            var win = window.open(url, '_blank')
+        }
         win.focus();
     }
 
@@ -765,68 +770,89 @@ $(document).ready(function() {
         }
     }
 
-    buildNotification = (contributorUsername, notifType, notifItemName, repoName) => {
-        // get
+    buildNotification = (contributorUsername, notifType, repoName, extraInfo) => {
         fetch(apiUrl + `/users/${contributorUsername}`).then(fetchRes => {
             fetchRes.json().then(userData => {
+                let actionMessage;
                 let userAvatarURL = `${userData.avatar_url}`;
                 let notificationPane = $("#notification-pane")
                 let notificationItem = document.createElement("div");
                 let userAvatar = document.createElement("img");
                 let contentTitle = document.createElement("p");
-                let contentBody = document.createElement("p");
+                let contentMessage = document.createElement("p");
 
                 const messages = {
-                  "file": "modified a file",
-                  "issue-open": "has opened an issue",
-                  "issue-closed": "has closed an issue",
-                  "issue-comment": "has commented on an issue",
-                  "issue-edited": "has edited an issue",
-                  "issue-added": "has added an issue",
+                  "push": "has made a commit",
+                  "issues": {
+                      "comment": "has commented on an issue",
+                      "edited": "has edited an issue",
+                      "added": "has added an issue",
+                      "opened": "has opened an issue",
+                      "deleted": "has deleted an issue",
+                      "transferred": "has transferred an issue",
+                      "pinned": "has pinned an issue",
+                      "unpinned": "has unpinned an issue",
+                      "closed": "has closed an issue",
+                      "reopened": "has reopened an issue",
+                      "assigned": "has assigned an issue to you",
+                      "unassigned": "has unassigned an issue from you",
+                      "labeled": "has labeled an issue",
+                      "unlabeled": "has unlabeled an issue",
+                      "locked": "has locked an issue",
+                      "unlocked": "has unlocked an issue",
+                      "milestoned": "has milstoned an issue",
+                      "demilestoned": "has demilstoned an issue"
+                  },
+                  "issues_comment" : {
+                      "created": "has commented on an issue",
+                      "edited": "has edited a comment on an issue",
+                      "deleted": "has deleted a comment on an issue"
+                  }
+                };
+
+                if (notifType == "push") {
+                    actionMessage = messages[notifType];
+                }
+                else {
+                    actionMessage = messages[notifType][extraInfo[1]];
                 }
 
-                const action = messages[notifType]
-
+                const action = actionMessage;
+                const message = extraInfo[0];
+                const onclickURL = extraInfo[2];
                 contentTitle.className = "notification-title";
-                contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b> has " + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
-                contentBody.className = "notification-body";
-                contentBody.innerHTML = notifItemName;
+                contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b>" + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
                 notificationItem.className = "notification-item new";
+                notificationItem.setAttribute("onclick", "goToPage(blah, " + onclickURL + ")")
                 userAvatar.src = userAvatarURL;
                 userAvatar.className = "avatar";
+                contentMessage.className = "notification-body";
+                contentMessage.innerHTML = message;
+
+                if (notificationPane.children[0].id === "refreshNotifs") {
+                    notificationPane.removeChild(notificationPane.children[0]);
+                }
 
                 notificationItem.appendChild(userAvatar);
                 notificationItem.appendChild(contentTitle);
-                notificationItem.appendChild(contentBody);
+                notificationItem.appendChild(contentMessage);
                 notificationItem.innerHTML += "<div style='clear:both'>&nbsp</div>";
                 notificationPane.prepend(notificationItem);
+                addRefreshButton();
             })
         })
     }
 
-    checkForNewNotifications = () => {
-      const notifPane = $("#notification-pane")
-      const notifications = Array.from(notifPane.children())
-      const notificationBadge = $("#badge")
-      const notifCount = notifications.filter(({ classList }) => classList.contains("new")).length
-
-      if (notifCount) {
-        notificationBadge.html(notifCount > 9 ? "9+" : String(notifCount))
-        notificationBadge.addClass("show-badge")
-      } else {
-        notifPane.html("<p class='notification-emphasis no-notifs'>No Notifications</p>");
-      }
-    }
-
     showNotifications = () => {
         const notificationPane = $("#notification-pane")
-        const notificationBadge = $("#badge")
+        const notificationBadge = $(".badge")
 
         if (!notificationPane.hasClass("notifications-visible")) {
             notificationPane.addClass("notifications-visible")
         }
         else {
             notificationPane.removeClass("notifications-visible");
+            notificationBadge.removeClass("show-badge")
             muteNewNotifications()
         }
     }
@@ -836,6 +862,53 @@ $(document).ready(function() {
         .map(notif => $(notif))
         .filter(notif => notif.hasClass("notification-item") && notif.hasClass("new"))
         .forEach(notif => notif.removeClass("new"))
+    }
+
+    checkForNewNotifications = () => {
+        const accessToken = window.localStorage.getItem("accessToken");
+        var otherInfo;
+        fetch(apiUrl + `/user?access_token=${accessToken}`).then(userData => {
+            userData.json().then(userInfo => {
+                let username = `${userInfo.login}`;
+                console.log(username);
+
+                fetch(apiUrl + `/notifications/${username}`).then(newRepoData => {
+                    newRepoData.json().then(json => {
+                        console.log("here's the info: ");
+                        console.log(json);
+                        json.forEach(notification => {
+                            let user = `${notification.contributor}`;
+                            let repo = `${notification.repoName}`;
+                            let type = `${notification.type}`;
+                            let otherInfo = [`${notification.content}`, `${notification.action}`, `${notification.notifURL}`];
+                            buildNotification(user, type, repo, otherInfo);
+                        })
+                    })
+                })
+            })
+        })
+        const notifPane = $("#notification-pane")
+        const notifications = Array.from(notifPane.children())
+        const notificationBadge = $(".badge")
+        const notifCount = notifications.filter(({ classList }) => classList.contains("new")).length
+
+        if (notifCount) {
+            notificationBadge.html(notifCount > 9 ? "9+" : String(notifCount))
+            notificationBadge.addClass("show-badge")
+            document.getElementsByClassName("no-notifs")[0].remove();
+        } else {
+            notifPane.html("<p class='notification-emphasis no-notifs'>No Notifications</p>");
+            addRefreshButton();
+        }
+    }
+
+    addRefreshButton = () => {
+        const notifPane = document.getElementById("notification-pane");
+        let refreshButton = document.createElement("button");
+        refreshButton.id = "refreshNotifs";
+        refreshButton.innerHTML = "<img id='refreshNotifsIcon' src='../img/refresh.svg'>";
+        refreshButton.setAttribute("onclick","checkForNewNotifications()");
+        notifPane.prepend(refreshButton);
     }
 
     $("#getReposButton").on("click", getRepos);
@@ -857,7 +930,9 @@ $(document).ready(function() {
     // On page load
     getUser();
     getRepos();
-    buildNotification("DanaC05", "file", "server.js", "cool-have-fun");
-    buildNotification("coolhavefun3", "issue", "index.handlebars", "cool-have-fun");
+    checkForNewNotifications()
+    window.setInterval(checkForNewNotifications, 60000);
+    buildNotification("DanaC05", "file", "cool-have-fun");
+    buildNotification("coolhavefun3", "issue", "cool-have-fun");
     updateEmailFrequencyRadio()
 });
