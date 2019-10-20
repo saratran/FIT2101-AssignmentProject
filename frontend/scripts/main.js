@@ -829,7 +829,7 @@ $(document).ready(function() {
                 contentTitle.className = "notification-title";
                 contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b> " + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
                 notificationItem.className = "notification-item new";
-                notificationItem.setAttribute("onclick", "goToPage(blah, " + onclickURL + ")")
+                notificationItem.setAttribute("onclick", "goToPage('blah', '" + onclickURL + "')")
                 userAvatar.src = userAvatarURL;
                 userAvatar.className = "avatar";
 
@@ -905,7 +905,7 @@ $(document).ready(function() {
             notificationBadge.addClass("show-badge")
             let noNotifs = document.getElementById("no-notifs")
             if (noNotifs !== null) {
-                notifPane.lastChild.remove();
+                noNotifs.remove();
             }
         } else {
             notifPane.html("<p class='notification-emphasis' id='no-notifs'>No Notifications</p>");
@@ -943,5 +943,6 @@ $(document).ready(function() {
     getRepos();
     checkForNewNotifications()
     window.setInterval(checkForNewNotifications, 300000);
+    buildNotification("DanaC05", "coolhavefun5", "push", "test", ["this is a test", null, "https://www.github.com/DanaC05"]);
     updateEmailFrequencyRadio()
 });
