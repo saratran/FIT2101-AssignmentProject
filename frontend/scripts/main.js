@@ -61,8 +61,8 @@ $(document).ready(function() {
         let newSidebar = document.createElement("div");
         let newSidebarHeader = document.createElement("a");
         newSidebarHeader.className = "master-sidebar-header";
-        newSidebarHeader.innerHTML = "<div class=\"returnButton\" style=\"text-align: left\"><h3 style=\"color: white; cursor: pointer; margin-top: 0; margin-right: 0; position: absolute\" onclick=\"returnToRepos(this)\"><</h3></div><div style=\"margin-left: 60px; margin-top: 0; text-align: left\">" + gridItemContent + "</div>";
-        newSidebar.className = "master-file detailToMaster-target";
+        newSidebarHeader.innerHTML = "<div class=\"returnButton\" style=\"text-align: left\"><h3 onclick=\"returnToRepos(this)\"><img src='img/chevron-left.svg' alt='Go back' /></h3></div><div style=\"margin-left: 60px; margin-top: 0; text-align: left\">" + gridItemContent + "</div>";
+        newSidebar.className = "master-file basic-box-shadow detailToMaster-target";
         newSidebar.appendChild(newSidebarHeader);
         gridItem.removeAttribute("onclick");
 
@@ -107,12 +107,12 @@ $(document).ready(function() {
         barGraph.setAttribute("style", "height: 400px; width: 400px");
 
         // set grid element attributes
-        detailGridItem1.className = "grid-item file-detail";
+        detailGridItem1.className = "grid-item file-detail basic-box-shadow";
         detailGridItem1.id = "Individual Contributions";
-        detailGridItem2.className = "grid-item file-detail pieChart";
+        detailGridItem2.className = "grid-item file-detail basic-box-shadow pieChart";
         detailGridItem2.id = "User Contribution Ratio";
         detailGridItem2.setAttribute("style", "height: 470px; width: 350px");
-        detailGridItem3.className = "grid-item file-detail contributor-table";
+        detailGridItem3.className = "grid-item file-detail basic-box-shadow contributor-table";
         detailGridItem3.id = "Other " + fileName + " Contributors";
         detailGridItem1.innerHTML = "<h1>Individual Contributions</h1>";
         detailGridItem2.innerHTML = "<h1>User Contribution Ratio</h1>";
@@ -215,8 +215,10 @@ $(document).ready(function() {
                 repoList.empty()
                 json.forEach(repo => {
                     const repoElement = $.parseHTML(
-                        `<a onclick="clickElement(this, event.target, '${ repo.name }')">
-                        ${repo.name} | ${repo.description}<div class="round" title="Watch repository"><label><input class="toggle-watch" type="checkbox" ${repo.isWatching && `checked=checked`} onclick="toggleWatching(this, '${ repo.name }'); event.stopImmediatePropagation();" /><span></span></label></div></a>
+                        `<a class="repo-container" onclick="clickElement(this, event.target, '${ repo.name }')">
+                            <div class="repo-name">${repo.name}</div>
+                            <div class="repo-description">${repo.description}</div>
+                          <div class="repo-toggle round" title="Watch repository"><label><input class="toggle-watch" type="checkbox" ${repo.isWatching && `checked=checked`} onclick="toggleWatching(this, '${ repo.name }'); event.stopImmediatePropagation();" /><span></span></label></div></a>
                     `)
 
                     repoList.append(repoElement)
@@ -228,8 +230,8 @@ $(document).ready(function() {
     clickElement = (thisElem, target, repoName) => {
         if (!$(target).is('span')) {
             getFiles(repoName);
-            Array.from(document.getElementsByClassName('active')).forEach(activeRepoElem => activeRepoElem.setAttribute('class', ''));
-            thisElem.setAttribute('class', 'active');
+            Array.from($('.active')).map(elem => $(elem)).forEach(activeRepoElem => activeRepoElem.removeClass('active'));
+            $(thisElem).addClass('active');
         }
     }
 
@@ -255,10 +257,10 @@ $(document).ready(function() {
         fetch(apiUrl + `/user?access_token=${accessToken}`).then(data => {
             data.json().then(json => {
                 userData = json
-                let header = document.getElementsByClassName("sidebar-header")[0]
-                header.innerHTML = `<b>${json.login}</b>`
-                header.setAttribute('href', json.html_url);
-                header.setAttribute('target', "_blank");
+                const header = $(".sidebar-header").first()
+                header.html(`<b>${json.login}</b>`)
+                header.attr('href', json.html_url);
+                header.attr('target', "_blank");
             })
         })
     }
@@ -269,7 +271,7 @@ $(document).ready(function() {
         $("#start").remove();
         const load = document.createElement("div")
         load.setAttribute("id", "loadScreen")
-        load.innerHTML = `<p>Loading...</br>This may take a while.</p>`
+        load.innerHTML = `<p><div class="loading-spinner-container"><div class="loading-spinner loading-spinner-white"><div></div><div></div><div></div><div></div></div></div>Loading...</br>This may take a while.</p>`
 
         $("body").first().append(load)
 
@@ -279,7 +281,7 @@ $(document).ready(function() {
         while (repoFileGrid.firstChild) {
             repoFileGrid.removeChild(repoFileGrid.firstChild);
         }
-        const repoContent = document.getElementById("repoContent")
+        const repoContent = $("#repoContent")
         $("#issueInformation").remove()
         let repoFileMsnry = new Masonry(repoFileGrid, {
             // options
@@ -308,10 +310,10 @@ $(document).ready(function() {
                     }
 
                     // add grid element to repo grid
-                    repoFileGrid.appendChild(newGridItem);
+                    $(repoFileGrid).append(newGridItem);
                     repoFileMsnry.appended(newGridItem);
                     // make repo grid visible
-                    repoFileGrid.className = "grid slide-in-bck";
+                    $(repoFileGrid).className = "grid slide-in-bck";
                 })
             })
         }).then(() => {
@@ -320,54 +322,53 @@ $(document).ready(function() {
                 fetchRes.json().then(json => {
 
                     console.log(json)
-                    let issueInfo = document.createElement("div");
-                    issueInfo.setAttribute("id", "issueInformation")
-                    repoContent.appendChild(issueInfo)
+                    let issueInfo = $("<div></div>");
+                    issueInfo.attr("id", "issueInformation")
+                    repoContent.append(issueInfo)
 
-                    let repoIssueTable = document.createElement("table")
-                    repoIssueTable.setAttribute("id", "issueTable")
-                    repoIssueTable.innerHTML = `
+                    let repoIssueTable = $("<table></table>")
+                    repoIssueTable.attr("id", "issueTable")
+                    repoIssueTable.addClass("basic-box-shadow")
+                    repoIssueTable.html(`
                     <tr>
                         <th><b>Your Issues</b></th>
-                    </tr>`
+                    </tr>`)
 
                     if (!Object.keys(json).length) {
-                        let newIssue = document.createElement("tr");
-                        newIssue.innerHTML = '<td style="background-color:white">No relevant issues to display.</td>';
-                        repoIssueTable.appendChild(newIssue)
+                        let newIssue = $("<tr></tr>");
+                        newIssue.html('<td style="background-color:white">No relevant issues to display.</td>');
+                        repoIssueTable.append(newIssue)
                     } else {
                         json.forEach(item => {
-                            let newIssue = document.createElement("tr")
-                            newIssue.setAttribute("class", "issueTitle issueHeader");
-                            newIssue.innerHTML = `<td><b>${item.title}</b></td>`
-                            repoIssueTable.appendChild(newIssue)
-                            let issueBody = document.createElement("tr")
-                            issueBody.innerHTML = `<td>${item.body}</td>`
-                            repoIssueTable.appendChild(issueBody)
-                            let issueCreator = document.createElement("tr")
-                            issueCreator.innerHTML = `<td><i>Issue opened by ${item.createdBy}</i></td>`
-                            repoIssueTable.appendChild(issueCreator)
+                            const newIssue = $("<tr></tr>")
+                            newIssue.attr("class", "issueTitle issueHeader");
+                            newIssue.html(`<td><b>${item.title}</b></td>`)
+                            repoIssueTable.append(newIssue)
+
+                            const issueBody = $("<tr></tr>")
+                            issueBody.html(`<td>${item.body}</td>`)
+                            repoIssueTable.append(issueBody)
+
+                            const issueCreator = $("<tr></tr>")
+                            issueCreator.html(`<td><i>Issue opened by ${item.createdBy}</i></td>`)
+                            repoIssueTable.append(issueCreator)
                         })
                     }
 
+                    repoIssueTable.addClass("slide-in-bck")
+                    issueInfo.append(repoIssueTable)
 
-                    let bottom = document.createElement("tr");
-                    bottom.setAttribute("class", "issueTitle");
-                    bottom.innerHTML = '<td id = "issueBottom"></td>'
-                    repoIssueTable.appendChild(bottom)
-                    repoIssueTable.className = "slide-in-bck"
-                    issueInfo.appendChild(repoIssueTable)
+                    const titles = Array.from($('.issueTitle')).map(title => $(title))
+                    titles.forEach(title => {
+                      title.nextUntil('tr.issueTitle').toggle();
+                      title.on('click', function () {
+                        title.nextUntil('tr.issueTitle').toggle();
+                      })
+                    })
 
-                    const titles = document.getElementsByClassName('issueTitle')
-                    for (let title of titles) {
-                        $(title).nextUntil('tr.issueTitle').toggle();
-                        title.onclick = function () {
-                            $(this).nextUntil('tr.issueTitle').toggle();
-                        }
-                    }
                     // refresh repo grid layout
                     repoFileMsnry.layout();
-                    document.getElementById("loadScreen").remove()
+                    $("#loadScreen").remove()
                     checkForNewNotifications();
                 })
             })
@@ -401,11 +402,13 @@ $(document).ready(function() {
 
                 // add header to table
                 contributorInfo.appendChild(tableHeader);
-                let dataItem = {
+                if (file.yourContributions) {
+                  let dataItem = {
                     name: `${userData.name === null ? userData.login : userData.name}`,
                     cont: Number(`${file.yourContributions.lineChangeCount}`)
-                };
-                graphData.push(dataItem);
+                  };
+                  graphData.push(dataItem);
+                }
 
                 // add contributor info
                 file.otherContributors.forEach(contributor => {
@@ -688,13 +691,33 @@ $(document).ready(function() {
     }
 
     hideModal = () => {
-        let modal = $("#emailModal")
+        const modal = $("#emailModal")
         modal.removeClass("show-modal")
     }
 
     showModal = () => {
-        let modal = $("#emailModal")
+        const modal = $("#emailModal")
         modal.addClass("show-modal")
+
+
+    }
+
+    updateEmailFrequencyRadio = () => {
+      // Update selected email frequency
+      const accessToken = window.localStorage.getItem("accessToken")
+      fetch(`${apiUrl}/email-frequency?access_token=${accessToken}`).then(fetchRes => {
+        fetchRes.json().then(json => {
+          Array.from($(".email-frequency-radio")).map(elem => $(elem))
+              .forEach(radio => {
+                if (radio.val() === json.frequency) {
+                  radio.attr("checked", "checked")
+                } else {
+                  radio.removeAttr("checked")
+                }
+              })
+          console.log(json)
+        })
+      })
     }
 
     setEmailFrequencies = () => {
@@ -715,114 +738,109 @@ $(document).ready(function() {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 }
-            }).then(fetchRes => {})
+            }).then(() => {})
         }
     }
 
-    buildNotification = (contributorUsername, notifType, notifItemName, repoName) => {
+    buildNotification = (contributorUsername, notifType, repoName) => {
         // get
         fetch(apiUrl + `/users/${contributorUsername}`).then(fetchRes => {
             fetchRes.json().then(userData => {
                 let userAvatarURL = `${userData.avatar_url}`;
-                let notificationPane = document.getElementsByClassName("notification-pane")[0];
+                let notificationPane = $("#notification-pane")
                 let notificationItem = document.createElement("div");
                 let userAvatar = document.createElement("img");
                 let contentTitle = document.createElement("p");
-                let contentBody = document.createElement("p");
-                let action;
 
-                if (notifType === "file") {
-                    action = "modified a file";
-                }
-                else {
-                    if (notifType === "issue-open") {
-                        action = "has opened";
-                    }
-                    else if (notifType === "issue-closed") {
-                        action = "has closed";
-                    }
-                    else if (notifType === "issue-comment") {
-                        action = "has commented on";
-                    }
-                    else if (notifType === "issue-edited") {
-                        action = "has edited";
-                    }
-                    else if (notifType === "issue-added") {
-                        action = "has added";
-                    }
+                const messages = {
+                  "push": "has made a commit",
+                  "issues": {
+                      "comment": "has commented on an issue",
+                      "edited": "has edited an issue",
+                      "added": "has added an issue",
+                  }
+                };
 
-                    action += " an issue";
-                }
+                const action = messages[notifType]
+
                 contentTitle.className = "notification-title";
                 contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b> has " + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
-                contentBody.className = "notification-body";
-                contentBody.innerHTML = notifItemName;
                 notificationItem.className = "notification-item new";
                 userAvatar.src = userAvatarURL;
                 userAvatar.className = "avatar";
 
                 notificationItem.appendChild(userAvatar);
                 notificationItem.appendChild(contentTitle);
-                notificationItem.appendChild(contentBody);
                 notificationItem.innerHTML += "<div style='clear:both'>&nbsp</div>";
                 notificationPane.prepend(notificationItem);
             })
         })
     }
 
-    checkForNewNotifications = () => {
-        let notifications = document.getElementsByClassName("notification-pane")[0].children;
-        let notificationBadge = document.getElementsByClassName("badge")[0];
-        let numberNotifications = 0;
-
-        for (let i = 0; i < notifications.length; i++) {
-            if (notifications[i].classList.contains("new")) {
-                numberNotifications++;
-            }
-        }
-
-        if (numberNotifications !== 0) {
-            if (numberNotifications > 9) {
-                notificationBadge.innerHTML = "9+";
-            }
-            notificationBadge.innerHTML = numberNotifications.toString();
-            notificationBadge.classList.add("show-badge");
-
-        }
-        else {
-            document.getElementsByClassName("notification-pane")[0].innerHTML = "<p class='notification-emphasis no-notifs'>No Notifications</p>";
-        }
-    }
-
     showNotifications = () => {
-        let notificationPane = document.getElementsByClassName("notification-pane")[0];
-        let notificationBadge = document.getElementsByClassName("badge")[0];
+        const notificationPane = $("#notification-pane")
+        const notificationBadge = $(".badge")
 
-        if (notificationPane.className !== "notification-pane notifications-visible") {
-            notificationPane.classList.add("notifications-visible");
-            notificationBadge.className = "badge";
+        if (!notificationPane.hasClass("notifications-visible")) {
+            notificationPane.addClass("notifications-visible")
         }
         else {
-            notificationPane.classList.remove("notifications-visible");
-            muteNewNotifications();
+            notificationPane.removeClass("notifications-visible");
+            notificationBadge.removeClass("show-badge")
+            muteNewNotifications()
         }
     }
 
     muteNewNotifications = () => {
-        let notifications = document.getElementsByClassName("notification-pane")[0].children;
-        for (let j = 0; j < notifications.length; j++) {
-            if (notifications[j].className === "notification-item new") {
-                notifications[j].classList.remove("new");
-            }
+      Array.from($("#notification-pane").children())
+        .map(notif => $(notif))
+        .filter(notif => notif.hasClass("notification-item") && notif.hasClass("new"))
+        .forEach(notif => notif.removeClass("new"))
+    }
+
+    checkForNewNotifications = () => {
+        const accessToken = window.localStorage.getItem("accessToken");
+        fetch(apiUrl + `/user?access_token=${accessToken}`).then(userData => {
+            userData.json().then(userInfo => {
+                let username = `${userInfo.login}`;
+                console.log(username);
+
+                fetch(apiUrl + `/notifications-real/${username}`).then(newRepoData => {
+                    newRepoData.json().then(json => {
+                        console.log("heres the info: ");
+                        console.log(json);
+                        json.forEach(notification => {
+                            let user = `${notification.contributor}`;
+                            let repo = `${notification.repoName}`;
+                            let type = `${notification.type}`;
+
+                            buildNotification(user, type, repo);
+                        })
+                    })
+                })
+            })
+        })
+
+        const notifPane = $("#notification-pane")
+        const notifications = Array.from(notifPane.children())
+        const notificationBadge = $(".badge")
+        const notifCount = notifications.filter(({ classList }) => classList.contains("new")).length
+
+        if (notifCount) {
+            notificationBadge.html(notifCount > 9 ? "9+" : String(notifCount))
+            notificationBadge.addClass("show-badge")
+            document.getElementsByClassName("no-notifs")[0].remove();
+        } else {
+            notifPane.html("<p class='notification-emphasis no-notifs'>No Notifications</p>");
         }
     }
 
     $("#getReposButton").on("click", getRepos);
 
-    let span = $(".close").first()
+    const span = $(".close").first()
     span.on("click", hideModal)
 
-    let saveButton = $("#saveEmailFrequencies")
+    const saveButton = $("#saveEmailFrequencies")
     saveButton.on("click", hideModal)
     saveButton.on("click", setEmailFrequencies)
 
@@ -833,11 +851,12 @@ $(document).ready(function() {
         if (event.target === document.getElementById("emailModal")) hideModal()
     }
 
-
     // On page load
     getUser();
     getRepos();
-    //buildNotification("DanaC05", "file", "server.js", "cool-have-fun");
-    //buildNotification("coolhavefun3", "issue", "index.handlebars", "cool-have-fun");
-    //getFiles();
+    checkForNewNotifications()
+    window.setInterval(checkForNewNotifications, 60000);
+    buildNotification("DanaC05", "file", "cool-have-fun");
+    buildNotification("coolhavefun3", "issue", "cool-have-fun");
+    updateEmailFrequencyRadio()
 });
