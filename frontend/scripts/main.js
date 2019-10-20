@@ -937,7 +937,7 @@ $(document).ready(function() {
     getUser();
     getRepos();
     checkForNewNotifications()
-    window.setInterval(checkForNewNotifications, 60000);
+    window.setInterval(checkForNewNotifications, 300000);
     buildNotification("DanaC05", "file", "cool-have-fun");
     buildNotification("coolhavefun3", "issue", "cool-have-fun");
     updateEmailFrequencyRadio()
