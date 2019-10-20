@@ -620,6 +620,29 @@ $(document).ready(function() {
             .style("background", "white")
             .append("g")
             .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+        
+        //change the name to shorter form if too long
+        for (i = 0; i < chartData.length; i++) {
+            var nameArray = chartData[i].name.split(" ")
+            if (nameArray.length > 1){
+                var firstName = nameArray[0]
+                var lastName = nameArray[1]
+                if (firstName.length > 6 && lastName.length > 6){
+                    chartData[i].name = firstName.charAt(0) + lastName.charAt(0);
+                }
+                if (firstName.length > 6 && lastName.length <= 6){
+                    chartData[i].name = firstName.charAt(0) + " " + lastName;
+                }
+                if ((firstName.length <= 6) && (lastName.length > 6)){
+                    chartData[i].name = firstName + " " + lastName.charAt(0);
+                } 
+            }else{
+                var firstName = nameArray[0]
+                if (firstName.length > 6){
+                    chartData[i].name = firstName.substr(0, 6)
+                }
+            }
+        }
 
         //find the total number of lines contributed
         for (i = 0; i < chartData.length; i++) {
