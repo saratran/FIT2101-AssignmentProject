@@ -827,7 +827,7 @@ $(document).ready(function() {
                 const onclickURL = notiURL;
 
                 contentTitle.className = "notification-title";
-                contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b>" + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
+                contentTitle.innerHTML = "<b class='notification-emphasis'>" + contributorUsername + "</b> " + action + " in " + "<b class='notification-emphasis'>" + repoName + "</b>."
                 notificationItem.className = "notification-item new";
                 notificationItem.setAttribute("onclick", "goToPage(blah, " + onclickURL + ")")
                 userAvatar.src = userAvatarURL;
@@ -835,8 +835,8 @@ $(document).ready(function() {
                 contentMessage.className = "notification-body";
                 contentMessage.innerHTML = message;
 
-                if (document.getElementById("refreshNotifs").parentElement === notificationPane) {
-                    notificationPane.removeChild(notificationPane.children[0]);
+                if (document.getElementById("refreshNotifs") !== null) {
+                    document.getElementById("refreshNotifs").remove();
                 }
 
                 notificationItem.appendChild(userAvatar);
@@ -901,7 +901,9 @@ $(document).ready(function() {
         if (notifCount) {
             notificationBadge.html(notifCount > 9 ? "9+" : String(notifCount))
             notificationBadge.addClass("show-badge")
-            document.getElementsByClassName("no-notifs")[0].remove();
+            if ( document.getElementsByClassName("no-notifs")[0] !== null) {
+                document.getElementsByClassName("no-notifs")[0].remove();
+            }
         } else {
             notifPane.html("<p class='notification-emphasis no-notifs'>No Notifications</p>");
             addRefreshButton();
@@ -938,7 +940,5 @@ $(document).ready(function() {
     getRepos();
     checkForNewNotifications()
     window.setInterval(checkForNewNotifications, 300000);
-    buildNotification("DanaC05", "file", "cool-have-fun");
-    buildNotification("coolhavefun3", "issue", "cool-have-fun");
     updateEmailFrequencyRadio()
 });
