@@ -803,7 +803,7 @@ $(document).ready(function() {
                       "milestoned": "has milstoned an issue",
                       "demilestoned": "has demilstoned an issue"
                   },
-                  "issues_comment" : {
+                  "issue_comment" : {
                       "created": "has commented on an issue",
                       "edited": "has edited a comment on an issue",
                       "deleted": "has deleted a comment on an issue"
@@ -901,11 +901,11 @@ $(document).ready(function() {
         if (notifCount) {
             notificationBadge.html(notifCount > 9 ? "9+" : String(notifCount))
             notificationBadge.addClass("show-badge")
-            if ( document.getElementsByClassName("no-notifs")[0] !== null) {
-                document.getElementsByClassName("no-notifs")[0].remove();
+            if (document.getElementById("no-notifs") !== null) {
+                document.getElementById("no-notifs").remove();
             }
         } else {
-            notifPane.html("<p class='notification-emphasis no-notifs'>No Notifications</p>");
+            notifPane.html("<p class='notification-emphasis' id='no-notifs'>No Notifications</p>");
             addRefreshButton();
         }
     }
