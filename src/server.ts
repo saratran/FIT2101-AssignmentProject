@@ -25,7 +25,7 @@ const isDev = process.env.ENV !== "SERVER"
 const clientID = isDev ? '93c39afdbb7a9cb45fbc' : '3e670fbb378ba2969da8';
 const clientSecret = isDev ? '502e47a56a3efafe5a03a37d7629e5f213af5d17' : 'c63bc1e0c44bde2ac43141be91edc04524bb5087';
 // const hookUrl = `https://devalarm.com/api/github`;
-const hookUrl = `http://8bda0c86.ngrok.io/api/github`
+const hookUrl = `http://9b9e6d77.ngrok.ioapi/github`
 
 app.get('/callback', (req, res) => {
   const requestToken = req.query.code;
@@ -100,9 +100,27 @@ app.post('/api/github/:username', async function (req, res) {
     const userId = (await db.getUserId(username))
     const repoId = (await db.getRepoId(userId, repoName))
     const contributor = body.sender.login
-    await db.executeQuery('INSERT INTO public.notifications (repo_id, user_id, type, contributor) VALUES ($1, $2, $3, $4)', [repoId, userId, event_name, contributor])
+    const issueAction = body.action;
+    const issueUrl = body.issue.url
+    const compareUrl = body.compare
+
+    if (event_name !== "push") {
+      let issueContent = "";
+      if (event_name === "issues") {
+        issueContent = body.issue.title;
+      } else {
+        issueContent = body.issue.comments.body;
+      }
+      const content = issueContent;
+      await db.executeQuery('INSERT INTO public.notifications (repo_id, user_id, type, contributor, content, action, url) VALUES ($1, $2, $3, $4, $5, $6, $7)', [repoId, userId, event_name, contributor, content, issueAction, issueUrl])
+    }
+    else {
+      const content = body.head_commit.message;
+      await db.executeQuery('INSERT INTO public.notifications (repo_id, user_id, type, contributor, content, action, url) VALUES ($1, $2, $3, $4, $5, $6, $7)', [repoId, userId, event_name, contributor, content, null, compareUrl])
+    }
 
     if (event_name === "push") {
+
       console.log("Received webhook push event")
       let { commits } = body
       const repoFullname = body.repository.full_name
@@ -256,14 +274,14 @@ app.post('/api/github/:username', async function (req, res) {
   res.status(200)
 });
 
-app.get('/api/notifications-real/:username', async (req, res) => {
+app.get('/api/notifications/:username', async (req, res) => {
   const { username } = req.params // Need github username to get the correct notifications
   const userId = await db.getUserId(username)
 
   // Return new notifications
   const rows = await db.executeQuery(`
-    SELECT notifications.id AS "id", notifications.type AS "type", notifications.contributor AS "contributor", repos.name AS "repoName"
-    FROM public.notifications
+    SELECT notifications.id AS "id", notifications.type AS "type", notifications.contributor AS "contributor", repos.name AS "repoName", notifications.content AS "content", notifications.action AS "action", notifications.url AS "notifURL"
+    FROM public.notifications 
     JOIN public.repos ON(notifications.repo_id = repos.id)
     WHERE notifications.is_new=true AND notifications.user_id=$1 AND repos.is_watching=true
     ORDER BY notifications.time DESC`, [userId])
@@ -272,22 +290,6 @@ app.get('/api/notifications-real/:username', async (req, res) => {
   const notiIds = rows.map(({ id }) => id)
   // await db.executeQuery(`UPDATE public.notifications SET is_new=false WHERE id=ANY($1)`,[notiIds])
   res.json(rows)
-})
-
-app.get('/api/notifications/:username', function (req, res) {
-  const { username } = req.params // Need github username to get the correct notifications
-
-  const mock_data = [{
-    repo: "Repo1",
-    changedBy: "some user",
-    type: "files"
-  }, {
-    repo: "Repo2",
-    changedBy: "another user",
-    type: "issues"
-  }]
-
-  res.json(mock_data)
 })
 
 app.post('/api/authenticate', function (req, res) {
